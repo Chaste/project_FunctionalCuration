@@ -1,0 +1,9 @@
+<?xml version='1.0'?>
+<pycml_config>
+<command_line_args>
+<arg>--protocol=/export/wolf1768/eclipse/workspace/Chaste/projects/CellModelTests/test/ICaLProtocol.py</arg>
+<arg>--cvode</arg>
+<arg>--expose-annotated-variables</arg>
+</command_line_args>
+
+</pycml_config>

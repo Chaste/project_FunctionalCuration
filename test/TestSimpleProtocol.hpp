@@ -1,0 +1,182 @@
+/*
+
+Copyright (C) University of Oxford, 2005-2011
+
+University of Oxford means the Chancellor, Masters and Scholars of the
+University of Oxford, having an administrative office at Wellington
+Square, Oxford OX1 2JD, UK.
+
+This file is part of Chaste.
+
+Chaste is free software: you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
+
+Chaste is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details. The offer of Chaste under the terms of the
+License is subject to the License being interpreted in accordance with
+English Law and subject to any action against the University of Oxford
+being under the jurisdiction of the English Courts.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Chaste. If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+#ifndef TESTSIMPLEPROTOCOL_HPP_
+#define TESTSIMPLEPROTOCOL_HPP_
+
+#include <vector>
+#include <string>
+#include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
+#include <boost/assign/list_of.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include <cxxtest/TestSuite.h>
+
+#include "OutputFileHandler.hpp"
+#include "FileFinder.hpp"
+#include "CellMLToSharedLibraryConverter.hpp"
+#include "DynamicCellModelLoader.hpp"
+#include "AbstractCardiacCell.hpp"
+#include "AbstractDynamicallyLoadableEntity.hpp"
+#include "AbstractSystemWithOutputs.hpp"
+#include "EulerIvpOdeSolver.hpp"
+#include "SimpleStimulus.hpp"
+#include "VectorHelperFunctions.hpp"
+
+#include "RunAndCheckIonicModels.hpp"
+#include "UsefulFunctionsForProtocolTesting.hpp"
+#include "PetscSetupAndFinalize.hpp"
+
+#include "LuoRudy1991BackwardEuler.hpp"
+
+class TestSimpleProtocol : public CxxTest::TestSuite
+{
+    template<typename CELL, typename VECTOR>
+    void CheckSimpleProtocolOutputs(boost::shared_ptr<CELL> pCell)
+    {
+        // Check that the model info matches what we expect from the protocol outputs below
+        TS_ASSERT_EQUALS(pCell->rGetStateVariableNames()[0], "membrane_voltage");
+        TS_ASSERT_EQUALS(pCell->GetNumberOfDerivedQuantities(), 2u);
+        TS_ASSERT_EQUALS(pCell->rGetDerivedQuantityNames()[0], "FonRT");
+        TS_ASSERT_EQUALS(pCell->rGetDerivedQuantityNames()[1], "fast_sodium_current__V");
+        TS_ASSERT_EQUALS(pCell->GetNumberOfParameters(), 1u);
+        TS_ASSERT_EQUALS(pCell->rGetParameterNames()[0], "membrane_fast_sodium_current_conductance");
+
+        // Check protocol outputs specification
+        typedef AbstractSystemWithOutputs<VECTOR> ASWO;
+        boost::shared_ptr<ASWO> p_cell_op = boost::dynamic_pointer_cast<ASWO>(pCell);
+        TS_ASSERT(p_cell_op);
+        TS_ASSERT_EQUALS(p_cell_op->GetNumberOfOutputs(), 5u);
+        std::vector<std::string> names = p_cell_op->GetOutputNames();
+        TS_ASSERT_EQUALS(names.size(), 5u);
+        // Should be sorted alphabetically
+        TS_ASSERT_EQUALS(names[0], "FonRT");
+        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("FonRT"), 0u);
+        TS_ASSERT_EQUALS(names[1], "time");
+        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("time"), 1u);
+        TS_ASSERT_EQUALS(names[2], "fast_sodium_current__V");
+        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("fast_sodium_current__V"), 2u);
+        TS_ASSERT_EQUALS(names[3], "membrane_fast_sodium_current_conductance");
+        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("membrane_fast_sodium_current_conductance"), 3u);
+        TS_ASSERT_EQUALS(names[4], "membrane_voltage");
+        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("membrane_voltage"), 4u);
+        std::vector<std::string> units = p_cell_op->GetOutputUnits();
+        TS_ASSERT_EQUALS(units.size(), 5u);
+        TS_ASSERT_EQUALS(units[0], "per_millivolt");
+        TS_ASSERT_EQUALS(units[1], "milliseconds");
+        TS_ASSERT_EQUALS(units[2], "millivolt");
+        TS_ASSERT_EQUALS(units[3], "milliS_per_cm2");
+        TS_ASSERT_EQUALS(units[4], "millivolt");
+        TS_ASSERT_THROWS_THIS(p_cell_op->GetOutputIndex("no_var"), "No output named 'no_var'.");
+
+        // Check output values
+        VECTOR inits = pCell->GetInitialConditions();
+        VECTOR init_outputs = p_cell_op->ComputeOutputs(0.0, inits);
+        TS_ASSERT_EQUALS(GetVectorSize(init_outputs), 5u);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 0), 0.037435728309031795, 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 1), 0.0, 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 2), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 3), pCell->GetParameter(0u), 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 4), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
+
+        VECTOR fini_outputs = p_cell_op->ComputeOutputs(1000.0, pCell->rGetStateVariables());
+        TS_ASSERT_EQUALS(GetVectorSize(fini_outputs), 5u);
+        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 0), 0.037435728309031795, 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 1), 1000.0, 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 2), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 3), pCell->GetParameter(0u), 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 4), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
+
+        DeleteVector(inits);
+        DeleteVector(init_outputs);
+        DeleteVector(fini_outputs);
+    }
+
+public:
+    void TestSimpleProtocolOnLr91() throw (Exception)
+    {
+        // Copy CellML file into output dir
+        std::string dirname = "TestSimpleProtocol";
+        OutputFileHandler handler(dirname);
+        FileFinder cellml_file("heart/src/odes/cellml/LuoRudy1991.cellml", RelativeTo::ChasteSourceRoot);
+        CopyFile(handler, cellml_file);
+
+        // Create options file
+        FileFinder proto_file("projects/CellModelTests/test/protocols/SimpleProtocol.py", RelativeTo::ChasteSourceRoot);
+        std::vector<std::string> options = boost::assign::list_of("--use-chaste-stimulus")("-i");
+        CreateOptionsFile(handler, proto_file, "LuoRudy1991", options);
+
+        // Do the conversion
+        CellMLToSharedLibraryConverter converter(true, "projects/CellModelTests");
+        FileFinder copied_cellml(dirname + "/LuoRudy1991.cellml", RelativeTo::ChasteTestOutput);
+        DynamicCellModelLoader* p_loader;
+        p_loader = converter.Convert(copied_cellml);
+        boost::shared_ptr<AbstractCardiacCell> p_cell;
+        p_cell = boost::dynamic_pointer_cast<AbstractCardiacCell>(RunLr91Test(*p_loader, 0u));
+        CheckSimpleProtocolOutputs<AbstractCardiacCell, std::vector<double> >(p_cell);
+
+        // The same test, but with optimised cell models
+        options.push_back("--opt");
+        OutputFileHandler handler2(dirname + "Opt");
+        CopyFile(handler2, cellml_file);
+        FileFinder copied_cellml2(handler2.GetOutputDirectoryFullPath() + "/LuoRudy1991.cellml", RelativeTo::Absolute);
+        CreateOptionsFile(handler2, proto_file, "LuoRudy1991", options);
+        p_loader = converter.Convert(copied_cellml2);
+        p_cell = boost::dynamic_pointer_cast<AbstractCardiacCell>(RunLr91Test(*p_loader, true, 2e-3));
+        CheckSimpleProtocolOutputs<AbstractCardiacCell, std::vector<double> >(p_cell);
+
+        options.back() = "--backward-euler";
+        OutputFileHandler handler3(dirname + "BE");
+        CopyFile(handler3, cellml_file);
+        FileFinder maple_output_file("heart/src/odes/cellml/LuoRudy1991.out", RelativeTo::ChasteSourceRoot);
+        CopyFile(handler3, maple_output_file);
+        FileFinder copied_cellml3(handler3.GetOutputDirectoryFullPath() + "/LuoRudy1991.cellml", RelativeTo::Absolute);
+        std::string extra_xml = std::string("<global>\n<lookup_tables>\n<lookup_table>\n") +
+                "<var type='name'>intracellular_calcium_concentration,Cai</var>\n" +
+                "<min>0.00001</min>\n<max>30.00001</max>\n<step>0.0001</step>\n" +
+                "</lookup_table>\n</lookup_tables>\n</global>";
+        CreateOptionsFile(handler3, proto_file, "LuoRudy1991", options, extra_xml);
+        p_loader = converter.Convert(copied_cellml3);
+        p_cell = boost::dynamic_pointer_cast<AbstractCardiacCell>(RunLr91Test(*p_loader, true, 0.3, "cytosolic_calcium_concentration"));
+        CheckSimpleProtocolOutputs<AbstractCardiacCell, std::vector<double> >(p_cell);
+
+        // Compare the last simulation above with normal Backward Euler to verify that the above tolerance really is needed!
+        double magnitude = -25.5; // uA/cm2
+        double duration  = 2.0 ;  // ms
+        double when = 50.0; // ms
+        boost::shared_ptr<SimpleStimulus> p_stimulus(new SimpleStimulus(magnitude, duration, when));
+        boost::shared_ptr<EulerIvpOdeSolver> p_solver;
+        CellLuoRudy1991FromCellMLBackwardEuler backward_lr91(p_solver, p_stimulus);
+        RunOdeSolverWithIonicModel(&backward_lr91,
+                                   1000.0,
+                                   "BackwardLr91");
+        CompareCellModelResults("ProtocolLr91", "BackwardLr91", 1e-12);
+    }
+};
+
+#endif // TESTSIMPLEPROTOCOL_HPP_

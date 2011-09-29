@@ -1,0 +1,50 @@
+#!/bin/sh
+# Start/stop the ssh checker daemon.
+#
+### BEGIN INIT INFO
+# Provides:          FCQueueServer
+# Required-Start:    $syslog $time
+# Required-Stop:     $syslog $time
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Functional Curation Queue Server
+# Description:       A simple job queue for the Functional Curation executable.
+### END INIT INFO
+
+DIR=/home/tom/eclipse/workspace/Chaste/projects/CellModelTests/gui
+EXE=$DIR/QueueServer.py
+PIDFILE=$DIR/functional_curation_queue.pid
+LONG_NAME="Functional Curation Queue Server"
+NAME="FCQueueServer"
+USER=tom
+GROUP=tomcat6
+
+export LD_LIBRARY_PATH=/home/$USER/eclipse/workspace/Chaste/lib
+
+test -f $EXE || exit 0
+
+. /lib/lsb/init-functions
+
+#COMMON_OPTS="--quiet --pidfile $PIDFILE --name $NAME"
+COMMON_OPTS="--quiet --pidfile $PIDFILE --user $USER"
+START_OPTS="$COMMON_OPTS --chuid $USER:$GROUP --chdir $DIR --startas $EXE"
+
+case "$1" in
+start)	log_daemon_msg "Starting $LONG_NAME" $NAME
+        start-stop-daemon --start $START_OPTS
+        log_end_msg $?
+        ;;
+stop)	log_daemon_msg "Stopping $LONG_NAME" $NAME
+        start-stop-daemon --stop $COMMON_OPTS
+        log_end_msg $?
+        ;;
+restart|force-reload) log_daemon_msg "Restarting $LONG_NAME" $NAME
+        start-stop-daemon --stop --retry 5 $COMMON_OPTS
+        start-stop-daemon --start $START_OPTS
+        log_end_msg $?
+        ;;
+*)	log_action_msg "Usage: /etc/init.d/FCQueueServer {start|stop|restart|force-reload}"
+        exit 2
+        ;;
+esac
+exit 0

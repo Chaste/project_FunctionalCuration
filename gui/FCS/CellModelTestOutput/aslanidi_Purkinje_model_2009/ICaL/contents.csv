@@ -1,0 +1,9 @@
+Variable name,Units,Number of dimensions,File name,Type
+time,ms,3,outputs_time.dat,Time
+extracellular_calcium_concentration,model-dependent,3,outputs_extracellular_calcium_concentration.dat,Timeseries
+membrane_L_type_calcium_current,"\mu A/cm^2",3,outputs_membrane_L_type_calcium_current.dat,Timeseries
+membrane_stimulus_current,"\mu A/cm^2",3,outputs_membrane_stimulus_current.dat,Timeseries
+membrane_voltage,mV,3,outputs_membrane_voltage.dat,Timeseries
+membrane_L_type_calcium_tail_current,"\mu A/cm^2",3,outputs_membrane_L_type_calcium_tail_current.dat,Post-processed
+final_membrane_voltage,mV,2,outputs_final_membrane_voltage.dat,Post-processed
+min_LCC,"\mu A/cm^2",2,outputs_min_LCC.dat,Post-processed

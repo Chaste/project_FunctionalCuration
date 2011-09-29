@@ -1,0 +1,11 @@
+Variable name,Units,Number of dimensions,File name,Type
+time,ms,2,outputs_time.dat,Time
+membrane_voltage,mV,2,outputs_membrane_voltage.dat,Timeseries
+raw_Apd90,ms,2,outputs_raw_Apd90.dat,Post-processed
+raw_DI,ms,1,outputs_raw_DI.dat,Post-processed
+first_raw_DI,ms,1,outputs_first_raw_DI.dat,Post-processed
+second_raw_Apd90,ms,1,outputs_second_raw_Apd90.dat,Post-processed
+Apd90,ms,1,outputs_Apd90.dat,Post-processed
+DI,ms,1,outputs_DI.dat,Post-processed
+S1S2_slope,dimensionless,1,outputs_S1S2_slope.dat,Post-processed
+max_S1S2_slope,dimensionless,0,outputs_max_S1S2_slope.dat,Post-processed

@@ -1,0 +1,2 @@
+serviceClass: fcs.client.SimulationService
+path: 9CA8B0D3E05B8CC7F2A0EAD0600806A5.gwt.rpc

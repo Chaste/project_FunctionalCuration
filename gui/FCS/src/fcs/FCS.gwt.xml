@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='fcs'>
+  <!-- Inherit the core Web Toolkit stuff.                        -->
+  <inherits name='com.google.gwt.user.User'/>
+  <inherits name="com.google.gwt.json.JSON" />
+
+  <!-- Inherit the default GWT style sheet.  You can change       -->
+  <!-- the theme of your GWT application by uncommenting          -->
+  <!-- any one of the following lines.                            -->
+  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <!-- <inherits name='com.google.gwt.user.theme.clean.Clean'/> -->
+  <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
+  <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
+
+  <!-- Other module inherits                                      -->
+
+<!-- Include GWTUpload library -->
+  <inherits name="gwtupload.GWTUpload"/>
+  <!-- Load dinamically predefined styles in the library when the application starts -->
+  <stylesheet src="Upload.css"/>
+ <!-- <replace-with class="gwtupload.client.DecoratedFileUpload.DecoratedFileUploadImplClick">-->
+ <!--    <when-type-is class="gwtupload.client.DecoratedFileUpload.DecoratedFileUploadImpl"/>-->
+ <!--    <when-property-is name="user.agent" value="ie9"/>-->
+ <!--  </replace-with>-->
+
+
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='fcs.client.FCS'/>
+
+  <!-- Specify the paths for translatable code                    -->
+  <source path='client'/>
+  <source path='shared'/>
+
+</module>

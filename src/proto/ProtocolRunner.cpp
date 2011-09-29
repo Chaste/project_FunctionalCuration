@@ -68,7 +68,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     }
 
     // Do the conversion
-    CellMLToSharedLibraryConverter converter(true, "projects/CellModelTests");
+    CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
     converter.CreateOptionsFile(mHandler, model_name, options);
     DynamicCellModelLoader* p_loader = converter.Convert(copied_model);
     boost::shared_ptr<AbstractStimulusFunction> p_stimulus;
@@ -76,8 +76,8 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     boost::shared_ptr<AbstractCvodeCell> p_cell(dynamic_cast<AbstractCvodeCell*>(p_loader->CreateCell(p_solver, p_stimulus)));
 
     // Load the XML protocol
-    FileFinder core_library_file("projects/CellModelTests/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
-    FileFinder cardiac_library_file("projects/CellModelTests/src/proto/library/CardiacLibrary.xml", RelativeTo::ChasteSourceRoot);
+    FileFinder core_library_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
+    FileFinder cardiac_library_file("projects/FunctionalCuration/src/proto/library/CardiacLibrary.xml", RelativeTo::ChasteSourceRoot);
     ProtocolParser parser;
     mpProtocol = parser.ParseFile(rProtoXmlFile);
     parser.ParseLibrary(core_library_file, mpProtocol);

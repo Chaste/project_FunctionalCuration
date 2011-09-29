@@ -44,8 +44,8 @@ public:
     void TestSteadyPacingProtocolRunning() throw(Exception, std::bad_alloc)
     {
         std::string dirname = "TestSteadyPacingProtocolOutputs";
-        FileFinder cellml_file("projects/CellModelTests/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/CellModelTests/test/protocols/SteadyPacing.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/SteadyPacing.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
 

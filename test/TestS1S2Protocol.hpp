@@ -46,8 +46,8 @@ public:
     void TestS1S2ProtocolRunning() throw(Exception, std::bad_alloc)
     {
         std::string dirname = "TestS1S2ProtocolOutputs";
-        FileFinder cellml_file("projects/CellModelTests/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/CellModelTests/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
 
@@ -76,8 +76,8 @@ public:
     {
         std::string dirname = "TestS1S2ProtocolHistoric";
         std::string model_name = "courtemanche_ramirez_nattel_1998";
-        FileFinder cellml_file("projects/CellModelTests/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/CellModelTests/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.RunProtocol();
@@ -100,7 +100,7 @@ public:
         	}
 
         	std::cout << "Comparing results of S1-S2 protocol: " << output_name << "...";
-			FileFinder ref_output("projects/CellModelTests/test/data/historic/" + model_name + "/S1S2/" + output_name + ".dat",
+			FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/S1S2/" + output_name + ".dat",
 					              RelativeTo::ChasteSourceRoot);
 			OutputFileHandler handler(dirname, false);
 			FileFinder test_output = handler.FindFile(output_name + ".csv");

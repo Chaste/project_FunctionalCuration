@@ -255,11 +255,11 @@ public:
             std::vector<AbstractStatementPtr> stmts = boost::assign::list_of(stmt);
             std::string error_msg(
                     "Protocol backtrace (most recent call last):\n"
-                    "  ./projects/CellModelTests/test/TestCoreProtocolLanguage.hpp:236:0     stmt\n"
-                    "  ./projects/CellModelTests/test/TestCoreProtocolLanguage.hpp:235:0     call\n"
-                    "  ./projects/CellModelTests/test/TestCoreProtocolLanguage.hpp:68:0      sum\n"
+                    "  ./projects/FunctionalCuration/test/TestCoreProtocolLanguage.hpp:236:0     stmt\n"
+                    "  ./projects/FunctionalCuration/test/TestCoreProtocolLanguage.hpp:235:0     call\n"
+                    "  ./projects/FunctionalCuration/test/TestCoreProtocolLanguage.hpp:68:0      sum\n"
                     "  <anon>\n"
-                    "  ./projects/CellModelTests/test/TestCoreProtocolLanguage.hpp:64:0      fold\n"
+                    "  ./projects/FunctionalCuration/test/TestCoreProtocolLanguage.hpp:64:0      fold\n"
                     "Second argument to fold should be an array.");
             TS_ASSERT_THROWS_CONTAINS(env.ExecuteStatements(stmts), "fold\nSecond argument to fold should be an array.");
         }

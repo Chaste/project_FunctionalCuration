@@ -127,12 +127,12 @@ public:
         CopyFile(handler, cellml_file);
 
         // Create options file
-        FileFinder proto_file("projects/CellModelTests/test/protocols/SimpleProtocol.py", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_file("projects/FunctionalCuration/test/protocols/SimpleProtocol.py", RelativeTo::ChasteSourceRoot);
         std::vector<std::string> options = boost::assign::list_of("--use-chaste-stimulus")("-i");
         CreateOptionsFile(handler, proto_file, "LuoRudy1991", options);
 
         // Do the conversion
-        CellMLToSharedLibraryConverter converter(true, "projects/CellModelTests");
+        CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
         FileFinder copied_cellml(dirname + "/LuoRudy1991.cellml", RelativeTo::ChasteTestOutput);
         DynamicCellModelLoader* p_loader;
         p_loader = converter.Convert(copied_cellml);

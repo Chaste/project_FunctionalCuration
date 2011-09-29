@@ -46,8 +46,8 @@ public:
     {
         std::string dirname = "TestICaLProtocolOutputs";
         std::string model_name = "aslanidi_Purkinje_model_2009";
-        FileFinder cellml_file("projects/CellModelTests/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/CellModelTests/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.RunProtocol();
@@ -70,7 +70,7 @@ public:
         	}
 
         	std::cout << "Comparing results of ICaL protocol: " << output_name << "...";
-			FileFinder ref_output("projects/CellModelTests/test/data/historic/" + model_name + "/ICaL/" + output_name + ".dat",
+			FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/ICaL/" + output_name + ".dat",
 					              RelativeTo::ChasteSourceRoot);
 			OutputFileHandler handler(dirname, false);
 			FileFinder test_output = handler.FindFile(output_name + ".csv");

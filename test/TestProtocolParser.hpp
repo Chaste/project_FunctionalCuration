@@ -73,7 +73,7 @@ public:
     void TestWithCorePostproc() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/CellModelTests/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         // Test inputs
@@ -177,7 +177,7 @@ public:
     void TestSimpleError() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/CellModelTests/test/protocols/test_error1.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_error1.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
@@ -210,7 +210,7 @@ public:
     void TestFindAndIndex() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/CellModelTests/test/protocols/test_find_index.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_find_index.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
@@ -243,7 +243,7 @@ public:
     void TestCoreLibrary() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/CellModelTests/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
         Environment& env = p_proto->rGetLibrary();
 
@@ -434,12 +434,12 @@ public:
         OutputFileHandler handler(dirname);
         FileFinder cellml_file("heart/src/odes/cellml/LuoRudy1991.cellml", RelativeTo::ChasteSourceRoot);
         FileFinder copied_cellml = handler.CopyFileTo(cellml_file);
-        FileFinder proto_py_file("projects/CellModelTests/test/protocols/SimpleProtocol.py", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_py_file("projects/FunctionalCuration/test/protocols/SimpleProtocol.py", RelativeTo::ChasteSourceRoot);
         std::vector<std::string> options = list_of("--opt")("--cvode")("--no-use-chaste-stimulus")("--expose-annotated-variables");
         CreateOptionsFile(handler, proto_py_file, "LuoRudy1991", options);
 
         // Do the conversion
-        CellMLToSharedLibraryConverter converter(true, "projects/CellModelTests");
+        CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
         DynamicCellModelLoader* p_loader = converter.Convert(copied_cellml);
         boost::shared_ptr<AbstractCardiacCellInterface> p_abs_cell(CreateCellFromLoader(*p_loader));
         boost::shared_ptr<CELL_TYPE> p_cell = boost::dynamic_pointer_cast<CELL_TYPE>(p_abs_cell);
@@ -450,9 +450,9 @@ public:
 
         // Test with simulation & post-processing loaded from file
         ProtocolParser parser;
-        FileFinder core_proto_file("projects/CellModelTests/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
-        FileFinder cardiac_proto_file("projects/CellModelTests/src/proto/library/CardiacLibrary.xml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_file("projects/CellModelTests/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder core_proto_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cardiac_proto_file("projects/FunctionalCuration/src/proto/library/CardiacLibrary.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
         parser.ParseLibrary(core_proto_file, p_proto);
         parser.ParseLibrary(cardiac_proto_file, p_proto);
@@ -464,7 +464,7 @@ public:
         std::vector<std::string> filenames = list_of("-contents.csv")("-steppers.csv")("-default-plots.csv");
         BOOST_FOREACH(std::string filename, filenames)
         {
-            FileFinder ref_file("projects/CellModelTests/test/data/test_basic_simulation/TestBasicSimulationAndApd" + filename, RelativeTo::ChasteSourceRoot);
+            FileFinder ref_file("projects/FunctionalCuration/test/data/test_basic_simulation/TestBasicSimulationAndApd" + filename, RelativeTo::ChasteSourceRoot);
             FileFinder test_file = handler.FindFile("TestBasicSimulationAndApd" + filename);
             TS_ASSERT_THROWS_NOTHING(EXPECT0(system, "diff -u " + test_file.GetAbsolutePath() + " " + ref_file.GetAbsolutePath()));
         }

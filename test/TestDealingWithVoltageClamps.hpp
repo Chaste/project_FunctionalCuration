@@ -43,7 +43,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "aslanidi_Purkinje_model_2009_NotLHopitaled.hpp"
 #include "aslanidi_Purkinje_model_2009_LHopitaled.hpp"
 
-#include "UsefulFunctionsForProtocolTesting.hpp" // Must come after any other CellModelTests headers
+#include "UsefulFunctionsForProtocolTesting.hpp" // Must come after any other FunctionalCuration headers
 #include "PetscSetupAndFinalize.hpp"
 
 class TestDealingWithVoltageClamps : public CxxTest::TestSuite

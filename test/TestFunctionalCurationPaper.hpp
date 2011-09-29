@@ -26,8 +26,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef TESTCELLMODELTESTS_HPP_
-#define TESTCELLMODELTESTS_HPP_
+#ifndef TESTFUNCTIONALCURATIONPAPER_HPP_
+#define TESTFUNCTIONALCURATIONPAPER_HPP_
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -60,7 +60,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 typedef N_Vector VECTOR;
 
-class TestCellModelTests : public CxxTest::TestSuite
+class TestFunctionalCurationPaper : public CxxTest::TestSuite
 {
 private:
     /** How many different S2 intervals are used. */
@@ -89,7 +89,7 @@ private:
         BOOST_FOREACH(std::string output_name, rOutputNames)
         {
             std::cout << "Comparing results of " << rProtocolName << " protocol on " << rModelName << ": " << output_name << "...";
-            FileFinder ref_output("projects/CellModelTests/test/data/historic/" + rModelName + "/" +
+            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + rModelName + "/" +
                                   rProtocolName + "/" + output_name + ".dat",
                                   RelativeTo::ChasteSourceRoot);
             FileFinder test_output = mpHandler->FindFile(output_name + ".csv");
@@ -124,7 +124,7 @@ private:
      */
     std::string SetupOutputFileHandler(const std::string& rCellMLFileBaseName, const std::string& rProtocolName, bool reset=false)
     {
-        std::string dirname = "CellModelTests/" + rCellMLFileBaseName + "/" + rProtocolName;
+        std::string dirname = "FunctionalCuration/" + rCellMLFileBaseName + "/" + rProtocolName;
         mpHandler.reset(new OutputFileHandler(dirname, reset)); // Create a new directory for this model
         return dirname;
     }
@@ -138,8 +138,8 @@ private:
         std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "S1S2");
 
 
-        FileFinder cellml_file("projects/CellModelTests/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/CellModelTests/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.GetProtocol()->SetInput("s1_interval", CONST(s1PacingCycleLength));
@@ -252,8 +252,8 @@ private:
     bool RunICaLVoltageClampProtocol(std::string& rCellMLFileBaseName)
     {
         std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "ICaL");
-        FileFinder cellml_file("projects/CellModelTests/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/CellModelTests/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
         try
         {
@@ -325,11 +325,11 @@ private:
     }
 
     /**
-     * @return all of the .cellml files in the directory of the CellModelTests project for dynamic loading.
+     * @return all of the .cellml files in the directory of the FunctionalCuration project for dynamic loading.
      */
     std::vector<std::string> GetAListOfCellMLFiles(void)
     {
-        std::string cell_ml_directory = "projects/CellModelTests/cellml";
+        std::string cell_ml_directory = "projects/FunctionalCuration/cellml";
 
         // Make a list of the cellml files in the directory...
         std::vector<std::string> cellml_files;
@@ -477,9 +477,9 @@ public:
         for (unsigned i=0; i<exp_data.size(); ++i)
         {
             // Copy the data from
-            FileFinder finder("projects/CellModelTests/test/data/" + exp_data[i], RelativeTo::ChasteSourceRoot);
+            FileFinder finder("projects/FunctionalCuration/test/data/" + exp_data[i], RelativeTo::ChasteSourceRoot);
             TS_ASSERT_EQUALS(finder.IsDir(), true);
-            mpHandler.reset(new OutputFileHandler("CellModelTests/" + exp_data[i], true)); // Clean this dir
+            mpHandler.reset(new OutputFileHandler("FunctionalCuration/" + exp_data[i], true)); // Clean this dir
             EXPECT0(system, "cp " + finder.GetAbsolutePath() + "* " + mpHandler->GetOutputDirectoryFullPath());
 
             if (i<3)
@@ -501,4 +501,4 @@ public:
     }
 };
 
-#endif // TESTS1S2PROTOCOL_HPP_
+#endif // TESTFUNCTIONALCURATIONPAPER_HPP_

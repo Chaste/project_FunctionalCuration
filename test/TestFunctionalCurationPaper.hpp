@@ -397,6 +397,11 @@ public:
     void TestProtocolsForManyCellModels() throw(Exception, std::bad_alloc)
     {
         std::vector<std::string> cellml_files = GetAListOfCellMLFiles();
+        if (CommandLineArguments::Instance()->OptionExists("--models"))
+        {
+            cellml_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--models");
+        }
+
         std::vector<std::string> ical_outputs = boost::assign::list_of("outputs_min_LCC")("outputs_final_membrane_voltage");
         std::vector<std::string> s1s2_outputs = boost::assign::list_of("outputs_APD90")("outputs_DI");
 

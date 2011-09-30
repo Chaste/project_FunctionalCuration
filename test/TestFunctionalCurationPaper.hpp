@@ -144,11 +144,13 @@ private:
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.GetProtocol()->SetInput("s1_interval", CONST(s1PacingCycleLength));
 
-        // Special-case for one model
-        if (rCellMLFileBaseName == "jafri_rice_winslow_model_1998")
-        {   // Relax tolerances a bit...
-            boost::shared_ptr<AbstractCvodeCell> p_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(runner.GetProtocol()->GetModel());
-            p_cell->SetTolerances(1e-4, 1e-6);
+        // Special case for non-conservative models which break after lots of paces
+        std::set<std::string> non_conservative_models =
+                boost::assign::list_of("jafri_rice_winslow_model_1998")
+                                      ("winslow_model_1999");
+        if (non_conservative_models.find(rCellMLFileBaseName) != non_conservative_models.end())
+        {
+            runner.GetProtocol()->SetInput("steady_state_beats", CONST(10));
         }
 
         runner.RunProtocol();

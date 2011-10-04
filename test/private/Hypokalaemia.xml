@@ -1,0 +1,284 @@
+<?xml version="1.0"?>
+<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    <!-- Declare protocol inputs with default values -->
+    <inputs>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>pacing_period</ci>
+                <cn>1000</cn>
+            </apply>
+            <apply><eq/>
+                <ci>steady_state_beats</ci>
+                <cn>1000</cn>
+            </apply>
+        </apply>    
+    </inputs>
+    
+    <library>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>default_Ko</ci>
+                <ci>oxmeta:extracellular_potassium_concentration</ci>
+            </apply>
+        </apply>    
+    </library>
+     
+    <units>
+        <cellml:units name="mV">
+            <cellml:unit units="volt" prefix="milli"/>
+        </cellml:units>
+        <cellml:units name="ms">
+            <cellml:unit units="second" prefix="milli"/>
+        </cellml:units>
+	   <cellml:units name="mM">
+	      <cellml:unit units="mole" prefix="milli"/>
+	      <cellml:unit units="litre" exponent="-1"/>
+	   </cellml:units>
+    </units>
+    
+    <modelInterface>
+        <!-- Here we've commented out the stimulus end time because we don't ever want it to finish, for other protocols you might want to re-include it. -->
+        <!-- <specifyInputVariable name="oxmeta:membrane_stimulus_current_end" units="ms" initial_value="100000000000"/> -->
+        <specifyInputVariable name="oxmeta:membrane_stimulus_current_offset" units="ms" initial_value="10"/>
+        <specifyInputVariable name="oxmeta:membrane_stimulus_current_period" units="ms" initial_value="1000"/>
+        <specifyInputVariable name="oxmeta:extracellular_potassium_concentration" units="mM"/>
+        <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
+        <specifyOutputVariable name="oxmeta:time" units="ms"/>
+        <specifyOutputVariable name="oxmeta:extracellular_potassium_concentration" units="mM"/>
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:membrane_stimulus_current</ci>
+                <piecewise>
+                    <piece>
+                        <ci>oxmeta:membrane_stimulus_current_amplitude</ci>
+                        <apply><and/>
+                            <apply><geq/>
+                                <ci>oxmeta:time</ci>
+                                <ci>oxmeta:membrane_stimulus_current_offset</ci>
+                            </apply>
+                        <!--<apply><leq/>
+                                <ci>oxmeta:time</ci>
+                                <ci>oxmeta:membrane_stimulus_current_end</ci>
+                            </apply> -->
+                            <apply><leq/>
+                                <apply><minus/>
+                                    <apply><minus/>
+                                        <ci>oxmeta:time</ci>
+                                        <ci>oxmeta:membrane_stimulus_current_offset</ci>
+                                    </apply>
+                                    <apply><times/>
+                                        <apply><floor/>
+                                            <apply><divide/>
+                                                <apply><minus/>
+                                                    <ci>oxmeta:time</ci>
+                                                    <ci>oxmeta:membrane_stimulus_current_offset</ci>
+                                                </apply>
+                                                <ci>oxmeta:membrane_stimulus_current_period</ci>
+                                            </apply>
+                                        </apply>
+                                        <ci>oxmeta:membrane_stimulus_current_period</ci>
+                                    </apply>
+                                </apply>
+                                <ci>oxmeta:membrane_stimulus_current_duration</ci>
+                            </apply>
+                        </apply>
+                    </piece>
+                    <otherwise>
+                        <apply><times/>
+                            <cn cellml:units="dimensionless">0</cn>
+                            <ci>oxmeta:membrane_stimulus_current_amplitude</ci>
+                        </apply>
+                    </otherwise>
+                </piecewise>
+            </apply>
+        </addOrReplaceEquation>
+    </modelInterface>
+
+    <simulations>    
+    	<!-- Do a pre-run to get the model to steady-state with the desired S1 stimulus -->
+		<timecourseSimulation>
+		    <vectorStepper name="time" units="ms">
+		        <value>0</value>
+		        <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
+		            <ci>pacing_period</ci>
+		            <ci>steady_state_beats</ci>
+		        </apply>
+		    </vectorStepper>
+		    <modifiers>
+		        <!-- Set stimulus period to S1 interval, offset 10ms -->                    
+		        <setVariable>
+		            <when>AT_START_ONLY</when>
+		            <name>oxmeta:membrane_stimulus_current_period</name><!-- ms -->
+		            <value>
+		                <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_period</ci>
+		            </value>
+		        </setVariable>         
+		        <saveState>
+		            <when>AT_END</when>
+		            <name>initial_state</name>
+		        </saveState>
+		    </modifiers>
+		</timecourseSimulation>
+        
+	    <nestedSimulation prefix="sim">
+	        <vectorStepper name="step_potassium" units="mM">
+				<!-- <ci>default_Ko</ci> \todo #1895 get this to work -->
+	            <value>8</value>
+	            <value>7</value>
+	            <value>6</value>
+	            <value>5</value>
+	            <value>4</value>
+	            <value>3</value>
+	            <value>2</value>
+	        </vectorStepper>
+	        
+	        <modifiers>
+	            <!-- Set the external potassium concentration -->
+	            <setVariable>
+	                <when>EVERY_LOOP</when>
+	                <name>oxmeta:extracellular_potassium_concentration</name>
+	                <value>
+	                    <ci xmlns="http://www.w3.org/1998/Math/MathML">step_potassium</ci>
+	                </value>
+	            </setVariable>
+	        </modifiers>
+	    
+	        <!-- Do a run to get the model to steady-state with the desired extracellular potassium -->
+	        <timecourseSimulation>            
+	            <uniformStepper name="time" units="ms">
+	                <start>0</start>
+	                <stop>
+	                <!-- As a workaround we run the model for two action potentials -->
+	                <!-- \todo #1858 make this do a single action potential -->
+	                    <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
+	                        <ci>pacing_period</ci>
+	                        <ci>steady_state_beats</ci>
+	                    </apply>
+	                </stop>                
+	                <step>1</step> <!-- Get a reasonable amount of detail for the APD calculation -->
+	            </uniformStepper>
+	            
+	            <modifiers>
+		            <resetState> <!-- At the beginning of the final AP simulation load up the state variables from the long run to steady state -->
+		                <when>AT_START_ONLY</when>
+		                <state>initial_state</state>
+		            </resetState>	                
+	            </modifiers>        
+	        </timecourseSimulation>
+      	</nestedSimulation>        
+    </simulations>
+    
+    <post-processing>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            
+            <!-- Test that expected model outputs exist -->
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
+                    <ci>sim:time</ci>
+                </apply>
+            </apply>
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
+                    <ci>sim:membrane_voltage</ci>
+                </apply>
+            </apply>
+            
+            <!-- Calculate the time at which there will be two further action potentials -->
+            <!-- \todo #1859 put a calculation in here -->
+            <apply><eq/>
+                <ci>min_time</ci>
+                <cn>8000</cn>
+            </apply>
+            
+            <!-- Reduce these arrays to just the 'steady' action potential(s) \todo #1858 - just one action potential! -->
+            <apply><eq/>
+                <ci>steady_state_membrane_voltage</ci>
+                <apply><ci>After</ci>
+                    <ci>sim:membrane_voltage</ci>
+                    <ci>sim:time</ci>
+                    <ci>min_time</ci>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
+                </apply>
+            </apply>            
+            <apply><eq/>
+                <ci>steady_state_time</ci>
+                <apply><ci>After</ci>
+                    <ci>sim:time</ci>
+                    <ci>sim:time</ci>
+                    <ci>min_time</ci>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
+                </apply>
+            </apply>
+                                    
+            <!-- Compute APD90 -->
+            <apply><eq/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                    <ci>raw_APD90</ci>
+                    <ci>raw_DI</ci>
+                </apply>
+                <apply><ci>Apd</ci>
+                    <ci>steady_state_membrane_voltage</ci>
+                    <ci>steady_state_time</ci>
+                    <cn>90</cn>
+                </apply>
+            </apply>                     
+           
+            <!-- Get the peak voltage -->
+            <apply><eq/>
+                <ci>peak_voltage</ci>
+                <apply><ci>Max</ci>
+                    <ci>steady_state_membrane_voltage</ci>
+                </apply>
+            </apply>
+            
+            <!-- Get the resting potential -->
+            <apply><eq/>
+                <ci>resting_potential</ci>
+                <apply><ci>Min</ci>
+                    <ci>steady_state_membrane_voltage</ci>
+                </apply>
+            </apply>
+            
+            <!-- Take the last action potential as the 'steady state' APD -->
+            <!-- \todo - #1859 how do we do this!?
+            <apply><eq/>
+                <ci>apd90</ci>
+                <apply><ci>Last</ci>
+                    <ci>raw_APD90</ci>
+                </apply>
+            </apply> -->
+        </apply>
+    </post-processing>
+    
+    <outputVariables>
+        <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Transmembrane potential (mV)"/>
+        <raw ref="sim:time" name="time" description="Time (ms)"/>       
+        <raw ref="sim:extracellular_potassium_concentration" name="extracellular_potassium_concentration"
+            description="Extracellular potassium concentration"/>
+            
+        <postprocessed name="steady_state_membrane_voltage" units="mV"/>
+        <postprocessed name="steady_state_time" units="ms"/>
+        <postprocessed name="peak_voltage" units="mV"/>
+        <postprocessed name="resting_potential" units="mV"/>
+        <postprocessed name="raw_APD90" units="ms"/>
+    </outputVariables>
+    
+    <plots>
+        <plot>
+            <title>Steady State Action Potential</title>
+            <x>steady_state_time</x>
+            <y>steady_state_membrane_voltage</y>
+        </plot>
+    </plots>
+</protocol>

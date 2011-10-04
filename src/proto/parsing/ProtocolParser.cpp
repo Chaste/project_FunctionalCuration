@@ -831,7 +831,7 @@ public:
     {
         SetContext(pDefnElt);
         std::vector<DOMElement*> children = XmlTools::GetChildElements(pDefnElt);
-        PROTO_ASSERT(children.size() == 3, "A nestedSimulation must contain a nested simulation definition.");
+        PROTO_ASSERT(children.size() == 3, "A nestedSimulation must contain a (single) nested simulation definition.");
         boost::shared_ptr<AbstractSimulation> p_nested_sim = ParseSimulationDefinition(children.back());
         return boost::make_shared<NestedSimulation>(p_nested_sim, pStepper, pModifiers);
     }

@@ -69,7 +69,7 @@ public:
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
         NdArray<double> max_slope = GET_ARRAY(r_outputs.Lookup("max_S1S2_slope"));
         TS_ASSERT_EQUALS(max_slope.GetNumElements(), 1u);
-        TS_ASSERT_DELTA(*max_slope.Begin(), 0.2123, 1e-4);
+        TS_ASSERT_DELTA(*max_slope.Begin(), 0.212, 1e-3);
     }
 
     void TestAgainstHistoricResults() throw(Exception, std::bad_alloc)

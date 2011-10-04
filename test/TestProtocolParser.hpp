@@ -253,14 +253,14 @@ public:
             DEFINE(input, boost::make_shared<ArrayCreate>(values));
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(input)(DEFAULT_EXPR);
 
-            AbstractValuePtr p_result = (*boost::make_shared<FunctionCall>("max", args))(env);
+            AbstractValuePtr p_result = (*boost::make_shared<FunctionCall>("Max", args))(env);
             TS_ASSERT(p_result->IsArray());
             NdArray<double> array = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 1u);
             TS_ASSERT_EQUALS(array.GetNumElements(), 1u);
             TS_ASSERT_EQUALS(*array.Begin(), 4);
 
-            p_result = (*boost::make_shared<FunctionCall>("min", args))(env);
+            p_result = (*boost::make_shared<FunctionCall>("Min", args))(env);
             TS_ASSERT(p_result->IsArray());
             array = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 1u);
@@ -273,7 +273,7 @@ public:
             std::vector<AbstractExpressionPtr> values = EXPR_LIST(CONST(1))(CONST(2))(CONST(4))(CONST(8));
             DEFINE(input, boost::make_shared<ArrayCreate>(values));
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(input)(DEFAULT_EXPR);
-            DEFINE(call, boost::make_shared<FunctionCall>("diff", args));
+            DEFINE(call, boost::make_shared<FunctionCall>("Diff", args));
             AbstractValuePtr p_result = (*call)(env);
             TS_ASSERT(p_result->IsArray());
             NdArray<double> array = GET_ARRAY(p_result);
@@ -293,7 +293,7 @@ public:
             NdArray<double>::Iterator it = input.Begin();
             *it++ = 1; *it++ = 2; *it = 3;
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(VALUE(ArrayValue, input))(CONST(3))(CONST(0));
-            AbstractExpressionPtr p_call = make_shared<FunctionCall>("stretch", args);
+            AbstractExpressionPtr p_call = make_shared<FunctionCall>("Stretch", args);
             AbstractValuePtr p_result = (*p_call)(env);
 
             TS_ASSERT(p_result->IsArray());
@@ -307,7 +307,7 @@ public:
             args = EXPR_LIST(CONST(3))(CONST(3))(CONST(2));
             DEFINE(p_shape, make_shared<ArrayCreate>(args));
             args = EXPR_LIST(VALUE(ArrayValue, array))(CONST(2))(DEFAULT_EXPR);
-            p_call = make_shared<FunctionCall>("stretch", args);
+            p_call = make_shared<FunctionCall>("Stretch", args);
             p_result = (*p_call)(env);
 
             TS_ASSERT(p_result->IsArray());
@@ -338,7 +338,7 @@ public:
 
             // Create a window of the "time" (j) dimension: window(input, 2, default)
             args = EXPR_LIST(VALUE(ArrayValue, input))(CONST(2))(DEFAULT_EXPR);
-            DEFINE(window_call, make_shared<FunctionCall>(LOOKUP("window"), args));
+            DEFINE(window_call, make_shared<FunctionCall>(LOOKUP("Window"), args));
             AbstractValuePtr p_window = (*window_call)(env);
             NdArray<double> window = GET_ARRAY(p_window);
             /* It should look like:
@@ -395,7 +395,7 @@ public:
             std::vector<AbstractExpressionPtr> args
                 = EXPR_LIST(VALUE(ArrayValue, xs))(VALUE(ArrayValue, ys))(VALUE(ArrayValue, targets))
                            (VALUE(ArrayValue, starts))(DEFAULT_EXPR)(DEFAULT_EXPR);
-            AbstractValuePtr p_result = (*make_shared<FunctionCall>("interp", args))(env);
+            AbstractValuePtr p_result = (*make_shared<FunctionCall>("Interp", args))(env);
             NdArray<double> result = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(result.GetNumDimensions(), 2u);
             TS_ASSERT_EQUALS(result.GetShape()[0], shape[0]);
@@ -411,7 +411,7 @@ public:
             }
             args = EXPR_LIST(VALUE(ArrayValue, xs))(VALUE(ArrayValue, ys))(VALUE(ArrayValue, targets))
                             (VALUE(ArrayValue, starts))(CONST(0))(DEFAULT_EXPR);
-            p_result = (*make_shared<FunctionCall>("interp", args))(env);
+            p_result = (*make_shared<FunctionCall>("Interp", args))(env);
             result = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(result.GetNumDimensions(), 2u);
             TS_ASSERT_EQUALS(result.GetShape()[0], shape[0]);

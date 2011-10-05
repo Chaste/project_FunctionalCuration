@@ -194,10 +194,15 @@
             </apply>
             
             <!-- Calculate the time at which there will be two further action potentials -->
-            <!-- \todo #1859 put a calculation in here -->
             <apply><eq/>
                 <ci>min_time</ci>
-                <cn>8000</cn>
+                <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
+                    <ci>pacing_period</ci>
+                    <apply xmlns="http://www.w3.org/1998/Math/MathML"><minus/>
+                    	<ci>steady_state_beats</ci>
+                    	<cn>2</cn> <!-- \todo #1858 make this a 1 -->
+                    </apply>
+	            </apply>
             </apply>
             
             <!-- Reduce these arrays to just the 'steady' action potential(s) \todo #1858 - just one action potential! -->
@@ -262,16 +267,16 @@
     </post-processing>
     
     <outputVariables>
-        <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Transmembrane potential (mV)"/>
-        <raw ref="sim:time" name="time" description="Time (ms)"/>       
+        <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Full membrane potential traces"/>
+        <raw ref="sim:time" name="time" description="Full time traces"/>       
         <raw ref="sim:extracellular_potassium_concentration" name="extracellular_potassium_concentration"
             description="Extracellular potassium concentration"/>
             
-        <postprocessed name="steady_state_membrane_voltage" units="mV"/>
-        <postprocessed name="steady_state_time" units="ms"/>
-        <postprocessed name="peak_voltage" units="mV"/>
-        <postprocessed name="resting_potential" units="mV"/>
-        <postprocessed name="raw_APD90" units="ms"/>
+        <postprocessed name="steady_state_membrane_voltage" description="action potential membrane voltage" units="mV"/>
+        <postprocessed name="steady_state_time" description="action potential time" units="ms"/>
+        <postprocessed name="peak_voltage" description="action potential peak voltage" units="mV"/>
+        <postprocessed name="resting_potential" description="action potential resting potential" units="mV"/>
+        <postprocessed name="raw_APD90" description="action potential duration 90%" units="ms"/>
     </outputVariables>
     
     <plots>

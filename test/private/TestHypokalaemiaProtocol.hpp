@@ -31,6 +31,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <cxxtest/TestSuite.h>
+#include <boost/assign/list_of.hpp>
+using boost::assign::list_of;
 
 #include "ProtocolRunner.hpp"
 #include "ProtocolLanguage.hpp"
@@ -65,10 +67,29 @@ public:
         TS_ASSERT_EQUALS(resting_potential.GetNumElements(), 7u);
         TS_ASSERT_DELTA(*resting_potential.Begin(), -75.4569, 1e-3);
 
-//        NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("apd90"));
-//        TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 0u);
-//        TS_ASSERT_EQUALS(apd90.GetNumElements(), 7u);
-//        TS_ASSERT_DELTA(*apd90.Begin(), 362.02, 1e-2);
+        // These are the results that came out first attempt (they look sensible)
+        std::vector<double> reference_apd90 = list_of(298.139)(318.821)(343.841)(375.742)(418.564)(476.702)(570.496);
+        std::vector<double> reference_resting = list_of(-75.4569)(-78.5914)(-82.1074)(-86.0988)(-90.6683)(-95.7858)(-98.9795);
+
+        NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("raw_APD90"));
+        NdArray<double>::Indices apd90_indices = apd90.GetIndices();
+        TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 2u);
+        TS_ASSERT_EQUALS(apd90.GetNumElements(), 14u);
+        apd90.IncrementIndices(apd90_indices); // This here because apd90 has an extra dimension at the moment (#1858)
+
+        NdArray<double> resting = GET_ARRAY(r_outputs.Lookup("resting_potential"));
+        NdArray<double>::Indices resting_indices = resting.GetIndices();
+        TS_ASSERT_EQUALS(resting.GetNumDimensions(), 2u);
+        TS_ASSERT_EQUALS(resting.GetNumElements(), 7u);
+
+        for (unsigned i=0; i<reference_apd90.size(); i++)
+        {
+        	TS_ASSERT_DELTA(apd90[apd90_indices], reference_apd90[i], 1e-2);
+        	apd90.IncrementIndices(apd90_indices);
+        	apd90.IncrementIndices(apd90_indices); // This here because apd90 has an extra dimension at the moment (#1858)
+        	TS_ASSERT_DELTA(resting[resting_indices], reference_resting[i], 1e-3);
+            resting.IncrementIndices(resting_indices);
+        }
     }
 };
 

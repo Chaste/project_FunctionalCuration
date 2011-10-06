@@ -514,14 +514,14 @@ public:
         TS_ASSERT_EQUALS(time_3d.GetShape()[0], 3u);
         TS_ASSERT_EQUALS(time_3d.GetShape()[1], 3u);
         TS_ASSERT_EQUALS(time_3d.GetShape()[2], num_timesteps);
-        NdArray<double>::Iterator p_time_3d = time_3d.Begin();
-        NdArray<double>::Iterator p_V_3d = GET_ARRAY(r_outputs_3d.Lookup("fast_sodium_current__V")).Begin();
+        NdArray<double>::ConstIterator p_time_3d = time_3d.Begin();
+        NdArray<double>::ConstIterator p_V_3d = GET_ARRAY(r_outputs_3d.Lookup("fast_sodium_current__V")).Begin();
         for (unsigned i=0; i<3u; ++i)
         {
             for (unsigned j=0; j<3u; ++j)
             {
-                NdArray<double>::Iterator p_time = time.Begin();
-                NdArray<double>::Iterator p_V = V.Begin();
+                NdArray<double>::ConstIterator p_time = time.Begin();
+                NdArray<double>::ConstIterator p_V = V.Begin();
                 for (unsigned k=0; k<1201u; ++k)
                 {
                     TS_ASSERT_EQUALS(*p_time_3d++, *p_time++);

@@ -189,7 +189,7 @@ public:
         TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(Accessor(LOOKUP("input_sum"), Accessor::NUM_DIMS)(env)), 1);
         TS_ASSERT_EQUALS(sum_array.GetNumElements(), 1u);
         TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(Accessor(LOOKUP("input_sum"), Accessor::NUM_ELEMENTS)(env)), 1);
-        double* p_result_elt = sum_array.Begin();
+        NdArray<double>::ConstIterator p_result_elt = sum_array.Begin();
         TS_ASSERT_EQUALS(*p_result_elt, 55.0);
 
         NdArray<double> max_result_array = LookupArray(env, "input2d_max"); // Should be {{6,4,5}}
@@ -372,7 +372,7 @@ public:
 
             // Some basic testing
             NdArray<double> is_odd = LookupArray(env, "odd_entries");
-            double* ptr = is_odd.Begin();
+            NdArray<double>::ConstIterator ptr = is_odd.Begin();
             TS_ASSERT_EQUALS(*ptr++, 0); // Entry [0,0] = 0 even
             TS_ASSERT_EQUALS(*ptr++, 1); // Entry [0,1] = 1 odd
             TS_ASSERT_EQUALS(*ptr++, 0); // Entry [0,2] = 2 even

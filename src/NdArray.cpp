@@ -34,45 +34,85 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <boost/numeric/conversion/bounds.hpp>
 
 #include "Exception.hpp"
-#include <sstream>
+#include "VectorStreaming.hpp"
 
-#define ASSERT_MSG(test, msg)                    \
-    if (!(test))                                   \
-    do {                                         \
-        std::stringstream msg_stream;            \
-        msg_stream << msg;                       \
-        EXCEPTION(msg_stream.str());             \
-    } while (false)
-
+#define ASSERT_MSG(test, msg) if (!(test)) EXCEPTION(msg)
 
 template<typename DATA>
 NdArray<DATA>::InternalData::InternalData(const Extents& rExtents)
+    : mExtents(rExtents)
 {
-    const Index num_dims = rExtents.size();
-    mExtents = rExtents;
+    const Index num_dims = mExtents.size();
     mNumElements = 1;
     for (Index i=0; i<num_dims; ++i)
     {
-        mNumElements *= rExtents[i];
+        mNumElements *= mExtents[i];
     }
     mpData = new DATA[mNumElements];
+    mpDataEnd = mpData + mNumElements;
     mIndicesMultipliers.resize(num_dims, 1);
     for (Index i=0; i<num_dims; ++i)
     {
         Index j = num_dims - i;
         if (j != num_dims)
         {
-            mIndicesMultipliers[j-1] = mIndicesMultipliers[j] * rExtents[j];
+            mIndicesMultipliers[j-1] = mIndicesMultipliers[j] * mExtents[j];
         }
     }
 }
 
 
+template<typename DATA>
+NdArray<DATA>::InternalData::InternalData(const boost::shared_ptr<InternalData> pSource,
+                                          const Indices& rBeginOffsets,
+                                          const std::vector<RangeIndex>& rSteps,
+                                          const Extents& rExtents)
+    : mExtents(rExtents),
+      mpSourceArray(pSource)
+{
+    const Index our_num_dims = mExtents.size();
+    const Index source_num_dims = pSource->mExtents.size();
+    assert(our_num_dims <= source_num_dims);
+    assert(rBeginOffsets.size() == source_num_dims);
+    assert(rSteps.size() == source_num_dims);
+    mNumElements = 1;
+    for (Index i=0; i<our_num_dims; ++i)
+    {
+        mNumElements *= mExtents[i];
+    }
+    mpData = pSource->mpData;
+    for (Index i=0; i<source_num_dims; ++i)
+    {
+        mpData += rBeginOffsets[i] * pSource->mIndicesMultipliers[i];
+    }
+    mIndicesMultipliers.resize(our_num_dims);
+    for (Index i=0, j=0; i<our_num_dims; ++i, ++j)
+    {
+        while (rSteps[j] == 0)
+        {
+            ++j;
+        }
+        assert(j < source_num_dims);
+        mIndicesMultipliers[i] = pSource->mIndicesMultipliers[j] * rSteps[j];
+    }
+    if (our_num_dims > 0)
+    {
+        mpDataEnd = mpData + mExtents[0] * mIndicesMultipliers[0];
+    }
+    else
+    {
+        mpDataEnd = mpData + 1;
+    }
+}
+
 
 template<typename DATA>
 NdArray<DATA>::InternalData::~InternalData()
 {
-    delete[] mpData;
+    if (!mpSourceArray)
+    {
+        delete[] mpData;
+    }
 }
 
 
@@ -80,6 +120,16 @@ template<typename DATA>
 NdArray<DATA>::NdArray(const Extents& rExtents)
 {
     mpInternalData.reset(new InternalData(rExtents));
+}
+
+
+template<typename DATA>
+NdArray<DATA>::NdArray(const NdArray<DATA>& rSource,
+                       const Indices& rBeginOffsets,
+                       const std::vector<RangeIndex>& rSteps,
+                       const Extents& rExtents)
+{
+    mpInternalData.reset(new InternalData(rSource.mpInternalData, rBeginOffsets, rSteps, rExtents));
 }
 
 
@@ -145,22 +195,19 @@ template <typename DATA>
 NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
 {
     const Index num_dims = mpInternalData->mExtents.size();
-    const Index no_dim = boost::numeric::bounds<Index>::highest();
-    ASSERT_MSG(num_dims < no_dim, "Array has too many dimensions to view!!!");
     ASSERT_MSG(rRanges.size() == num_dims, "Wrong number of ranges supplied; received " << rRanges.size()
                << " but array has " << num_dims << " dimensions.");
     // Work out the extents of the view, and determine how view indices map to ours
     Extents extents;
-    Indices our_idxs = GetIndices();
-    Extents begins(num_dims);
-    std::vector<Index> dim_map(num_dims);
+    Indices begins(num_dims);
+    std::vector<RangeIndex> steps;
     for (Index dim=0; dim<num_dims; ++dim)
     {
         const Range& r = rRanges[dim];
+        steps.push_back(r.mStep);
         RangeIndex begin = r.mBegin;
         if (r.mStep != 0) // Not a degenerate range
         {
-            dim_map[dim] = extents.size();
             RangeIndex end = r.mEnd;
             if (end == Range::END)
             {
@@ -202,7 +249,7 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
         else
         {
             // We'll always index at the given location in this dimension. Check it's valid.
-            RangeIndex begin = r.mBegin;
+            begin = r.mBegin;
             if (begin < 0)
             {
                 begin = mpInternalData->mExtents[dim] + begin;
@@ -214,29 +261,11 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
                        << dim << " is after the end (" << mpInternalData->mExtents[dim] << ") of the dimension.");
             ASSERT_MSG(r.mEnd == r.mBegin, "When the step is zero the start and end of a range must be equal; "
                        << r.mEnd << " != " << r.mBegin << " for dimension " << dim << ".");
-            our_idxs[dim] = begin;
-            dim_map[dim] = no_dim;
         }
         begins[dim] = begin;
     }
     // Create the view array
-    NdArray<DATA> view(extents);
-    Indices view_idxs = view.GetIndices();
-    const Index num_elements = view.GetNumElements();
-    for (Index i=0; i<num_elements; ++i)
-    {
-        for (Index dim=0; dim<num_dims; ++dim)
-        {
-            Index view_dim = dim_map[dim];
-            if (view_dim != no_dim)
-            {
-                const Range& r = rRanges[dim];
-                our_idxs[dim] = view_idxs[view_dim] * r.mStep + begins[dim];
-            }
-        }
-        view[view_idxs] = (*this)[our_idxs];
-        view.IncrementIndices(view_idxs);
-    }
+    NdArray<DATA> view(*this, begins, steps, extents);
     return view;
 }
 

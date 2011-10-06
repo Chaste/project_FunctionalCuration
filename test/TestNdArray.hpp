@@ -34,9 +34,13 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include "NdArray.hpp"
 
+// Save typing...
 typedef NdArray<double> Array;
+typedef Array::Extents Extents;
 typedef Array::Index Index;
 typedef Array::Indices Indices;
+typedef Array::Iterator Iterator;
+typedef Array::ConstIterator ConstIterator;
 typedef Array::Range R;
 typedef std::vector<R> RangeSpec;
 
@@ -45,7 +49,7 @@ class TestNdArray : public CxxTest::TestSuite
 public:
     void Test0dArray() throw (Exception)
     {
-        Array::Extents extents;
+        Extents extents;
         Array arr0d(extents);
         TS_ASSERT_EQUALS(arr0d.GetNumDimensions(), 0u);
         TS_ASSERT_EQUALS(arr0d.GetNumElements(), 1u);
@@ -55,6 +59,7 @@ public:
         double value = 1.0;
         *arr0d.Begin() = value;
         TS_ASSERT_EQUALS(*arr0d.Begin(), value);
+        TS_ASSERT_EQUALS(++arr0d.Begin(), arr0d.End());
 
         Array arr0d2(value);
         TS_ASSERT_EQUALS(arr0d2.GetNumDimensions(), 0u);
@@ -63,11 +68,12 @@ public:
         TS_ASSERT(arr0d2.GetShape().empty());
         TS_ASSERT(arr0d2.Begin() != arr0d2.End());
         TS_ASSERT_EQUALS(*arr0d2.Begin(), value);
+        TS_ASSERT_EQUALS(++arr0d2.Begin(), arr0d2.End());
     }
 
     void TestBasicFunctionality() throw (Exception)
     {
-        Array::Extents extents = boost::assign::list_of(3)(4)(2);
+        Extents extents = boost::assign::list_of(3)(4)(2);
 
         Array arr(extents);
         const Index num_elements = extents[0]*extents[1]*extents[2];
@@ -96,11 +102,11 @@ public:
             arr.IncrementIndices(indices);
         }
 
-        // For STL algorithms it's nice to be able to iterate over the data
+        // We can also iterate over the whole array; useful for STL algorithms
         verify = 0;
-        for (Array::Iterator p_data=arr.Begin(); p_data != arr.End(); ++p_data)
+        for (ConstIterator it=arr.Begin(); it != arr.End(); ++it)
         {
-            TS_ASSERT_EQUALS(*p_data, verify);
+            TS_ASSERT_EQUALS(*it, verify);
             verify++;
         }
 
@@ -115,12 +121,14 @@ public:
         TS_ASSERT_EQUALS(view3d.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(view3d.GetShape()[1], 2u);
         TS_ASSERT_EQUALS(view3d.GetShape()[2], 1u);
-        indices = view3d.GetIndices();
         std::vector<double> expected = boost::assign::list_of(1)(5)(9)(13);
-        for (Index i=0; i<4u; ++i)
+        unsigned i=0;
+        for (ConstIterator it=view3d.Begin(); it != view3d.End(); ++it)
         {
-            TS_ASSERT_EQUALS(view3d[indices], expected[i]);
-            view3d.IncrementIndices(indices);
+            TS_ASSERT_EQUALS(*it, expected[i]);
+            // Views should ideally alias the original data, not copy it
+            TS_ASSERT_EQUALS(it, arr.Begin() + (ptrdiff_t)expected[i]);
+            i++;
         }
 
         // Now a 2d view of the same data
@@ -132,13 +140,9 @@ public:
         TS_ASSERT_EQUALS(view2d.GetNumElements(), 2u*2u*1u);
         TS_ASSERT_EQUALS(view2d.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(view2d.GetShape()[1], 2u);
-        indices = view3d.GetIndices();
-        Indices indices2 = view2d.GetIndices();
-        for (Index i=0; i<4u; ++i)
+        for (ConstIterator it=view2d.Begin(), it3d=view3d.Begin(); it != view2d.End(); ++it, ++it3d)
         {
-            TS_ASSERT_EQUALS(view3d[indices], view2d[indices2]);
-            view3d.IncrementIndices(indices);
-            view2d.IncrementIndices(indices2);
+            TS_ASSERT_EQUALS(*it, *it3d);
         }
 
         // We can use negative indices to count from the end; same data as above
@@ -150,13 +154,9 @@ public:
         TS_ASSERT_EQUALS(view_neg.GetNumElements(), 2u*2u*1u);
         TS_ASSERT_EQUALS(view_neg.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(view_neg.GetShape()[1], 2u);
-        indices = view3d.GetIndices();
-        indices2 = view_neg.GetIndices();
-        for (Index i=0; i<4u; ++i)
+        for (ConstIterator it=view_neg.Begin(), it3d=view3d.Begin(); it != view_neg.End(); ++it, ++it3d)
         {
-            TS_ASSERT_EQUALS(view3d[indices], view_neg[indices2]);
-            view3d.IncrementIndices(indices);
-            view_neg.IncrementIndices(indices2);
+            TS_ASSERT_EQUALS(*it, *it3d);
         }
 
         // We can do reverse views too
@@ -168,12 +168,14 @@ public:
         TS_ASSERT_EQUALS(view2d.GetNumElements(), 1u*2u*2u);
         TS_ASSERT_EQUALS(view2d.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(view2d.GetShape()[1], 2u);
-        indices = view2d.GetIndices();
         expected = boost::assign::list_of(23)(22)(19)(18);
-        for (Index i=0; i<4u; ++i)
+        i=0;
+        for (ConstIterator it=view2d.Begin(); it != view2d.End(); ++it)
         {
-            TS_ASSERT_EQUALS(view2d[indices], expected[i]);
-            view2d.IncrementIndices(indices);
+            TS_ASSERT_EQUALS(*it, expected[i]);
+            // Views should ideally alias the original data, not copy it
+            TS_ASSERT_EQUALS(it, arr.Begin() + (ptrdiff_t)expected[i]);
+            i++;
         }
 
         // Assignment just aliases, so we need a 'real' copy operation too
@@ -219,6 +221,62 @@ public:
             } // non-shared entries are unspecified
             arr.IncrementIndices(indices);
         }
+    }
+
+    void TestMoreIterationAndViews() throw (Exception)
+    {
+        Extents extents = boost::assign::list_of(3)(4)(2)(7);
+
+        Array arr(extents);
+        TS_ASSERT_EQUALS(arr.GetNumDimensions(), 4u);
+        TS_ASSERT_EQUALS(arr.GetNumElements(), 3u*4u*2u*7u);
+
+        // Fill in the array using iterators (and note that it++ works too)
+        double value = 0.0;
+        for (Iterator it = arr.Begin(); it != arr.End(); it++)
+        {
+            *it = (value--)/2.0;
+        }
+
+        // Check we can take a view missing 'internal' dimensions
+        RangeSpec view_indices = boost::assign::list_of(R(0, 2, R::END))  // First & last elements from dim 0
+                                                       (R(R::END, -2, 1)) // Dim 1 reversed step 2 (elts 3, 1)
+                                                       (R(-1))            // Last element of dim 2
+                                                       (R(2, -1, 0));     // First 2 elements of dim 3 reversed
+        Array view = arr[view_indices];
+        TS_ASSERT_EQUALS(view.GetNumDimensions(), 3u);
+        TS_ASSERT_EQUALS(view.GetNumElements(), 2u*2u*2u);
+        TS_ASSERT_EQUALS(view.GetShape()[0], 2u);
+        TS_ASSERT_EQUALS(view.GetShape()[1], 2u);
+        TS_ASSERT_EQUALS(view.GetShape()[2], 2u);
+        // Original array multipliers are: 56, 14, 7, 1
+        // So offsets into it are 50,49,22,21, 162,161,134,133
+        std::vector<double> expected = boost::assign::list_of(-25.0)(-49.0/2)(-11.0)(-21.0/2)
+                                                             (-81.0)(-161.0/2)(-67.0)(-133.0/2);
+        unsigned i=0;
+        for (ConstIterator it=view.Begin(); it != view.End(); ++it)
+        {
+            TS_ASSERT_EQUALS(*it, expected[i]);
+            // Views should ideally alias the original data, not copy it
+            TS_ASSERT_EQUALS(it, arr.Begin() + (ptrdiff_t)(-2*expected[i]));
+            i++;
+        }
+
+        // Check that copying a view gives us a fresh array
+        Array view_copy = view.Copy();
+        TS_ASSERT_DIFFERS(view_copy.Begin(), view.Begin());
+        for (ConstIterator it=view.Begin(), copy_it=view_copy.Begin(); it != view.End(); ++it, ++copy_it)
+        {
+            TS_ASSERT_EQUALS(*it, *copy_it);
+        }
+
+        // And check that a 0d view works
+        view_indices = boost::assign::list_of(R(1))(R(2))(R(1))(R(3));
+        view = arr[view_indices];
+        TS_ASSERT_EQUALS(view.GetNumDimensions(), 0u);
+        TS_ASSERT_EQUALS(view.GetNumElements(), 1u);
+        TS_ASSERT_EQUALS(*view.Begin(), -0.5*(56+28+7+3));
+        TS_ASSERT_EQUALS(++view.Begin(), view.End());
     }
 };
 

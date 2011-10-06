@@ -56,21 +56,20 @@ AbstractValuePtr Find::operator()(const Environment& rEnv) const
     NdArray<double> result(shape);
 
     // Fill it in
-    NdArray<double>::Indices operand_indices = operand.GetIndices();
-    NdArray<double>::Indices result_indices = result.GetIndices();
+    NdArray<double>::Iterator result_iter = result.Begin();
     unsigned num_non_zeros = 0u;
-    for (unsigned i=0; i<shape[0]; ++i)
+    for (NdArray<double>::ConstIterator operand_iter = operand.Begin();
+         operand_iter != operand.End();
+         ++operand_iter)
     {
-        if (operand[operand_indices] != 0.0)
+        if (*operand_iter != 0.0)
         {
             for (unsigned j=0; j<N; ++j)
             {
-                result[result_indices] = operand_indices[j];
-                result.IncrementIndices(result_indices);
+                *result_iter++ = operand_iter.rGetIndices()[j];
             }
             num_non_zeros++;
         }
-        operand.IncrementIndices(operand_indices);
     }
 
     // Re-size down to actual number of non-zeros

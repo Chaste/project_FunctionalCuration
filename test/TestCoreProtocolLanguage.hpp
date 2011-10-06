@@ -133,14 +133,12 @@ public:
         }
         // input2 = { 1, 2, 3 }
         {
-            const NdArray<double>::Index size = 3u;
-            NdArray<double>::Extents extents = list_of(size);
+            NdArray<double>::Extents extents = list_of(3u);
             NdArray<double> input2(extents);
-            NdArray<double>::Indices indices = input2.GetIndices();
-            for (unsigned i=1; i<=size; ++i)
+            int i=1;
+            for (NdArray<double>::Iterator it = input2.Begin(); it != input2.End(); ++it)
             {
-                input2[indices] = i;
-                input2.IncrementIndices(indices);
+                *it = i++;
             }
             program.push_back(ASSIGN_STMT("input2", VALUE(ArrayValue, input2))); LOC(program.back());
         }

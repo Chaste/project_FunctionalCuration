@@ -104,10 +104,16 @@ public:
 
         // We can also iterate over the whole array; useful for STL algorithms
         verify = 0;
+        indices = arr.GetIndices();
         for (ConstIterator it=arr.Begin(); it != arr.End(); ++it)
         {
             TS_ASSERT_EQUALS(*it, verify);
             verify++;
+            for (unsigned i=0; i<3u; i++)
+            {
+                TS_ASSERT_EQUALS(it.rGetIndices()[i], indices[i]);
+            }
+            arr.IncrementIndices(indices);
         }
 
         // Look at views

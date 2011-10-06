@@ -204,6 +204,14 @@ public:
               mpExtents(rOther.mpExtents)
         {}
 
+        /**
+         * Get the indices of the array element pointed at.
+         */
+        const Indices& rGetIndices() const
+        {
+            return mIndices;
+        }
+
      private:
         friend class boost::iterator_core_access;
         template <class> friend class IteratorImpl;

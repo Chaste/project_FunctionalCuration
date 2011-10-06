@@ -415,31 +415,31 @@ private:
 template<typename DATA>
 typename NdArray<DATA>::Iterator NdArray<DATA>::Begin()
 {
-    return NdArray<DATA>::Iterator(mpInternalData->mpData, GetIndices(),
-                                   mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
+    return typename NdArray<DATA>::Iterator(mpInternalData->mpData, GetIndices(),
+                                            mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
 }
 
 
 template<typename DATA>
 typename NdArray<DATA>::Iterator NdArray<DATA>::End()
 {
-    return NdArray<DATA>::Iterator(mpInternalData->mpDataEnd, GetIndices(),
-                                   mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
+    return typename NdArray<DATA>::Iterator(mpInternalData->mpDataEnd, GetIndices(),
+                                            mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
 }
 
 template<typename DATA>
 typename NdArray<DATA>::ConstIterator NdArray<DATA>::Begin() const
 {
-    return NdArray<DATA>::ConstIterator(mpInternalData->mpData, GetIndices(),
-                                        mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
+    return typename NdArray<DATA>::ConstIterator(mpInternalData->mpData, GetIndices(),
+                                                 mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
 }
 
 
 template<typename DATA>
 typename NdArray<DATA>::ConstIterator NdArray<DATA>::End() const
 {
-    return NdArray<DATA>::ConstIterator(mpInternalData->mpDataEnd, GetIndices(),
-                                        mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
+    return typename NdArray<DATA>::ConstIterator(mpInternalData->mpDataEnd, GetIndices(),
+                                                 mpInternalData->mIndicesMultipliers, mpInternalData->mExtents);
 }
 
 

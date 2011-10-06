@@ -62,7 +62,7 @@ public:
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
         NdArray<double> peak_voltage = GET_ARRAY(r_outputs.Lookup("peak_voltage"));
         TS_ASSERT_EQUALS(peak_voltage.GetNumElements(), 7u);
-        TS_ASSERT_DELTA(*peak_voltage.Begin(), 50.3177, 1e-3);
+        TS_ASSERT_DELTA(*peak_voltage.Begin(), 50.3177, 5e-3);
         NdArray<double> resting_potential = GET_ARRAY(r_outputs.Lookup("resting_potential"));
         TS_ASSERT_EQUALS(resting_potential.GetNumElements(), 7u);
         TS_ASSERT_DELTA(*resting_potential.Begin(), -75.4569, 1e-3);
@@ -74,8 +74,7 @@ public:
         NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("raw_APD90"));
         NdArray<double>::Indices apd90_indices = apd90.GetIndices();
         TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 2u);
-        TS_ASSERT_EQUALS(apd90.GetNumElements(), 14u);
-        apd90.IncrementIndices(apd90_indices); // This here because apd90 has an extra dimension at the moment (#1858)
+        TS_ASSERT_EQUALS(apd90.GetNumElements(), 7u);
 
         NdArray<double> resting = GET_ARRAY(r_outputs.Lookup("resting_potential"));
         NdArray<double>::Indices resting_indices = resting.GetIndices();
@@ -86,7 +85,6 @@ public:
         {
         	TS_ASSERT_DELTA(apd90[apd90_indices], reference_apd90[i], 1e-2);
         	apd90.IncrementIndices(apd90_indices);
-        	apd90.IncrementIndices(apd90_indices); // This here because apd90 has an extra dimension at the moment (#1858)
         	TS_ASSERT_DELTA(resting[resting_indices], reference_resting[i], 1e-3);
             resting.IncrementIndices(resting_indices);
         }

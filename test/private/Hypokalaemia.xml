@@ -19,6 +19,7 @@
                 <ci>potassium_test_concentrations</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                    <!-- <ci>oxmeta:extracellular_potassium_concentration</ci> you should be able to uncomment this Gary -->
                     <cn>8</cn>
                     <cn>7</cn>
                     <cn>6</cn>
@@ -140,7 +141,6 @@
         
 	    <nestedSimulation prefix="sim">
 	        <vectorStepper name="step_potassium" units="mM">
-				<!-- <ci>default_Ko</ci> \todo #1895 get this to work -->
                 <ci xmlns="http://www.w3.org/1998/Math/MathML">potassium_test_concentrations</ci>
 	        </vectorStepper>
 	        
@@ -157,18 +157,45 @@
 	    
 	        <!-- Do a run to get the model to steady-state with the desired extracellular potassium -->
 	        <timecourseSimulation>            
-	            <uniformStepper name="time" units="ms">
-	                <start>0</start>
-	                <stop>
-	                <!-- As a workaround we run the model for two action potentials -->
-	                <!-- \todo #1858 make this do a single action potential -->
-	                    <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
-	                        <ci>pacing_period</ci>
-	                        <ci>steady_state_beats</ci>
+	            <vectorStepper name="time" units="ms">
+	                <apply xmlns="http://www.w3.org/1998/Math/MathML"><ci>Join</ci>
+	                    <apply>
+	                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+	                        <cn>0</cn>
+	                        <apply><times/>
+	                            <ci>pacing_period</ci>
+	                            <ci>steady_state_beats</ci>
+	                        </apply>
 	                    </apply>
-	                </stop>                
-	                <step>1</step> <!-- Get a reasonable amount of detail for the APD calculation -->
-	            </uniformStepper>
+	                    <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                            <domainofapplication>
+                                <!-- #0#t = bcl*st_st_beats+1:1:bcl*(st_st_beats+1) -->
+                                <apply>
+                                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                                    <cn>0</cn>
+                                    <apply><plus/>
+                                        <apply><times/>
+                                            <ci>pacing_period</ci>
+                                            <ci>steady_state_beats</ci>
+                                        </apply>
+                                        <cn>1</cn>
+                                    </apply>
+                                    <cn>1</cn>
+                                    <apply><times/>
+                                        <ci>pacing_period</ci>
+                                        <apply><plus/>
+                                            <ci>steady_state_beats</ci>
+                                            <cn>1</cn>
+                                        </apply>
+                                    </apply>
+                                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/string">t</csymbol>
+                                </apply>
+                            </domainofapplication>
+                            <ci>t</ci>
+                        </apply>
+	                </apply>
+	            </vectorStepper>
 	            
 	            <modifiers>
 		            <resetState> <!-- At the beginning of the final AP simulation load up the state variables from the long run to steady state -->
@@ -207,12 +234,12 @@
                     <ci>pacing_period</ci>
                     <apply xmlns="http://www.w3.org/1998/Math/MathML"><minus/>
                     	<ci>steady_state_beats</ci>
-                    	<cn>2</cn> <!-- \todo #1858 make this a 1 -->
+                    	<cn>1</cn>
                     </apply>
 	            </apply>
             </apply>
             
-            <!-- Reduce these arrays to just the 'steady' action potential(s) \todo #1858 - just one action potential! -->
+            <!-- Reduce these arrays to just the 'steady' action potential -->
             <apply><eq/>
                 <ci>steady_state_membrane_voltage</ci>
                 <apply><ci>After</ci>
@@ -234,11 +261,7 @@
                                     
             <!-- Compute APD90 -->
             <apply><eq/>
-                <apply>
-                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                    <ci>raw_APD90</ci>
-                    <ci>raw_DI</ci>
-                </apply>
+                <ci>raw_APD90</ci>
                 <apply><ci>Apd</ci>
                     <ci>steady_state_membrane_voltage</ci>
                     <ci>steady_state_time</ci>
@@ -261,15 +284,6 @@
                     <ci>steady_state_membrane_voltage</ci>
                 </apply>
             </apply>            
-          
-            <!-- Take the last action potential as the 'steady state' APD -->
-            <!-- \todo - #1859 how do we do this!?
-            <apply><eq/>
-                <ci>apd90</ci>
-                <apply><ci>Last</ci>
-                    <ci>raw_APD90</ci>
-                </apply>
-            </apply> -->
         </apply>
     </post-processing>
     
@@ -296,7 +310,7 @@
         <plot>
         	<title>APD90 as a function of [Ko]</title>
         	<x>potassium_test_concentrations</x>
-        	<y>raw_APD90</y> <!-- \todo #1859 use single APs -->
+        	<y>raw_APD90</y>
         </plot>
         <plot>
         	<title>Resting potential as a function of [Ko]</title>

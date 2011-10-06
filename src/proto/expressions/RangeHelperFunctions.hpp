@@ -36,6 +36,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractValue.hpp"
 #include "NdArray.hpp"
 
+// These utility functions are used by ArrayCreate and View.
+
 /**
  * Check the start, end, or dimension of a range specification.
  *

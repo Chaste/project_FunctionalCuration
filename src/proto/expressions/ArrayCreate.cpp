@@ -67,59 +67,25 @@ ArrayCreate::ArrayCreate(const AbstractExpressionPtr pElementGenerator,
 }
 
 /**
- * Get the indices corresponding to a given distance through a range specification.
- *
- * @param rIndexValues  will be filled in
- * @param rRanges  the ranges over which the indices vary
- * @param position  how far through we are
- */
-void GetIndexValues(std::vector<RangeIndex>& rIndexValues,
-                    const std::vector<R>& rRanges,
-                    Index position)
-{
-    const Index N = rRanges.size();
-    assert(rIndexValues.size() == N);
-    std::vector<Index> extents;
-    extents.reserve(N);
-    for (std::vector<R>::const_iterator it = rRanges.begin(); it != rRanges.end(); ++it)
-    {
-        if (it->mStep == 0) extents.push_back(1);
-        else extents.push_back((Index)ceil((it->mEnd - it->mBegin) / (double)it->mStep));
-    }
-    std::vector<Index> divs(N, 1);
-    for (Index i=0; i<N; ++i)
-    {
-        Index j = N - i;
-        if (j != N)
-        {
-            divs[j-1] = divs[j] * extents[j];
-        }
-        rIndexValues[j-1] = rRanges[j-1].mBegin + ((position/divs[j-1]) % extents[j-1])*rRanges[j-1].mStep;
-    }
-}
-
-/**
  * Define variables in the given environment representing the indices over specified dimensions.
  *
  * @param rSubEnv  the environment
  * @param rIndexNames  the variable names
- * @param rRanges  the ranges over which the indices vary
- * @param position  how far through we are
+ * @param rIndexCounts  how many steps along each dimension
+ * @param rRanges  the ranges over which each dimension can vary
  * @param rLoc  location in the program
  */
 void SetIndexValues(Environment& rSubEnv,
                     const std::vector<std::string>& rIndexNames,
+                    const NdArray<double>::Indices& rIndexCounts,
                     const std::vector<R>& rRanges,
-                    Index position,
                     const std::string& rLoc)
 {
-    const Index N = rIndexNames.size();
-    std::vector<RangeIndex> index_values(N);
-    GetIndexValues(index_values, rRanges, position);
+    const unsigned N = rIndexNames.size();
     std::vector<AbstractValuePtr> values(N);
-    for (Index i=0; i<N; ++i)
+    for (unsigned i=0; i<N; ++i)
     {
-        values[i] = boost::make_shared<SimpleValue>(index_values[i]);
+        values[i] = boost::make_shared<SimpleValue>(rRanges[i].mBegin + rIndexCounts[i]*rRanges[i].mStep);
     }
     rSubEnv.DefineNames(rIndexNames, values, rLoc);
 }
@@ -134,7 +100,7 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
         // Array comprehension
         // Check range definitions
         std::map<Index, R> range_specs;
-        std::map<Index, std::string> range_names; // Need a string value type?
+        std::map<Index, std::string> range_names;
         ExtractRangeSpecs(range_specs, params, GetLocationInfo(), &range_names);
         const Index num_range_specs = range_specs.size();
         // Construct view specifications
@@ -174,7 +140,7 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
         for (Index i=0; i<num_sub_arrays; ++i)
         {
             Environment sub_env(rEnv.GetAsDelegatee());
-            SetIndexValues(sub_env, index_names, generation_ranges, i, GetLocationInfo());
+            SetIndexValues(sub_env, index_names, generator_indices, generation_ranges, GetLocationInfo());
             AbstractValuePtr p_sub_array = (*mpElementGenerator)(sub_env);
             PROTO_ASSERT(p_sub_array->IsArray(),
                          "The generator expression in an array comprehension must yield arrays.");
@@ -221,34 +187,8 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
                 Index index_j = generator_indices[j];
                 view_ranges[generator_dimensions[j]] = R(index_j, 0, index_j);
             }
-            ///\todo can't do this yet...
-            //NdArray<double> view = (*p_array)[view_ranges];
-            //std::copy(sub_array.Begin(), sub_array.End(), view.Begin());
-            {
-                const Index array_size = p_array->GetNumDimensions();
-                if (i == 0)
-                {
-                    NdArray<double>::Extents::const_iterator shape_it = sub_array_shape.begin();
-                    for (Index j=0; j<array_size; ++j)
-                    {
-                        if (view_ranges[j].mBegin == R::END)
-                        {
-                            view_ranges[j].mBegin = 0u;
-                            view_ranges[j].mEnd = *shape_it++;
-                        }
-                    }
-                }
-                std::vector<RangeIndex> full_indices_(array_size);
-                std::vector<Index> full_indices(array_size);
-                NdArray<double>::Iterator p_sub_element = sub_array.Begin();
-                const Index num_elts = sub_array.GetNumElements();
-                for (Index j=0; j<num_elts; ++j)
-                {
-                    GetIndexValues(full_indices_, view_ranges, j);
-                    std::copy(full_indices_.begin(), full_indices_.end(), full_indices.begin()); // Yuck!
-                    (*p_array)[full_indices] = *p_sub_element++;
-                }
-            }
+            NdArray<double> view = (*p_array)[view_ranges];
+            std::copy(sub_array.Begin(), sub_array.End(), view.Begin());
             p_array->IncrementIndices(generator_indices, generator_extents);
         }
         p_result = boost::make_shared<ArrayValue>(*p_array);

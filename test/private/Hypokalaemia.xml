@@ -15,6 +15,19 @@
                 <ci>steady_state_beats</ci>
                 <cn>1000</cn>
             </apply>
+            <apply><eq/>
+                <ci>potassium_test_concentrations</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                    <cn>8</cn>
+                    <cn>7</cn>
+                    <cn>6</cn>
+                    <cn>5</cn>
+                    <cn>4</cn>
+                    <cn>3</cn>
+                    <cn>2</cn>
+                </apply>
+            </apply>
         </apply>    
     </inputs>
     
@@ -128,13 +141,7 @@
 	    <nestedSimulation prefix="sim">
 	        <vectorStepper name="step_potassium" units="mM">
 				<!-- <ci>default_Ko</ci> \todo #1895 get this to work -->
-	            <value>8</value>
-	            <value>7</value>
-	            <value>6</value>
-	            <value>5</value>
-	            <value>4</value>
-	            <value>3</value>
-	            <value>2</value>
+                <ci xmlns="http://www.w3.org/1998/Math/MathML">potassium_test_concentrations</ci>
 	        </vectorStepper>
 	        
 	        <modifiers>
@@ -253,8 +260,8 @@
                 <apply><ci>Min</ci>
                     <ci>steady_state_membrane_voltage</ci>
                 </apply>
-            </apply>
-            
+            </apply>            
+          
             <!-- Take the last action potential as the 'steady state' APD -->
             <!-- \todo - #1859 how do we do this!?
             <apply><eq/>
@@ -277,6 +284,7 @@
         <postprocessed name="peak_voltage" description="action potential peak voltage" units="mV"/>
         <postprocessed name="resting_potential" description="action potential resting potential" units="mV"/>
         <postprocessed name="raw_APD90" description="action potential duration 90%" units="ms"/>
+        <postprocessed name="potassium_test_concentrations" description="Extracellular potassium test concentrations" units="mM"/>
     </outputVariables>
     
     <plots>
@@ -284,6 +292,16 @@
             <title>Steady State Action Potential</title>
             <x>steady_state_time</x>
             <y>steady_state_membrane_voltage</y>
+        </plot>
+        <plot>
+        	<title>APD90 as a function of [Ko]</title>
+        	<x>potassium_test_concentrations</x>
+        	<y>raw_APD90</y> <!-- \todo #1859 use single APs -->
+        </plot>
+        <plot>
+        	<title>Resting potential as a function of [Ko]</title>
+        	<x>potassium_test_concentrations</x>
+        	<y>resting_potential</y> 
         </plot>
     </plots>
 </protocol>

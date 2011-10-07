@@ -29,10 +29,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #ifndef TESTFUNCTIONALCURATIONPAPER_HPP_
 #define TESTFUNCTIONALCURATIONPAPER_HPP_
 
-#include <sys/types.h>
-#include <dirent.h>
-#include <vector>
-#include <string>
+
 #include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/shared_ptr.hpp>
 #include <boost/assign/list_of.hpp>
@@ -52,11 +49,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "PetscSetupAndFinalize.hpp"
 
 #include "Debug.hpp"
-#include "Warnings.hpp"
-
-#define OUR_WARN(msg, model, proto) \
-    do { std::string m=msg; std::cout << std::endl << m << std::endl << std::flush; \
-         WARNING("Model: " + model + ", proto: " + proto + ": " + m); } while (false)
+#include "UsefulFunctionsForProtocolTesting.hpp"
 
 typedef N_Vector VECTOR;
 
@@ -187,7 +180,7 @@ private:
         *p_gnuplot_script  << "set grid" << std::endl;
         *p_gnuplot_script  << "set autoscale" << std::endl;
         *p_gnuplot_script  << "set style data lines" << std::endl;
-        *p_gnuplot_script  << "set key off\"" << std::endl;
+        *p_gnuplot_script  << "set key off" << std::endl;
         *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
 
         *p_gnuplot_script  << "plot ";
@@ -326,74 +319,7 @@ private:
         EXPECT0(system, "gnuplot " + output_dir + filename);
     }
 
-    /**
-     * @return all of the .cellml files in the directory of the FunctionalCuration project for dynamic loading.
-     */
-    std::vector<std::string> GetAListOfCellMLFiles(void)
-    {
-        std::string cell_ml_directory = "projects/FunctionalCuration/cellml";
 
-        // Make a list of the cellml files in the directory...
-        std::vector<std::string> cellml_files;
-
-        struct dirent **eps;
-
-        int n = scandir(cell_ml_directory.c_str(), &eps, returnOne, alphasort);
-        if (n >= 0)
-        {
-            for (int cnt = 0; cnt < n; ++cnt)
-            {
-                // The 'scandir' command picks up all the hidden files and svn stuff.
-                std::string file_name = eps[cnt]->d_name;
-                size_t found = file_name.find(".cellml");
-                if (found>0 && found==file_name.length()-7) // If we found ".cellml" and it was at the end
-                {
-                    cellml_files.push_back(file_name.substr(0,found)); // Don't include the ".cellml"
-                }
-            }
-        }
-        else
-        {
-            EXCEPTION("Couldn't open the directory: " + cell_ml_directory);
-        }
-
-        return cellml_files;
-    }
-
-    /**
-     * Provide a string which can be used as a graph title by
-     * formatting the directory name to remove underscores and insert spaces,
-     * and capitalise the first letter of each word.
-     *
-     * @param rDirectory  The directory of this model (from CellML file name)
-     * @return  A string of the name with spaces and capital letters for printing.
-     */
-    std::string GetTitleFromDirectory(const std::string& rDirectory)
-    {
-        // Format the title of the graph to remove underscores and insert spaces.
-        std::string plot_title = rDirectory;
-        std::string find_this = "_";
-        std::string put_this = " ";
-        plot_title[0] = toupper(plot_title[0]); // Capitalise the first letter.
-        size_t pos = plot_title.find(find_this); // Find the first underscore
-        while ( pos != std::string::npos )
-        {
-            plot_title.replace(pos,find_this.size(),put_this); // replace "_" with " "
-            plot_title[pos+1] =  toupper(plot_title[pos+1]); // Capitalise the next word
-            pos = plot_title.find(find_this); // Find the next underscore
-        }
-        return plot_title;
-    }
-
-    /**
-     * This is just required to tell scandir to return all of the files it finds
-     * I found it easier to compare the std::strings to look for cellML
-     * rather than try to use these crazy pointers to weird objects.
-     */
-    static int returnOne (const struct dirent *unused)
-    {
-        return 1;
-    }
 
 public:
     void TestProtocolsForManyCellModels() throw(Exception, std::bad_alloc)

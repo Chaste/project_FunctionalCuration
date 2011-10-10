@@ -62,27 +62,3 @@ void TimecourseSimulation::Run(AbstractProtocolOutputs& rOutputs)
         mpModifiers->ApplyAtEnd(mpCell, mpStepper);
     }
 }
-
-//// Alternative implementation with UniformStepper (untested):
-//#include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
-//void TimecourseSimulation::Run(AbstractProtocolOutputs& rOutputs)
-//{
-//    boost::shared_ptr<UniformStepper> p_stepper = boost::dynamic_pointer_cast<UniformStepper>(mpStepper);
-//    assert(p_stepper);
-//    // Can only apply modifiers at start
-//    if (mpModifiers)
-//    {
-//        (*mpModifiers)(mpCell, mpStepper);
-//    }
-//    // Solve for whole time period
-//    OdeSolution states = p_cell->Compute(p_stepper->GetStartPoint(), p_stepper->GetEndPoint(), p_stepper->GetInterval());
-//    // Compute and fill in outputs
-//    const unsigned num_points = 1 + states.GetNumberOfTimeSteps();
-//    assert(num_points == p_stepper->GetNumberOfOutputPoints());
-//    p_stepper->Reset();
-//    for (unsigned i=0; i<num_points; ++i)
-//    {
-//        rOutputs.AddOutputData(rGetSteppers(), states.rGetSolutions()[i]);
-//        p_stepper->Step();
-//    }
-//}

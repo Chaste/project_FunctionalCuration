@@ -31,9 +31,12 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "ValueTypes.hpp"
 #include "BacktraceException.hpp"
 
+#include "AbstractCvodeSystem.hpp"
+#include "ProtoHelperMacros.hpp"
+
 SetVariableModifier::SetVariableModifier(ApplyWhen when,
-                                                 const std::string& rVariableName,
-                                                 const AbstractExpressionPtr pValue)
+                                         const std::string& rVariableName,
+                                         const AbstractExpressionPtr pValue)
     : AbstractSimulationModifier(when),
       mVariableName(rVariableName),
       mpValueExpression(pValue)
@@ -46,5 +49,18 @@ void SetVariableModifier::ReallyApply(boost::shared_ptr<AbstractCardiacCellInter
 {
     AbstractValuePtr p_value = (*mpValueExpression)(pStepper->rGetEnvironment());
     PROTO_ASSERT(p_value->IsDouble(), "The value computed by a setVariable modifier must be a real number.");
+
+    AbstractCvodeSystem* p_sys = dynamic_cast<AbstractCvodeSystem*>(pCell.get());
+    if (p_sys)
+    {
+        const double old_value = GET_SIMPLE_VALUE(pStepper->rGetEnvironment().Lookup(mVariableName, GetLocationInfo()));
+        const double new_value = GET_SIMPLE_VALUE(p_value);
+        if (old_value != new_value)
+        {
+            // We're effectively changing the RHS function, and need to tell CVODE
+            p_sys->ResetSolver();
+        }
+    }
+
     pStepper->rGetEnvironment().OverwriteDefinition(mVariableName, p_value, GetLocationInfo());
 }

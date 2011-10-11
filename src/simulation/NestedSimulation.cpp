@@ -44,7 +44,8 @@ void NestedSimulation::Run(AbstractProtocolOutputs& rOutputs)
     for (mpStepper->Reset(); !mpStepper->AtEnd(); mpStepper->Step())
     {
         std::cout << "Nested simulation " << mpStepper->GetIndexName() << " step "
-                  << mpStepper->GetCurrentOutputNumber() << "..." << std::endl;
+                  << mpStepper->GetCurrentOutputNumber() << " value " << mpStepper->GetCurrentOutputPoint()
+                  << "..." << std::endl;
         /// \todo  Move modifiers invocation to base class method?
         if (mpModifiers)
         {

@@ -60,12 +60,12 @@ public:
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
         NdArray<double> peak_voltage = GET_ARRAY(r_outputs.Lookup("peak_voltage"));
         TS_ASSERT_EQUALS(peak_voltage.GetNumElements(), 1u);
-        TS_ASSERT_DELTA(*peak_voltage.Begin(), 46.937, 1e-3);
+        TS_ASSERT_DELTA(*peak_voltage.Begin(), 46.9406, 1e-3);
 
         NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("apd90"));
         TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 1u);
         TS_ASSERT_EQUALS(apd90.GetNumElements(), 1u);
-        TS_ASSERT_DELTA(*apd90.Begin(), 362.01, 1e-2);
+        TS_ASSERT_DELTA(*apd90.Begin(), 361.8468, 1e-2);
     }
 };
 

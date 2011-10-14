@@ -1,4 +1,0 @@
-Plot: IV curve for model
-X: final_membrane_voltage
-Y: min_LCC
-Traces: [Ca]o 50%, [Ca]o 100%, [Ca]o 150%

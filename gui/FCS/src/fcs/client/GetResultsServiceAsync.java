@@ -11,6 +11,6 @@ import fcs.shared.PlotData;
  * The async counterpart of <code>GreetingService</code>.
  */
 public interface GetResultsServiceAsync {
-	void getResults(ArrayList<String> modelList, String protocol, String xVAr, String yVar, AsyncCallback<PlotData> callback) throws IllegalArgumentException;
+	void getResults(ArrayList<String> modelList, String protocol, AsyncCallback<PlotData> callback) throws IllegalArgumentException;
 	void getMenuData(AsyncCallback<MenuData> callback);
 }

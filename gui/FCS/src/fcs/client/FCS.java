@@ -62,71 +62,75 @@ public class FCS implements EntryPoint {
 	private final GetResultsServiceAsync getRes = GWT
 			.create(GetResultsService.class);
 
-	private final SimulationServiceAsync simulation = GWT.create(SimulationService.class);
-	
-	
+	private final SimulationServiceAsync simulation = GWT
+			.create(SimulationService.class);
+
 	/**
 	 * This is the entry point method.
 	 */
-	  
-	
-	  // Load the image in the document and in the case of success attach it to the viewer
 
-	 
-	
-	//final Label test = new Label("TEEEEEEEEEEEEEEEEESSSSSSSSSSSSSSSSSTTTTTTTTTTTTT");
+	// Load the image in the document and in the case of success attach it to
+	// the viewer
+
+	// final Label test = new
+	// Label("TEEEEEEEEEEEEEEEEESSSSSSSSSSSSSSSSSTTTTTTTTTTTTT");
 	final Label modelsLabel = new Label("Models:");
 	final Label protocolsLabel = new Label("Protocols:");
 	final ListBox models = new ListBox(true);
 	final ListBox protocols = new ListBox();
-	final Button getGraph = new Button("Get Graph");
-    final TextArea text = new TextArea();
+	final Button getGraph = new Button("Display Simulation Results");
+	final TextArea text = new TextArea();
 
+	public static int numberOfGraphs =0;
+	
 	final ListBox selectedModels = new ListBox();
-	 private OnFinishUploaderHandler onFinishUploaderHandler = new OnFinishUploaderHandler() {
-		    @Override
-			public void onFinish(IUploader uploader) {
-		      if (uploader.getStatus() == Status.SUCCESS) {
+	private OnFinishUploaderHandler onFinishUploaderHandler = new OnFinishUploaderHandler() {
+		@Override
+		public void onFinish(IUploader uploader) {
+			if (uploader.getStatus() == Status.SUCCESS) {
 
-		        
-		        // The server sends useful information to the client by default
-		        UploadedInfo info = uploader.getServerInfo();
-		        simulation.runSimulation(info.name, new AsyncCallback<String>() {
-					
-					@Override
-					public void onSuccess(String result) {
-						String currentText = text.getText();
-						text.setText(currentText+"\n"+result);
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						// TODO Auto-generated method stub
-						
-					}
-				});
-		        //System.out.println("File name " + info.name);
-		        //System.out.println("File content-type " + info.ctype);
-		        //System.out.println("File size " + info.size);
+				// The server sends useful information to the client by default
+				UploadedInfo info = uploader.getServerInfo();
+				simulation.runSimulation(info.name,
+						new AsyncCallback<String>() {
 
-		        // You can send any customized message and parse it 
-		        //System.out.println("Server message " + info.message);
-		        
-		        
-		        
-		      }
-		    }
-		  };
+							@Override
+							public void onSuccess(String result) {
+								String currentText = text.getText();
+								text.setText(currentText + "\n" + result);
+							}
+
+							@Override
+							public void onFailure(Throwable caught) {
+								// TODO Auto-generated method stub
+
+							}
+						});
+				// System.out.println("File name " + info.name);
+				// System.out.println("File content-type " + info.ctype);
+				// System.out.println("File size " + info.size);
+
+				// You can send any customized message and parse it
+				// System.out.println("Server message " + info.message);
+
+			} else {
+				String buff = text.getText();
+				text.setText(buff+"Error occured while uploading...\n");
+				
+			}
+		}
+	};
+
 	/**
 	 * This is the entry point method.
 	 */
 	@Override
 	public void onModuleLoad() {
-		
-		
+
 		final VerticalPanel mainPanel = new VerticalPanel();
+		final VerticalPanel graphPanel = new VerticalPanel();
 		final HorizontalPanel menuPanel = new HorizontalPanel();
-		//mainPanel.add(test);
+		// mainPanel.add(test);
 		final FlexTable table = new FlexTable();
 		final Label enter = new Label("Please enter your name:");
 		final Button sendButton = new Button("Send");
@@ -144,7 +148,7 @@ public class FCS implements EntryPoint {
 		table.setWidget(1, 0, nameField);
 		table.setWidget(1, 1, sendButton);
 
-		//mainPanel.add(table);
+		// mainPanel.add(table);
 
 		final Panel selectionPanel = new HorizontalPanel();
 		getRes.getMenuData(new AsyncCallback<MenuData>() {
@@ -158,27 +162,44 @@ public class FCS implements EntryPoint {
 			@Override
 			public void onSuccess(MenuData result) {
 				initSelectionPanel(selectionPanel, result);
+				selectionPanel.add(getGraph);
 			}
 		});
 
+		
+		selectionPanel.setStyleName("panel");
 		menuPanel.add(selectionPanel);
+	
 		
 		final VerticalPanel upLoadPanel = new VerticalPanel();
 		// Create a new uploader panel and attach it to the document
-	    MultiUploader defaultUploader = new MultiUploader();
+		MyUploadStatus status = new MyUploadStatus(text);
+		MultiUploader defaultUploader = new MultiUploader(status);
 
-	    String ext = "cellml";
-	    defaultUploader.setValidExtensions(ext);
-	    // Add a finish handler which will load the image once the upload finishes
-	    defaultUploader.addOnFinishUploadHandler(onFinishUploaderHandler);
-	    text.setReadOnly(true);
-	    text.setText("Console:\n");
-	    upLoadPanel.add(defaultUploader);
-	    upLoadPanel.add(text);
-	    
-	    menuPanel.add(upLoadPanel);
+		String ext = "cellml";
+		defaultUploader.setValidExtensions(ext);
+		// Add a finish handler which will load the image once the upload
+		// finishes
+		defaultUploader.addOnFinishUploadHandler(onFinishUploaderHandler);
+		text.setWidth("400px");
+		text.setHeight("200px");
+		text.setReadOnly(true);
+		text.setText("Console:\n");
+		
+		Label up = new Label("Upload a model:");
+		upLoadPanel.add(up);
+		upLoadPanel.add(defaultUploader);
+		upLoadPanel.setStyleName("panel");
+		// int width = upLoadPanel.getOffsetWidth();
+
+		// System.out.println("width "+width);
+		// text.setWidth(""+width+"px");
+
+		upLoadPanel.add(text);
+		
+		menuPanel.add(upLoadPanel);
 		mainPanel.add(menuPanel);
-		mainPanel.add(getGraph);
+		
 
 		// final Panel graphPanel = new VerticalPanel();
 		// initGraphPanel(graphPanel);
@@ -191,7 +212,6 @@ public class FCS implements EntryPoint {
 		// Focus the cursor on the name field when the app loads
 		nameField.setFocus(true);
 		nameField.selectAll();
-
 
 		// Create the popup dialog box
 		final DialogBox dialogBox = new DialogBox();
@@ -233,16 +253,16 @@ public class FCS implements EntryPoint {
 				// Then, we send the input to the server.
 				getGraph.setEnabled(false);
 
-				ArrayList<String>modelList = new ArrayList<String>();
-				for(int i =0; i<models.getItemCount();++i){
-					if(models.isItemSelected(i)){
+				ArrayList<String> modelList = new ArrayList<String>();
+				for (int i = 0; i < models.getItemCount(); ++i) {
+					if (models.isItemSelected(i)) {
 						modelList.add(models.getItemText(i));
 					}
 				}
-				//String model = models.getItemText(models.getSelectedIndex());
+				// String model = models.getItemText(models.getSelectedIndex());
 				String protocol = protocols.getItemText(protocols
 						.getSelectedIndex());
-				getRes.getResults(modelList, protocol, null, null,
+				getRes.getResults(modelList, protocol,
 						new AsyncCallback<PlotData>() {
 							@Override
 							public void onFailure(Throwable caught) {
@@ -253,14 +273,16 @@ public class FCS implements EntryPoint {
 							@Override
 							public void onSuccess(PlotData result) {
 								ArrayList<Plot> plots = result.getPlots();
-								//for(int a=0;a<plots.size();a++){
-									//Plot plot = plots.get(a);
-								//for (Plot plot : plots) {
-						
-									GraphComposite graph = new GraphComposite(plots);
-									mainPanel.add(graph);
+								
+									GraphComposite graph = new GraphComposite(
+											plots, Integer.toString(numberOfGraphs));
+									numberOfGraphs++;
+									
+								
+									graphPanel.clear();
+									graphPanel.add(graph);
 							
-								//}
+								
 							}
 
 						});
@@ -337,29 +359,26 @@ public class FCS implements EntryPoint {
 		sendButton.addClickHandler(handler);
 		nameField.addKeyUpHandler(handler);
 		getGraph.addClickHandler(new GetDataHandler());
+		mainPanel.add(graphPanel);
 		RootPanel.get("body").add(mainPanel);
-		
 
 	}
 
 	private void initSelectionPanel(Panel selectionPanel, MenuData data) {
 
-		
 		for (String s : data.getModels()) {
 			models.addItem(s);
 		}
 
-
 		for (String s : data.getProtocols()) {
 			protocols.addItem(s);
 		}
-		
-		
+
 		FlexTable table = new FlexTable();
 
-		models.setVisibleItemCount(5);
+		models.setVisibleItemCount(1);
 		// protocols.setVisibleItemCount(5);
-		//selectedModels.setVisibleItemCount(15);
+		// selectedModels.setVisibleItemCount(15);
 		models.setItemSelected(0, true);
 
 		final Button modelSelectionButton = new Button("select");
@@ -375,5 +394,5 @@ public class FCS implements EntryPoint {
 		// selectionPanel.add(modelSelectionButton);
 		// selectionPanel.add(selectedModels);
 	}
-	
+
 }

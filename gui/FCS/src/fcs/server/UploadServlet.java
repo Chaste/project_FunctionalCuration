@@ -53,6 +53,7 @@ public class UploadServlet extends UploadAction {
            String saveName = item.getName().replaceAll("[\\\\/><\\|\\s\"'{}()\\[\\]]+", "_");
            File file =new File("CellModelTestInput/Models/"+saveName);
            if(file.exists()){
+        	   //System.out.println("file exists");
         	   throw new UploadActionException("File already exists!");
            }else{
           /// Create a temporary file placed in /tmp (only works in unix)
@@ -71,7 +72,9 @@ public class UploadServlet extends UploadAction {
            }
 
         } catch (Exception e) {
-          throw new UploadActionException(e);
+        	response += e.getMessage();
+        	
+        	throw new UploadActionException(e);
         }
       }
     }

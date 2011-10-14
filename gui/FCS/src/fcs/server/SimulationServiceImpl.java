@@ -2,6 +2,7 @@ package fcs.server;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -12,50 +13,55 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import fcs.client.SimulationService;
 
 @SuppressWarnings("serial")
-public class SimulationServiceImpl extends RemoteServiceServlet implements SimulationService{
+public class SimulationServiceImpl extends RemoteServiceServlet implements
+		SimulationService {
 
 	@Override
 	public String runSimulation(String model) {
 		String response = "";
-        File dir = new File(GetResultsServiceImpl.protocolsDir);
-    	String[] child = dir.list();
-    	
-      Socket sock=null;
-      PrintWriter write = null;
-      BufferedReader in = null;
-      for(int i=0;i<child.length;i++){
-    	  System.out.println(child[i]);
-      }
-      
-     try{
-      sock = new Socket("localhost", 7777);
-      write = new PrintWriter(sock.getOutputStream(), true);
-      
-      in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-      
-      System.out.println("Connected to socket!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      
-      write.println("Models/"+model+"\n"+"Protocols/"+child[0]+"\n"+GetResultsServiceImpl.protocolsDir+"\n");
+		File dir = new File(GetResultsServiceImpl.protocolsSourceDir);
+		String[] protocols = dir.list();
 
-      String read = in.readLine();
-      while(read!=null){
-      System.out.println("Response: "+read);
-      response+=read;
-      read=in.readLine();
-      }
-      
-      /*
-      for(int i =0;i<child.length;i++){
-      write.println(saveName);
-      write.println(child[i]);
-      response+=in.readLine();
-      }
-      */
-      
-     }catch(IOException ioe){
-    	  	ioe.printStackTrace();
-     }
-        		return response;
+		// remove .cellml
+		String modelName = model.substring(0, model.length() - 7);
+
+		Socket sock = null;
+		PrintWriter write = null;
+		BufferedReader in = null;
+
+		for (int i = 0; i < protocols.length; i++) {
+		try {
+
+			sock = new Socket("localhost", 7777);
+			write = new PrintWriter(sock.getOutputStream(), true);
+
+			in = new BufferedReader(
+					new InputStreamReader(sock.getInputStream()));
+
+			
+
+				// remove .xml
+				String protocolName = protocols[i].substring(0,
+						protocols[i].length() - 4);
+
+				write.println("Models/" + model + "\n" + "Protocols/"
+						+ protocols[i] + "\n" + modelName + "/" + protocolName
+						+ "\n");
+
+				String read = in.readLine();
+				while (read != null) {
+					response += (read + "\n");
+					read = in.readLine();
+				}
+
+			
+
+		} catch (IOException ioe) {
+			response += ioe.getMessage();
+		}
+		}
+		return response;
+
 	}
 }
 

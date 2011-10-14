@@ -2,25 +2,46 @@
 
 
 /** Example rules used by the template application (remove for your app) */
-#body {
+#main {
 	width : 90%;
-margin : auto; 
-}
-h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
+	margin : auto; 
 }
 
-.h1 {
-  font-size: 2em;
+	#img {
+	float: left;
+	}
+#body{
+	margin : 50px 0px 0px 0px;
+	}
+h1 {
+	padding: 40px 0px 0px 100px;
+	margin: 0px 0px 0px 100px;
+	}
+	
+	
+.title{
+	font-size: 1em;
   font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 10px;
+  color: #263E6A;
+  height: 120px;
+  vertical-align: middle;
+	margin : 40px 100px 0px 0px;
+	}
+	
+.graphtitle{
+	font-size: 1.5em;
+  font-weight: bold;
+  color: #263E6A;
+ 
   text-align: center;
-}
+  
+	}
+
+.panel{
+	margin: 20px 20px 20px 20px;
+
+	}
+
 
 .sendButton {
   display: block;

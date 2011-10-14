@@ -17,17 +17,17 @@ import fcs.client.LegendContainer;
 import fcs.shared.Plot;
 
 public class GraphComposite extends Composite{
-	public static int nbGraphs =0;
+	//public static int nbGraphs =0;
 	Graph g;
-	public GraphComposite(ArrayList<Plot> plots){
+	public GraphComposite(ArrayList<Plot> plots, String id){
 		
-		LegendContainer legend = new LegendContainer("legend"+nbGraphs);
-		LegendContainer hiddenLegend = new LegendContainer("hidden"+nbGraphs);
-		LegendContainer overView = new LegendContainer("overview"+nbGraphs);
-		nbGraphs++;
+		LegendContainer legend = new LegendContainer("legend"+id);
+		LegendContainer hiddenLegend = new LegendContainer("hidden"+id);
+		LegendContainer overView = new LegendContainer("overview"+id);
+		//nbGraphs++;
 
 		Label title = new Label(plots.get(0).getName());
-		title.setStyleName("h1");
+		title.setStyleName("graphtitle");
 		//Label xAxis = new Label("x axis: "+plot.getxTitle());
 		//Label yAxis = new Label("y axis: "+plot.getyTitle());
 		
@@ -48,7 +48,7 @@ public class GraphComposite extends Composite{
 		one.add(two);
 		//one.add(xAxis);
 		
-		g = new Graph(plots, null, legend, hiddenLegend, overView);
+		g = new Graph(plots, "graph"+id, null, legend, hiddenLegend, overView);
 		graphContainer.add(g);
 		resetButton.addClickHandler(new ClickHandler() {
 			
@@ -62,7 +62,7 @@ public class GraphComposite extends Composite{
 	}
 	
 	public void resetGraph(){
-		System.out.println("reset");
+		//System.out.println("reset");
 		g.reset();
 	}
 	

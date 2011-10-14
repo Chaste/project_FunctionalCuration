@@ -27,14 +27,12 @@ public class Plot implements IsSerializable {
 		name = "defaultPlotName";
 	}
 
-	public Plot(String dataPath, String name, String modelName, String xTitle, String yTitle,
-			String traces) {
+	public Plot(String dataPath, String name, String modelName, String xTitle, String yTitle) {
 		this.dataPath = dataPath;
 		this.name = name;
 		this.modelName=modelName;
 		this.xTitle = xTitle;
 		this.yTitle = yTitle;
-		this.traces = traces;
 		series= new ArrayList<Serie>();
 	}
 

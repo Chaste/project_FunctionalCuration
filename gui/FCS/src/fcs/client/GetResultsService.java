@@ -13,7 +13,7 @@ import fcs.shared.PlotData;
  */
 @RemoteServiceRelativePath("results")
 public interface GetResultsService extends RemoteService {
-	PlotData getResults(ArrayList<String> modelList, String protocol, String xVar, String yVar) throws IllegalArgumentException;
+	PlotData getResults(ArrayList<String> modelList, String protocol) throws IllegalArgumentException;
 
 	MenuData getMenuData();
 }

@@ -24,14 +24,13 @@ public class Graph extends Widget {
 	private JSONObject m_defaultOptions;
 	private List<GraphListener> m_listeners = new ArrayList<GraphListener>();
 
-	public Graph(ArrayList<Plot> p, JSONObject options, LegendContainer l,
+	public Graph(ArrayList<Plot> p, String id, JSONObject options, LegendContainer l,
 			LegendContainer l2, LegendContainer l3) {
 		super();
 		plots = p;
 		legend = l;
 		hiddenLegend = l2;
 		overview = l3;
-		String id = "" + Random.nextInt();
 		Element divEle = DOM.createDiv();
 		setElement(divEle);
 		divEle.setId(id);
@@ -263,9 +262,7 @@ $wnd.plotObject = (function(){
         plot = $wnd.$.plot($wnd.$("#"+plotCont), data, main_options);
         overview = $wnd.$.plot($wnd.$("#"+overviewCont), data, overview_options);
      	overview.setSelection(currentRanges, true);
-      }else{
-    	alert('error')
-    }
+      }
     
     }
     

@@ -197,12 +197,15 @@ void AbstractProtocol::WriteToFile(const OutputFileHandler& rHandler,
         std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = p_sim->rGetSteppers();
         BOOST_FOREACH(boost::shared_ptr<AbstractStepper> p_stepper, r_steppers)
         {
-            (*p_file) << '"' << p_stepper->GetIndexName() << "\",\"" << p_stepper->GetUnits() << '"';
-            for (p_stepper->Reset(); !p_stepper->AtEnd(); p_stepper->Step())
+            if (p_stepper) // See #1911
             {
-                (*p_file) << "," << p_stepper->GetCurrentOutputPoint();
+                (*p_file) << '"' << p_stepper->GetIndexName() << "\",\"" << p_stepper->GetUnits() << '"';
+                for (p_stepper->Reset(); !p_stepper->AtEnd(); p_stepper->Step())
+                {
+                    (*p_file) << "," << p_stepper->GetCurrentOutputPoint();
+                }
+                (*p_file) << std::endl;
             }
-            (*p_file) << std::endl;
         }
     }
 

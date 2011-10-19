@@ -411,7 +411,7 @@ typename Protocol<VECTOR>::ModelPtr Protocol<VECTOR>::CheckModel(boost::shared_p
     {
         EXCEPTION("Given model doesn't have any protocol outputs.");
     }
-    if (p_model->GetNumberOfOutputs() == 0)
+    if (p_model->GetNumberOfOutputs() == 0 && p_model->rGetVectorOutputNames().size() == 0)
     {
         EXCEPTION("Number of model outputs is zero.");
     }
@@ -466,6 +466,9 @@ void Protocol<VECTOR>::AddOutputData(const std::vector<boost::shared_ptr<Abstrac
 
     const unsigned nesting_depth = rSteppers.size();
     const std::vector<std::string> output_names = mpModel->GetOutputNames();
+    const unsigned num_outputs = output_names.size();
+    const std::vector<std::string>& r_vector_output_names = mpModel->rGetVectorOutputNames();
+    const unsigned num_vector_outputs = r_vector_output_names.size();
     EnvironmentPtr& p_outputs = mOutputs[prefix];
 
     if (!p_outputs)
@@ -482,7 +485,6 @@ void Protocol<VECTOR>::AddOutputData(const std::vector<boost::shared_ptr<Abstrac
             }
 
             // Create output arrays
-            const unsigned num_outputs = output_names.size();
             const std::vector<std::string> output_units = mpModel->GetOutputUnits();
             for (unsigned i=0; i<num_outputs; ++i)
             {
@@ -490,6 +492,17 @@ void Protocol<VECTOR>::AddOutputData(const std::vector<boost::shared_ptr<Abstrac
                 AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
                 p_value->SetUnits(output_units[i]);
                 p_outputs->DefineName(output_names[i], p_value, "Protocol setup");
+            }
+
+            // Create arrays for vector outputs
+            const std::vector<unsigned> vector_output_lengths = mpModel->GetVectorOutputLengths();
+            for (unsigned i=0; i<num_vector_outputs; ++i)
+            {
+                NdArray<double>::Extents shape(outputs_shape);
+                shape.push_back(vector_output_lengths[i]);
+                NdArray<double> array(shape);
+                AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
+                p_outputs->DefineName(r_vector_output_names[i], p_value, "Protocol setup");
             }
         }
     }
@@ -507,14 +520,30 @@ void Protocol<VECTOR>::AddOutputData(const std::vector<boost::shared_ptr<Abstrac
     assert(p_system);
     const double time = rSteppers.back()->GetCurrentOutputPoint();
     VECTOR outputs = mpModel->ComputeOutputs(time, p_system->rGetStateVariables());
-    const unsigned num_outputs = GetVectorSize(outputs);
-    assert(output_names.size() == num_outputs);
+    assert(GetVectorSize(outputs) == num_outputs);
     for (unsigned i=0; i<num_outputs; ++i)
     {
         NdArray<double> array = GET_ARRAY(p_outputs->Lookup(output_names[i], "Data entry"));
         array[indices] = GetVectorComponent(outputs, i);
     }
     DeleteVector(outputs);
+
+    // Fill in vector outputs
+    std::vector<VECTOR> vector_outputs = mpModel->ComputeVectorOutputs(time, p_system->rGetStateVariables());
+    assert(vector_outputs.size() == num_vector_outputs);
+    for (unsigned i=0; i<num_vector_outputs; ++i)
+    {
+        NdArray<double>::Indices our_indices(indices);
+        our_indices.push_back(0u);
+        NdArray<double> array = GET_ARRAY(p_outputs->Lookup(r_vector_output_names[i], "Data entry"));
+        const unsigned vector_length = GetVectorSize(vector_outputs[i]);
+        assert(vector_length == array.GetShape().back());
+        for (unsigned j=0; j<vector_length; ++j)
+        {
+            array[our_indices] = GetVectorComponent(vector_outputs[i], j);
+            our_indices.back()++;
+        }
+    }
 }
 
 

@@ -33,7 +33,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * An additional base class for cells that have outputs specified via a protocol.
- * 
+ *
  * The template parameter is the type used by the cell for vectors of real numbers.
  * It will be either std::vector<double> (for AbstractCardiacCell subclasses) or
  * N_Vector (for AbstractCvodeCell subclasses).
@@ -46,19 +46,19 @@ public:
      * Get the number of system outputs.
      */
     unsigned GetNumberOfOutputs() const;
-    
+
     /**
      * Compute the system outputs from the given system state.
      * Uses the current values for the parameters.
-     * 
+     *
      * \todo  Is using current param values safe for all protocols?  Will need to watch out for this.
-     * 
+     *
      * @param time  the time at which to compute the outputs
      * @param rState  values for the state variables
      */
     VECTOR ComputeOutputs(double time,
                           const VECTOR& rState);
-    
+
     /**
      * Get the vector of output names.
      */
@@ -68,14 +68,34 @@ public:
      * Get the vector of output units.
      */
     std::vector<std::string> GetOutputUnits() const;
-    
+
     /**
      * Get the index of an output, given its name.
      *
      * @param rName  the name of an output.
      */
     unsigned GetOutputIndex(const std::string& rName) const;
-    
+
+    /**
+     * Compute the system outputs which are vectors of variables from the given system state.
+     * Uses the current values for the parameters.
+     *
+     * @param time  the time at which to compute the outputs
+     * @param rState  values for the state variables
+     */
+    std::vector<VECTOR> ComputeVectorOutputs(double time, const VECTOR& rState);
+
+    /**
+     * Get the names of system outputs which are vectors of variables.  Currently these names
+     * are oxmeta names, but eventually they'll be arbitrary URIs.
+     */
+    const std::vector<std::string>& rGetVectorOutputNames() const;
+
+    /**
+     * Get the lengths of the system outputs which are vectors of variables.
+     */
+    std::vector<unsigned> GetVectorOutputLengths() const;
+
     /**
      * What types of variable can be system outputs.
      */
@@ -86,10 +106,10 @@ public:
         PARAMETER, ///< A modifiable parameter
         DERIVED    ///< A derived quantity
     };
-    
+
     /** Virtual destructor to force this class to be polymorphic. */
     virtual ~AbstractSystemWithOutputs();
-    
+
 protected:
     /**
      * Information encoding which variables in the system are outputs.
@@ -97,6 +117,16 @@ protected:
      * This must be set up by subclass constructors, if the system has outputs.
      */
     std::vector<std::pair<unsigned, OutputTypes> > mOutputsInfo;
+
+    /**
+     * Information encoding which vectors of variables in the system form single outputs.
+     * Their order matters.
+     * This must be set up by subclass constructors, if the system has such outputs.
+     */
+    std::vector<std::vector<std::pair<unsigned, OutputTypes> > > mVectorOutputsInfo;
+
+    /** Names of system outputs that are vectors of variables. */
+    std::vector<std::string> mVectorOutputNames;
 };
 
 #endif /*ABSTRACTSYSTEMWITHOUTPUTS_HPP_*/

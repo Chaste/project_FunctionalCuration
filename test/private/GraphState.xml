@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    <units>
+        <cellml:units name="ms">
+            <cellml:unit units="second" prefix="milli"/>
+        </cellml:units>
+    </units>
+    <modelInterface>
+        <setIndependentVariableUnits units="ms"/>
+        <specifyOutputVariable name="oxmeta:state_variable"/>
+    </modelInterface>
+    <simulations>
+        <timecourseSimulation prefix="sim">
+            <uniformStepper units="ms" name="time">
+                <start>0</start>
+                <stop>1000</stop>
+                <step>1</step>
+            </uniformStepper>
+            <modifiers/>
+        </timecourseSimulation>
+    </simulations>
+    <outputVariables>
+        <raw name="state" description="State variables" ref="sim:state_variable"/>
+    </outputVariables>
+    <plots>
+        <plot>
+            <title>State variables</title>
+            <data>state</data>
+        </plot>
+    </plots>
+</protocol>

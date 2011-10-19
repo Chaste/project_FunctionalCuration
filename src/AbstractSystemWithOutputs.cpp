@@ -42,10 +42,10 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 /**
  * Helper function to create a new vector with given size.  All entries
  * will be initialised to zero.
- * 
+ *
  * This isn't a member so that we can specialise it without having to
  * specialise the whole class.
- * 
+ *
  * @param rVec  the vector to create
  * @param size  the size of the vector
  */
@@ -90,7 +90,7 @@ unsigned AbstractSystemWithOutputs<VECTOR>::GetNumberOfOutputs() const
 {
     return mOutputsInfo.size();
 }
-    
+
 template<typename VECTOR>
 VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
         double time,
@@ -98,13 +98,13 @@ VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
 {
     AbstractParameterisedSystem<VECTOR>* p_this = dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this);
     assert(p_this);
-    
+
     VECTOR outputs;
     CreateNewVector(outputs, GetNumberOfOutputs());
-    
+
     bool computed_derived_quantities = false;
     VECTOR derived_quantities;
-    
+
     for (unsigned i=0; i<GetNumberOfOutputs(); i++)
     {
         switch (mOutputsInfo[i].second)
@@ -129,13 +129,83 @@ VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
             break;
         }
     }
-    
+
     if (computed_derived_quantities)
     {
         DeleteVector(derived_quantities);
     }
-    
+
     return outputs;
+}
+
+
+template<typename VECTOR>
+std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(double time, const VECTOR& rState)
+{
+    AbstractParameterisedSystem<VECTOR>* p_this = dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this);
+    assert(p_this);
+
+    bool computed_derived_quantities = false;
+    VECTOR derived_quantities;
+
+    const unsigned num_vector_outputs = mVectorOutputsInfo.size();
+    std::vector<VECTOR> outputs(num_vector_outputs);
+    for (unsigned i=0; i<num_vector_outputs; i++)
+    {
+        const unsigned output_length = mVectorOutputsInfo[i].size();
+        VECTOR& r_output = outputs[i];
+        CreateNewVector(r_output, output_length);
+        for (unsigned j=0; j<output_length; j++)
+        {
+            switch (mVectorOutputsInfo[i][j].second)
+            {
+            case FREE:
+                // Special-case for the free variable, assuming it is time
+                SetVectorComponent(r_output, j, time);
+                break;
+            case STATE:
+                SetVectorComponent(r_output, j, GetVectorComponent(rState, mVectorOutputsInfo[i][j].first));
+                break;
+            case PARAMETER:
+                SetVectorComponent(r_output, j, p_this->GetParameter(mVectorOutputsInfo[i][j].first));
+                break;
+            case DERIVED:
+                if (!computed_derived_quantities)
+                {
+                    derived_quantities = p_this->ComputeDerivedQuantities(time, rState);
+                    computed_derived_quantities = true;
+                }
+                SetVectorComponent(r_output, j, GetVectorComponent(derived_quantities, mVectorOutputsInfo[i][j].first));
+                break;
+            }
+        }
+    }
+
+    if (computed_derived_quantities)
+    {
+        DeleteVector(derived_quantities);
+    }
+
+    return outputs;
+}
+
+
+template<typename VECTOR>
+std::vector<unsigned> AbstractSystemWithOutputs<VECTOR>::GetVectorOutputLengths() const
+{
+    std::vector<unsigned> lengths(mVectorOutputsInfo.size());
+    for (unsigned i=0; i<lengths.size(); ++i)
+    {
+        lengths[i] = mVectorOutputsInfo[i].size();
+    }
+    return lengths;
+}
+
+
+template<typename VECTOR>
+const std::vector<std::string>& AbstractSystemWithOutputs<VECTOR>::rGetVectorOutputNames() const
+{
+    return mVectorOutputNames;
 }
 
 
@@ -144,7 +214,7 @@ std::vector<std::string> AbstractSystemWithOutputs<VECTOR>::GetOutputNames() con
 {
     const AbstractParameterisedSystem<VECTOR> * const p_this = dynamic_cast<const AbstractParameterisedSystem<VECTOR> * const>(this);
     assert(p_this);
-    
+
     std::vector<std::string> names;
     names.reserve(GetNumberOfOutputs());
     for (unsigned i=0; i<GetNumberOfOutputs(); i++)
@@ -174,7 +244,7 @@ template<typename VECTOR>
 std::vector<std::string> AbstractSystemWithOutputs<VECTOR>::GetOutputUnits() const
 {
     const AbstractParameterisedSystem<VECTOR> * const p_this = dynamic_cast<const AbstractParameterisedSystem<VECTOR> * const>(this);
-    
+
     std::vector<std::string> units;
     units.reserve(GetNumberOfOutputs());
     for (unsigned i=0; i<GetNumberOfOutputs(); i++)
@@ -187,7 +257,7 @@ std::vector<std::string> AbstractSystemWithOutputs<VECTOR>::GetOutputUnits() con
             break;
         case STATE:
             units.push_back(p_this->rGetStateVariableUnits()[mOutputsInfo[i].first]);
-            break; 
+            break;
         case PARAMETER:
             units.push_back(p_this->rGetParameterUnits()[mOutputsInfo[i].first]);
             break;
@@ -204,9 +274,9 @@ template<typename VECTOR>
 unsigned AbstractSystemWithOutputs<VECTOR>::GetOutputIndex(const std::string& rName) const
 {
     const AbstractParameterisedSystem<VECTOR> * const p_this = dynamic_cast<const AbstractParameterisedSystem<VECTOR> * const>(this);
-    
+
     unsigned index = UNSIGNED_UNSET;
-    
+
     // Check each output in turn
     for (unsigned i=0; i<GetNumberOfOutputs(); i++)
     {
@@ -243,14 +313,13 @@ unsigned AbstractSystemWithOutputs<VECTOR>::GetOutputIndex(const std::string& rN
             break; // Found it, so stop searching
         }
     }
-    
+
     if (index == UNSIGNED_UNSET)
     {
         EXCEPTION("No output named '" + rName + "'.");
     }
     return index;
 }
-
 
 
 template<typename VECTOR>

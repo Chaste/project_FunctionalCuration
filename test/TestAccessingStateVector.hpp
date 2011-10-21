@@ -47,7 +47,7 @@ public:
         std::string dirname = "TestAccessingStateVector";
         std::string model_name = "luo_rudy_1991";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/private/GraphState.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.RunProtocol();
@@ -66,7 +66,7 @@ public:
         }
 
         // Compare the results with original data
-        FileFinder ref_dir("projects/FunctionalCuration/test/private/data/TestAccessingStateVector", RelativeTo::ChasteSourceRoot);
+        FileFinder ref_dir("projects/FunctionalCuration/test/data/TestAccessingStateVector", RelativeTo::ChasteSourceRoot);
         FileFinder out_dir(dirname, RelativeTo::ChasteTestOutput);
 
         // Test metadata files

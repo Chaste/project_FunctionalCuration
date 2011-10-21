@@ -31,10 +31,12 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include <cxxtest/TestSuite.h>
 #include <boost/foreach.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "ProtocolRunner.hpp"
 #include "OutputFileHandler.hpp"
 
+#include "ProtoHelperMacros.hpp"
 #include "NumericFileComparison.hpp"
 
 class TestAccessingStateVector : public CxxTest::TestSuite
@@ -52,40 +54,39 @@ public:
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
+        // Double-check transpose
+        NdArray<double> state_trans = GET_ARRAY(runner.GetProtocol()->rGetOutputsCollection().Lookup("state", "test"));
+        NdArray<double> state_raw = GET_ARRAY(runner.GetProtocol()->rGetOutputsCollection().Lookup("raw_state", "test"));
+        for (NdArray<double>::ConstIterator it=state_raw.Begin(); it != state_raw.End(); ++it)
+        {
+            NdArray<double>::Indices idxs(2);
+            idxs[0] = it.rGetIndices()[1];
+            idxs[1] = it.rGetIndices()[0];
+            TS_ASSERT_EQUALS(*it, state_trans[idxs]);
+        }
+
         // Compare the results with original data
+        FileFinder ref_dir("projects/FunctionalCuration/test/private/data/TestAccessingStateVector", RelativeTo::ChasteSourceRoot);
+        FileFinder out_dir(dirname, RelativeTo::ChasteTestOutput);
 
         // Test metadata files
-        std::vector<std::string> filenames = list_of("-contents.csv")("-steppers.csv")("-default-plots.csv");
+        std::vector<std::string> filenames = boost::assign::list_of("-contents.csv")("-steppers.csv")("-default-plots.csv");
         BOOST_FOREACH(std::string filename, filenames)
         {
-            FileFinder ref_file("projects/FunctionalCuration/test/private/data/TestAccessingStateVector/outputs" + filename, RelativeTo::ChasteSourceRoot);
-            FileFinder test_file(dirname + "/" + filename, RelativeTo::ChasteTestOutput);
+            FileFinder ref_file("outputs" + filename, ref_dir);
+            FileFinder test_file("outputs" + filename, out_dir);
             TS_ASSERT_THROWS_NOTHING(EXPECT0(system, "diff -u " + test_file.GetAbsolutePath() + " " + ref_file.GetAbsolutePath()));
         }
 
-//        for (unsigned i=0; i<2; i++)
-//        {
-//            std::string output_name;
-//            if (0u==i)
-//            {
-//                output_name = "outputs_min_LCC";
-//            }
-//            else
-//            {
-//                output_name = "outputs_final_membrane_voltage";
-//            }
-//
-//            std::cout << "Comparing results of ICaL protocol: " << output_name << "...";
-//            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/ICaL/" + output_name + ".dat",
-//                                  RelativeTo::ChasteSourceRoot);
-//            OutputFileHandler handler(dirname, false);
-//            FileFinder test_output = handler.FindFile(output_name + ".csv");
-//
-//            NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-//            TS_ASSERT(comp.CompareFiles(2e-4));
-//
-//            std::cout << "done.\n";
-//        }
+        filenames = boost::assign::list_of("outputs_raw_state")("outputs_state");
+        BOOST_FOREACH(std::string output_name, filenames)
+        {
+            FileFinder ref_output(output_name + ".csv", ref_dir);
+            FileFinder test_output(output_name + ".csv", out_dir);
+            NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
+            TS_ASSERT(comp.CompareFiles(1e-4, 0, false));
+        }
+
     }
 };
 

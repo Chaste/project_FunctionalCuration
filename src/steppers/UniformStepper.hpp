@@ -84,6 +84,11 @@ public:
     unsigned GetNumberOfOutputPoints() const;
 
     /**
+     * The end point is fixed, and hence the number of output points is known at the start.
+     */
+    bool IsEndFixed() const;
+
+    /**
      * If this stepper was constructed with expressions rather than values, evaluate the
      * expressions in the stepper's environment (which must have been set with SetEnvironment)
      * to convert them to the parameters for this stepper.

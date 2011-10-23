@@ -74,6 +74,13 @@ public:
     virtual unsigned GetNumberOfOutputPoints() const =0;
 
     /**
+     * Return whether the end point is fixed, and hence the number of output points known at
+     * the start, or whether it is determined by a dynamic condition, and hence the number of
+     * output points is unknown until AtEnd returns true.
+     */
+    virtual bool IsEndFixed() const =0;
+
+    /**
      * If this stepper was constructed with expressions rather than values, evaluate the
      * expressions in the stepper's environment (which must have been set with SetEnvironment)
      * to convert them to the parameters for this stepper.

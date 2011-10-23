@@ -104,6 +104,12 @@ unsigned UniformStepper::GetNumberOfOutputPoints() const
 }
 
 
+bool UniformStepper::IsEndFixed() const
+{
+    return true;
+}
+
+
 void UniformStepper::Reset()
 {
     mCurrentStep = 0;

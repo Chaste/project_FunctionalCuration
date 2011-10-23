@@ -42,6 +42,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractStepper.hpp"
 #include "UniformStepper.hpp"
 #include "VectorStepper.hpp"
+#include "WhileStepper.hpp"
 
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
@@ -68,6 +69,7 @@ class TestSteppers : public CxxTest::TestSuite
     {
         MAKE_PTR_A(AbstractStepper, UniformStepper, p_uniform, (rName, rUnits, start, end, step));
         DoAbstractTest(p_uniform, rName);
+        TS_ASSERT(p_uniform->IsEndFixed());
         const double tol = fabs(step)/1000.0;
 
         TS_ASSERT_EQUALS(p_uniform->GetNumberOfOutputPoints(), 1 + (unsigned)floor((end-start)/step + 0.5));
@@ -91,6 +93,7 @@ class TestSteppers : public CxxTest::TestSuite
     {
         MAKE_PTR_A(AbstractStepper, VectorStepper, ps, (rName, rUnits, rVec));
         DoAbstractTest(ps, rName);
+        TS_ASSERT(ps->IsEndFixed());
 
         TS_ASSERT_EQUALS(ps->GetNumberOfOutputPoints(), rVec.size());
         for (unsigned i=0; i<ps->GetNumberOfOutputPoints(); i++)
@@ -179,7 +182,7 @@ public:
         // Timecourse stepper
         args = EXPR_LIST(CONST(2))(CONST(1000));
         DEFINE(timecourse_end, make_shared<MathmlTimes>(args));
-        boost::shared_ptr<AbstractStepper> p_timecourse(new UniformStepper("timecourse", "ms", CONST(0), timecourse_end, CONST(1)));
+        MAKE_PTR_A(AbstractStepper, UniformStepper, p_timecourse, ("timecourse", "ms", CONST(0), timecourse_end, CONST(1)));
         TS_ASSERT_EQUALS(p_timecourse->GetNumberOfOutputPoints(), 0u);
         TS_ASSERT_EQUALS(p_timecourse->GetCurrentOutputNumber(), 0u);
         TS_ASSERT_EQUALS(p_timecourse->GetCurrentOutputPoint(), DOUBLE_UNSET);
@@ -195,6 +198,33 @@ public:
             TS_ASSERT_EQUALS(p_timecourse->Step(), i+1);
         }
         TS_ASSERT(p_timecourse->AtEnd());
+    }
+
+    void TestWhileLoop() throw (Exception)
+    {
+        // While i<10
+        const unsigned N=10;
+        std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(N));
+        DEFINE(cond, make_shared<MathmlLt>(args));
+        MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper, ("i", "number", cond));
+        Environment env;
+        p_stepper->SetEnvironment(env);
+        p_stepper->Initialise();
+
+        DoAbstractTest(p_stepper, "i");
+        TS_ASSERT(!p_stepper->IsEndFixed());
+        TS_ASSERT_LESS_THAN(N, p_stepper->GetNumberOfOutputPoints()); // It should make a large initial guess!
+        TS_ASSERT_EQUALS(p_stepper->GetCurrentOutputNumber(), 0u);
+        TS_ASSERT_EQUALS(p_stepper->GetCurrentOutputPoint(), 0.0);
+
+        for (unsigned i=0; i<N; i++)
+        {
+            TS_ASSERT(!p_stepper->AtEnd());
+            TS_ASSERT_EQUALS(p_stepper->GetCurrentOutputPoint(), i);
+            TS_ASSERT_EQUALS(p_stepper->Step(), i+1);
+        }
+        TS_ASSERT(p_stepper->AtEnd());
+        TS_ASSERT_EQUALS(N, p_stepper->GetNumberOfOutputPoints());
     }
 
 };

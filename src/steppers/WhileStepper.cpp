@@ -26,63 +26,62 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "VectorStepper.hpp"
+#include "WhileStepper.hpp"
 
 #include "BacktraceException.hpp"
+#include "ProtoHelperMacros.hpp"
 
-VectorStepper::VectorStepper(const std::string& rIndexName,
-                             const std::string& rIndexUnits,
-                             const std::vector<double>& rValues)
+WhileStepper::WhileStepper(const std::string& rIndexName,
+                           const std::string& rIndexUnits,
+                           const AbstractExpressionPtr pStoppingCondition)
     : AbstractStepper(rIndexName, rIndexUnits),
-      mValues(rValues)
+      mNumberOfOutputPoints(1000u),
+      mpStoppingCondition(pStoppingCondition)
 {
-    PROTO_ASSERT(!rValues.empty(), "A VectorStepper must be given a non-empty vector.");
-    SetCurrentOutputPoint(mValues.front());
+    assert(mpStoppingCondition);
+    SetCurrentOutputPoint(0.0);
 }
 
 
-VectorStepper::VectorStepper(const std::string& rIndexName,
-                             const std::string& rIndexUnits,
-                             const std::vector<AbstractExpressionPtr>& rValues)
-    : AbstractStepper(rIndexName, rIndexUnits)
+void WhileStepper::Initialise()
 {
-    PROTO_ASSERT(!rValues.empty(), "A VectorStepper must be given a non-empty vector.");
-    mExpressions = rValues;
+    assert(mpEnvironment);
 }
 
 
-void VectorStepper::Initialise()
+unsigned WhileStepper::GetNumberOfOutputPoints() const
 {
-    if (!mExpressions.empty())
-    {
-        mValues = EvaluateParameters(true);
-        SetCurrentOutputPoint(mValues.front());
-    }
+    return mNumberOfOutputPoints;
 }
 
 
-unsigned VectorStepper::GetNumberOfOutputPoints() const
+bool WhileStepper::IsEndFixed() const
 {
-    return mValues.size();
+    return false;
 }
 
 
-bool VectorStepper::IsEndFixed() const
-{
-    return true;
-}
-
-
-void VectorStepper::Reset()
+void WhileStepper::Reset()
 {
     mCurrentStep = 0;
-    SetCurrentOutputPoint(mValues.front());
+    SetCurrentOutputPoint(0.0);
 }
 
 
-double VectorStepper::Step()
+double WhileStepper::Step()
 {
     ++mCurrentStep;
-    SetCurrentOutputPoint(mCurrentStep < mValues.size() ? mValues[mCurrentStep] : DOUBLE_UNSET);
+    SetCurrentOutputPoint(mCurrentStep);
+    // Test if the condition now holds
+    AbstractValuePtr p_result = (*mpStoppingCondition)(*mpEnvironment);
+    PROTO_ASSERT(p_result->IsDouble(), "A while loop stopping condition must evaluate to a number.");
+    if (!GET_SIMPLE_VALUE(p_result))
+    {
+        mNumberOfOutputPoints = mCurrentStep;
+    }
+    else if (mCurrentStep == mNumberOfOutputPoints)
+    {
+        mNumberOfOutputPoints += 1000u;
+    }
     return GetCurrentOutputPoint();
 }

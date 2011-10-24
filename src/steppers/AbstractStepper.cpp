@@ -46,7 +46,7 @@ AbstractStepper::~AbstractStepper()
 }
 
 
-bool AbstractStepper::AtEnd() const
+bool AbstractStepper::AtEnd()
 {
     return GetCurrentOutputNumber() == GetNumberOfOutputPoints();
 }

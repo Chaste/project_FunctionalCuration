@@ -288,7 +288,7 @@ void NdArray<DATA>::Resize(const Extents& rExtents)
     {
         num_shared_elts *= min_extents[i];
     }
-    // Create a new array to put the shared data in, then swap internal pointers
+    // Create a new array to put the shared data in, then swap contents of internal pointers
     NdArray<DATA> new_array(rExtents);
     Indices old_idxs = GetIndices();
     Indices new_idxs = new_array.GetIndices();
@@ -299,7 +299,9 @@ void NdArray<DATA>::Resize(const Extents& rExtents)
         IncrementIndices(new_idxs, min_extents);
     }
     // ... the swap
-    std::swap(mpInternalData, new_array.mpInternalData);
+    delete[] mpInternalData->mpData;
+    (*mpInternalData) = (*new_array.mpInternalData);
+    new_array.mpInternalData->mpData = NULL;
 }
 
 

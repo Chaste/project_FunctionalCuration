@@ -48,6 +48,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractStepper.hpp"
 #include "UniformStepper.hpp"
 #include "VectorStepper.hpp"
+#include "WhileStepper.hpp"
 
 #include <xercesc/dom/DOM.hpp>
 #include <xsd/cxx/xml/sax/bits/error-handler-proxy.hxx>
@@ -698,6 +699,15 @@ public:
                 }
             }
             p_stepper.reset(new VectorStepper(name, units, values));
+        }
+        else if (stepper_type == "whileStepper")
+        {
+            std::vector<DOMElement*> children = XmlTools::GetChildElements(pDefnElt);
+            PROTO_ASSERT(children.size() == 1, "A while stepper must contain a single condition.");
+            std::vector<DOMElement*> cond = XmlTools::GetChildElements(children.front());
+            PROTO_ASSERT(cond.size() == 1, "A while stepper must contain a single condition.");
+            AbstractExpressionPtr p_condition = ParseExpression(cond.front());
+            p_stepper.reset(new WhileStepper(name, units, p_condition));
         }
         else
         {

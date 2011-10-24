@@ -203,7 +203,7 @@ public:
     void TestWhileLoop() throw (Exception)
     {
         // While i<10
-        const unsigned N=10;
+        unsigned N = 10;
         std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(N));
         DEFINE(cond, make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper, ("i", "number", cond));
@@ -225,6 +225,36 @@ public:
         }
         TS_ASSERT(p_stepper->AtEnd());
         TS_ASSERT_EQUALS(N, p_stepper->GetNumberOfOutputPoints());
+
+        // While i<2000 - test extending the range
+        N = 2000;
+        args = EXPR_LIST(LOOKUP("i2"))(CONST(N));
+        DEFINE(cond2, make_shared<MathmlLt>(args));
+        MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper2, ("i2", "number", cond2));
+        p_stepper2->SetEnvironment(env);
+        p_stepper2->Initialise();
+        TS_ASSERT(!p_stepper2->IsEndFixed());
+        TS_ASSERT_LESS_THAN(p_stepper2->GetNumberOfOutputPoints(), N);
+        TS_ASSERT_EQUALS(p_stepper2->GetCurrentOutputNumber(), 0u);
+        TS_ASSERT_EQUALS(p_stepper2->GetCurrentOutputPoint(), 0.0);
+
+        for (unsigned i=0; i<N; i++)
+        {
+            TS_ASSERT(!p_stepper2->AtEnd());
+            TS_ASSERT_EQUALS(p_stepper2->GetCurrentOutputPoint(), i);
+            TS_ASSERT_EQUALS(p_stepper2->Step(), i+1);
+        }
+        TS_ASSERT(p_stepper2->AtEnd());
+        TS_ASSERT_EQUALS(N, p_stepper2->GetNumberOfOutputPoints());
+
+        // While i<0 - empty loop is not allowed
+        N = 0;
+        args = EXPR_LIST(LOOKUP("i3"))(CONST(N));
+        DEFINE(cond3, make_shared<MathmlLt>(args));
+        MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper3, ("i3", "number", cond3));
+        p_stepper3->SetEnvironment(env);
+        p_stepper3->Initialise();
+        TS_ASSERT_THROWS_CONTAINS(p_stepper3->AtEnd(), "A while loop condition must hold initially.");
     }
 
 };

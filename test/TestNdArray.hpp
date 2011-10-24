@@ -208,7 +208,9 @@ public:
         // PostProcFind uses a resize operation
         Array::Extents changed_extents = boost::assign::list_of(3)(3)(3); // Was 3x4x2
         Array::Extents min_extents = boost::assign::list_of(3)(3)(2);
+        Array copy_alias = copy; // Check any aliases are also resized
         copy.Resize(changed_extents);
+        TS_ASSERT_EQUALS(copy.GetShape(), copy_alias.GetShape());
         indices = arr.GetIndices();
         for (Index i=0; i<num_elements; ++i)
         {
@@ -224,6 +226,7 @@ public:
             if (shared)
             {
                 TS_ASSERT_EQUALS(arr[indices], copy[indices]);
+                TS_ASSERT_EQUALS(arr[indices], copy_alias[indices]);
             } // non-shared entries are unspecified
             arr.IncrementIndices(indices);
         }

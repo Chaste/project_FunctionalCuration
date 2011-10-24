@@ -81,6 +81,14 @@ public:
     virtual void AddOutputData(const std::vector<boost::shared_ptr<AbstractStepper> >& rSteppers)=0;
 
     /**
+     * If this just-completed simulation is controlled by a while loop, then we might need to
+     * shrink any outputs to the final extent of the loop.
+     *
+     * @param pSimulation  the outermost simulation which has just finished
+     */
+    void SetFinalOutputSizes(boost::shared_ptr<AbstractSimulation> pSimulation);
+
+    /**
      * Write protocol outputs to a collection of files.
      *
      * Each output will be written to a separate file, the name of which

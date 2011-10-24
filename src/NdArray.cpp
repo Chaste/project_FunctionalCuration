@@ -206,31 +206,34 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
         const Range& r = rRanges[dim];
         steps.push_back(r.mStep);
         RangeIndex begin = r.mBegin;
+        if (begin == Range::END)
+        {
+            if (r.mStep < 0) begin = mpInternalData->mExtents[dim];
+            else begin = 0u;
+        }
+        else if (begin < 0)
+        {
+            begin = mpInternalData->mExtents[dim] + begin;
+            ASSERT_MSG(begin >= 0, "Cannot begin a range at a negative index; got "
+                       << begin << " even after subtracting from dimension " << dim << " size"
+                       << mpInternalData->mExtents[dim] << ".");
+        }
+        RangeIndex end = r.mEnd;
+        if (end == Range::END)
+        {
+            if (r.mStep < 0) end = 0u;
+            else end = mpInternalData->mExtents[dim];
+        }
+        else if (end < 0)
+        {
+            end = mpInternalData->mExtents[dim] + end;
+            ASSERT_MSG(end >= 0, "Cannot end a range at a negative index; got "
+                       << end << " even after subtracting from dimension " << dim << " size"
+                       << mpInternalData->mExtents[dim] << ".");
+        }
+
         if (r.mStep != 0) // Not a degenerate range
         {
-            RangeIndex end = r.mEnd;
-            if (end == Range::END)
-            {
-                if (r.mStep < 0) end = 0u;
-                else end = mpInternalData->mExtents[dim];
-            }
-            else if (end < 0)
-            {
-                end = mpInternalData->mExtents[dim] + end;
-                assert(end >= 0);
-            }
-            if (begin == Range::END)
-            {
-                if (r.mStep < 0) begin = mpInternalData->mExtents[dim];
-                else begin = 0u;
-            }
-            else if (begin < 0)
-            {
-                begin = mpInternalData->mExtents[dim] + begin;
-                ASSERT_MSG(begin >= 0, "Cannot begin a range at a negative index; got "
-                           << begin << " even after subtracting from dimension " << dim << " size"
-                           << mpInternalData->mExtents[dim] << ".");
-            }
             ASSERT_MSG(begin != end, "Start and end of range for dimension " << dim
                        << " are equal but the step is not zero.");
             ASSERT_MSG(begin <= mpInternalData->mExtents[dim], "Range start " << begin << " for dimension "
@@ -249,18 +252,10 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
         else
         {
             // We'll always index at the given location in this dimension. Check it's valid.
-            begin = r.mBegin;
-            if (begin < 0)
-            {
-                begin = mpInternalData->mExtents[dim] + begin;
-                ASSERT_MSG(begin >= 0, "Cannot begin a range at a negative index; got " << begin
-                           << " even after subtracting from dimension " << dim << " size "
-                           << mpInternalData->mExtents[dim] << ".");
-            }
             ASSERT_MSG(begin < mpInternalData->mExtents[dim], "Index " << begin << " selected for dimension "
                        << dim << " is after the end (" << mpInternalData->mExtents[dim] << ") of the dimension.");
-            ASSERT_MSG(r.mEnd == r.mBegin, "When the step is zero the start and end of a range must be equal; "
-                       << r.mEnd << " != " << r.mBegin << " for dimension " << dim << ".");
+            ASSERT_MSG(end == begin, "When the step is zero the start and end of a range must be equal; "
+                       << end << " != " << begin << " for dimension " << dim << ".");
         }
         begins[dim] = begin;
     }

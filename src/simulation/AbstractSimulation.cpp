@@ -30,6 +30,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/foreach.hpp>
 
+#include "BacktraceException.hpp"
+
 AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
                                        boost::shared_ptr<AbstractStepper> pStepper,
                                        boost::shared_ptr<ModifierCollection> pModifiers,
@@ -44,6 +46,8 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInte
         // Create the stepper collection vector
         mpSteppers.reset(new std::vector<boost::shared_ptr<AbstractStepper> >);
     }
+    PROTO_ASSERT(mpSteppers->empty() || mpSteppers->front()->IsEndFixed(),
+                 "A while loop may only be the outermost loop for a simulation.");
     // Add our stepper to the front of the shared collection (innermost is last)
     mpSteppers->insert(mpSteppers->begin(), mpStepper);
     mpStepper->SetEnvironment(mEnvironment);
@@ -73,6 +77,13 @@ Environment& AbstractSimulation::rGetEnvironment()
 void AbstractSimulation::SetOutputsPrefix(const std::string& rPrefix)
 {
     mOutputsPrefix = rPrefix;
+    if (!mpStepper->IsEndFixed())
+    {
+        // Create an environment to contain views of the simulation outputs thus far, for
+        // use in the loop condition test if needed.
+        EnvironmentPtr p_view_env(new Environment(true/* allow overwrite */));
+        mEnvironment.SetDelegateeEnvironment(p_view_env, rPrefix);
+    }
 }
 
 

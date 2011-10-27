@@ -51,17 +51,18 @@ public:
                      boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
 
     /**
-     * Run a simulation, filling in the given outputs collection.
-     *
-     * @param rOutputs  will be filled with the simulation protocol outputs.
-     */
-    void Run(AbstractProtocolOutputs& rOutputs);
-
-    /**
      * Set method for #mpCell used by the initial parser implementation.
      * @param pCell  the cell model the protocol is being run on
      */
     virtual void SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
+
+protected:
+    /**
+     * Run a simulation, filling in the results.
+     *
+     * @param pResults  an Environment containing results arrays to fill in
+     */
+    void Run(EnvironmentPtr pResults);
 
 private:
     /** The simulation nested inside this one. */

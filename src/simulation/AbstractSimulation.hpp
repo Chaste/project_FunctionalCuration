@@ -36,7 +36,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractCardiacCellInterface.hpp"
 #include "AbstractStepper.hpp"
 #include "ModifierCollection.hpp"
-#include "AbstractProtocolOutputs.hpp"
 #include "Environment.hpp"
 #include "LocatableConstruct.hpp"
 
@@ -68,11 +67,23 @@ public:
     virtual ~AbstractSimulation();
 
     /**
-     * Run a simulation, filling in the given outputs collection.
-     *
-     * @param rOutputs  will be filled with the simulation outputs.
+     * Run a simulation, returning an Environment containing the results.  This is the method
+     * external callers should use to run an entire simulation.
      */
-    virtual void Run(AbstractProtocolOutputs& rOutputs) =0;
+    EnvironmentPtr Run();
+
+    /**
+     * Run a simulation, filling in the results if requested.
+     *
+     * This method must be provided by concrete subclasses.  If the supplied pointer is
+     * NULL then no results are being stored for this simulation, and the subclass should
+     * just run the simulation.  Otherwise, the supplied Environment will have arrays
+     * defined for each simulation output, but their contents will be undefined and must
+     * be filled in.
+     *
+     * @param pResults  an Environment containing results arrays to fill in, or an empty pointer
+     */
+    virtual void Run(EnvironmentPtr pResults)=0;
 
     /** Get method for #mpCell. */
     boost::shared_ptr<AbstractCardiacCellInterface> GetCell()
@@ -86,7 +97,7 @@ public:
         return mpSteppers;
     }
 
-    /** Get method for #mpSteppers used by AbstractProtocolOutputs. */
+    /** Get method for what #mpSteppers points to. */
     std::vector<boost::shared_ptr<AbstractStepper> >& rGetSteppers()
     {
         return *mpSteppers;
@@ -94,6 +105,9 @@ public:
 
     /**
      * Set method for #mpCell used by the initial parser implementation.
+     *
+     * \todo Store AbstractUntemplatedSystemWithOutputs instead?
+     *
      * @param pCell  the cell model the protocol is being run on
      */
     virtual void SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell)
@@ -118,6 +132,42 @@ public:
     std::string GetOutputsPrefix() const;
 
 protected:
+    /**
+     * Initialise a simulation results environment, creating all the output arrays
+     * defined from the model.
+     *
+     * @param pResults  the results Environment
+     */
+    void CreateOutputArrays(EnvironmentPtr pResults);
+
+    /**
+     * If this simulation is controlled by a while loop, then we might need to resize the
+     * output arrays whenever they exceed the current allocation, and shrink them to the
+     * final extent of the loop at the end of the simulation.
+     *
+     * @param pResults  the results Environment
+     */
+    void ResizeOutputs(EnvironmentPtr pResults);
+
+    /**
+     * Create a delegatee of our environment containing views of the simulation results
+     * thus far.
+     * Should only be called if this simulation is controlled by a while loop and has a
+     * results prefix.
+     *
+     * @param pResults  the Environment containing the full simulation results
+     */
+    void CreateResultViews(EnvironmentPtr pResults);
+
+    /**
+     * Add the model outputs at the current simulation step to the results environment.
+     * This method will exit early if we're not storing results for the current
+     * simulation - there's no need to test before calling.
+     *
+     * @param pResults  the results Environment
+     */
+    void AddOutputData(EnvironmentPtr pResults);
+
     /**
      * The cell model the protocol is being run on.
      */
@@ -144,6 +194,15 @@ protected:
     Environment mEnvironment;
 
 private:
+    /**
+     * Add model outputs for the current simulation step.  Called by AddOutputData
+     * to do the actual work.
+     *
+     * @param pResults  the results Environment
+     */
+    template<typename VECTOR>
+    void AddOutputDataTemplated(EnvironmentPtr pResults);
+
     /** The namespace prefix to use for outputs from this simulation. */
     std::string mOutputsPrefix;
 };

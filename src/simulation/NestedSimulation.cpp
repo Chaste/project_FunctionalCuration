@@ -39,7 +39,7 @@ NestedSimulation::NestedSimulation(boost::shared_ptr<AbstractSimulation> pNested
 }
 
 
-void NestedSimulation::Run(AbstractProtocolOutputs& rOutputs)
+void NestedSimulation::Run(EnvironmentPtr pResults)
 {
     for (mpStepper->Reset(); !mpStepper->AtEnd(); mpStepper->Step())
     {
@@ -52,7 +52,7 @@ void NestedSimulation::Run(AbstractProtocolOutputs& rOutputs)
             (*mpModifiers)(mpCell, mpStepper);
         }
         // Run the nested simulation, which will add any outputs produced
-        mpNestedSimulation->Run(rOutputs);
+        mpNestedSimulation->Run(pResults);
     }
     if (mpModifiers)
     {

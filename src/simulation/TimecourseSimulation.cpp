@@ -37,7 +37,7 @@ TimecourseSimulation::TimecourseSimulation(boost::shared_ptr<AbstractCardiacCell
 }
 
 
-void TimecourseSimulation::Run(AbstractProtocolOutputs& rOutputs)
+void TimecourseSimulation::Run(EnvironmentPtr pResults)
 {
     // Loop over time
     for (mpStepper->Reset(); !mpStepper->AtEnd(); /* step done in loop body */)
@@ -48,7 +48,7 @@ void TimecourseSimulation::Run(AbstractProtocolOutputs& rOutputs)
             (*mpModifiers)(mpCell, mpStepper);
         }
         // Compute outputs here, so we get the initial state
-        rOutputs.AddOutputData(rGetSteppers());
+        AddOutputData(pResults);
         // Simulate until the next output point, if there is one
         const double curr_time = mpStepper->GetCurrentOutputPoint();
         const double next_time = mpStepper->Step();

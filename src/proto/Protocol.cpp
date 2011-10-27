@@ -37,15 +37,11 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include "Exception.hpp"
 #include "Warnings.hpp"
-#include "VectorHelperFunctions.hpp"
 
 #include "ProtoHelperMacros.hpp"
 #include "ModelWrapperEnvironment.hpp"
 #include "VectorStreaming.hpp"
 #include "BacktraceException.hpp"
-#include "View.hpp"
-#include "NameLookup.hpp"
-#include "TupleExpression.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
 typedef std::pair<std::string, std::string> StringPair;
@@ -83,11 +79,20 @@ void AbstractProtocol::Run()
         mSimulationNumber = 0u;
         BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
         {
-            std::cout << "Running simulation " << mSimulationNumber << "..." << std::endl;
+            const std::string prefix = p_sim->GetOutputsPrefix();
+            std::cout << "Running simulation " << mSimulationNumber << " " << prefix << "..." << std::endl;
             p_sim->rGetEnvironment().SetDelegateeEnvironment(mLibrary.GetAsDelegatee());
             p_sim->InitialiseSteppers();
-            p_sim->Run(*this);
-            SetFinalOutputSizes(p_sim);
+            EnvironmentPtr p_results = p_sim->Run();
+            if (!prefix.empty())
+            {
+                // Store the outputs
+                assert(p_results);
+                PROTO_ASSERT2(!mOutputs[prefix],
+                              "The simulation prefix " << prefix << " has been used for multiple simulations.",
+                              p_sim->GetLocationInfo());
+                mOutputs[prefix] = p_results;
+            }
             mSimulationNumber++;
         }
     }
@@ -404,32 +409,6 @@ void AbstractProtocol::SetDefaultPlots(const std::vector<boost::shared_ptr<PlotS
 }
 
 
-void AbstractProtocol::SetFinalOutputSizes(boost::shared_ptr<AbstractSimulation> pSimulation)
-{
-    assert(mSimulationNumber < mSimulations.size());
-    const std::string prefix = mSimulations[mSimulationNumber]->GetOutputsPrefix();
-    if (prefix.empty())
-    {
-        // We're not storing outputs from this simulation
-        return;
-    }
-    boost::shared_ptr<AbstractStepper> p_stepper = mSimulations[mSimulationNumber]->rGetSteppers().front();
-    if (p_stepper->IsEndFixed())
-    {
-        // No need to resize
-        return;
-    }
-    EnvironmentPtr& p_outputs = mOutputs[prefix];
-    std::vector<std::string> output_names = p_outputs->GetDefinedNames();
-    BOOST_FOREACH(const std::string& r_name, output_names)
-    {
-        NdArray<double> array = GET_ARRAY(p_outputs->Lookup(r_name, "Output sizing"));
-        NdArray<double>::Extents shape = array.GetShape();
-        shape[0] = p_stepper->GetNumberOfOutputPoints();
-        array.Resize(shape);
-    }
-}
-
 /*
  *
  * Templated concrete class implementation.
@@ -480,160 +459,6 @@ void Protocol<VECTOR>::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> 
     for (unsigned simulation=0; simulation<mSimulations.size(); ++simulation)
     {
         mSimulations[simulation]->SetCell(pModel);
-    }
-}
-
-
-template<typename VECTOR>
-void Protocol<VECTOR>::AddOutputData(const std::vector<boost::shared_ptr<AbstractStepper> >& rSteppers)
-{
-    assert(mpModel);
-    assert(mSimulationNumber < mSimulations.size());
-    assert(!rSteppers.empty());
-
-    const std::string prefix = mSimulations[mSimulationNumber]->GetOutputsPrefix();
-    if (prefix.empty())
-    {
-        // We're not storing outputs from this simulation
-        return;
-    }
-
-    const unsigned nesting_depth = rSteppers.size();
-    const bool is_while_loop = !rSteppers[0]->IsEndFixed();
-    const std::vector<std::string> output_names = mpModel->GetOutputNames();
-    const unsigned num_outputs = output_names.size();
-    const std::vector<std::string>& r_vector_output_names = mpModel->rGetVectorOutputNames();
-    const unsigned num_vector_outputs = r_vector_output_names.size();
-    EnvironmentPtr& p_outputs = mOutputs[prefix];
-
-    if (!p_outputs)
-    {
-        // Create the output arrays for this simulation, now we know the stepper (initial) sizes
-        p_outputs.reset(new Environment);
-        // Figure out the shape of output arrays from the steppers
-        NdArray<double>::Extents outputs_shape(nesting_depth);
-        for (unsigned dim=0; dim<nesting_depth; ++dim)
-        {
-            outputs_shape[dim] = rSteppers[dim]->GetNumberOfOutputPoints();
-            PROTO_ASSERT2(dim == 0 || rSteppers[dim]->IsEndFixed(),
-                          "A while loop must be the outermost loop in a simulation.",
-                          rSteppers[dim]->GetLocationInfo());
-        }
-
-        // Create output arrays
-        const std::vector<std::string> output_units = mpModel->GetOutputUnits();
-        for (unsigned i=0; i<num_outputs; ++i)
-        {
-            NdArray<double> array(outputs_shape);
-            AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
-            p_value->SetUnits(output_units[i]);
-            p_outputs->DefineName(output_names[i], p_value, "Protocol setup");
-        }
-
-        // Create arrays for vector outputs
-        const std::vector<unsigned> vector_output_lengths = mpModel->GetVectorOutputLengths();
-        for (unsigned i=0; i<num_vector_outputs; ++i)
-        {
-            NdArray<double>::Extents shape(outputs_shape);
-            shape.push_back(vector_output_lengths[i]);
-            NdArray<double> array(shape);
-            AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
-            p_outputs->DefineName(r_vector_output_names[i], p_value, "Protocol setup");
-        }
-    }
-    assert(mOutputs[prefix]);
-
-    // Figure out which part of the output arrays to fill
-    NdArray<double>::Indices indices(nesting_depth);
-    bool about_to_outer_loop = true;
-    for (unsigned dim=0; dim<nesting_depth; ++dim)
-    {
-        indices[dim] = rSteppers[dim]->GetCurrentOutputNumber();
-        if (dim > 0 && indices[dim] < rSteppers[dim]->GetNumberOfOutputPoints())
-        {
-            about_to_outer_loop = false;
-        }
-    }
-
-    // Fill in outputs
-    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(mpModel);
-    assert(p_system);
-    const double time = rSteppers.back()->GetCurrentOutputPoint();
-    VECTOR outputs = mpModel->ComputeOutputs(time, p_system->rGetStateVariables());
-    assert(GetVectorSize(outputs) == num_outputs);
-    for (unsigned i=0; i<num_outputs; ++i)
-    {
-        NdArray<double> array = GET_ARRAY(p_outputs->Lookup(output_names[i], "Data entry"));
-        // Resize if a while loop has gone beyond the current allocation
-        if (is_while_loop && indices[0] >= array.GetShape()[0])
-        {
-            NdArray<double>::Extents shape = array.GetShape();
-            shape[0] = rSteppers[0]->GetNumberOfOutputPoints();
-            array.Resize(shape);
-        }
-        // Assign value
-        array[indices] = GetVectorComponent(outputs, i);
-    }
-    DeleteVector(outputs);
-
-    // Fill in vector outputs
-    std::vector<VECTOR> vector_outputs = mpModel->ComputeVectorOutputs(time, p_system->rGetStateVariables());
-    assert(vector_outputs.size() == num_vector_outputs);
-    for (unsigned i=0; i<num_vector_outputs; ++i)
-    {
-        NdArray<double>::Indices our_indices(indices);
-        our_indices.push_back(0u);
-        NdArray<double> array = GET_ARRAY(p_outputs->Lookup(r_vector_output_names[i], "Data entry"));
-        // Resize if a while loop has gone beyond the current allocation
-        if (is_while_loop && indices[0] >= array.GetShape()[0])
-        {
-            NdArray<double>::Extents shape = array.GetShape();
-            shape[0] = rSteppers[0]->GetNumberOfOutputPoints();
-            array.Resize(shape);
-        }
-        // Fill in the vector
-        const unsigned vector_length = GetVectorSize(vector_outputs[i]);
-        assert(vector_length == array.GetShape().back());
-        for (unsigned j=0; j<vector_length; ++j)
-        {
-            array[our_indices] = GetVectorComponent(vector_outputs[i], j);
-            our_indices.back()++;
-        }
-    }
-
-    if (about_to_outer_loop && is_while_loop)
-    {
-        // (Re-)evaluate the views of the simulation outputs
-        EnvironmentPtr p_view_env = boost::const_pointer_cast<Environment>(mSimulations[mSimulationNumber]->rGetEnvironment().GetDelegateeEnvironment(prefix));
-        DEFINE_TUPLE(dim_default, EXPR_LIST(NULL_EXPR)(NULL_EXPR)(CONST(1))(NULL_EXPR));
-        DEFINE_TUPLE(dim0, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(indices[0]+1)));
-        std::vector<AbstractExpressionPtr> view_args = boost::assign::list_of(dim0)(dim_default);
-        BOOST_FOREACH(const std::string& r_name, output_names)
-        {
-            DEFINE(view, boost::make_shared<View>(LOOKUP(r_name), view_args));
-            if (indices[0] == 0)
-            {
-                p_view_env->DefineName(r_name, (*view)(*p_outputs), rSteppers[0]->GetLocationInfo());
-            }
-            else
-            {
-                p_view_env->OverwriteDefinition(r_name, (*view)(*p_outputs), rSteppers[0]->GetLocationInfo());
-            }
-        }
-        DEFINE_TUPLE(dim1, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(indices[0]+1)));
-        view_args = boost::assign::list_of(dim1)(dim_default);
-        BOOST_FOREACH(const std::string& r_name, r_vector_output_names)
-        {
-            DEFINE(view, boost::make_shared<View>(LOOKUP(r_name), view_args));
-            if (indices[0] == 0)
-            {
-                p_view_env->DefineName(r_name, (*view)(*p_outputs), rSteppers[0]->GetLocationInfo());
-            }
-            else
-            {
-                p_view_env->OverwriteDefinition(r_name, (*view)(*p_outputs), rSteppers[0]->GetLocationInfo());
-            }
-        }
     }
 }
 

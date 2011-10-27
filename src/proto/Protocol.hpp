@@ -32,8 +32,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
-#include "AbstractProtocolOutputs.hpp"
 #include "AbstractSystemWithOutputs.hpp"
 #include "AbstractStatement.hpp"
 #include "Environment.hpp"
@@ -51,13 +51,17 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
  * It defines the interface, but omits part of the implementation - that is delegated to a derived class
  * templated over the underlying model state vector type.
  */
-class AbstractProtocol : public AbstractProtocolOutputs
+class AbstractProtocol : boost::noncopyable
 {
 public:
     /**
      * Default constructor.
      */
     AbstractProtocol();
+
+    /** Virtual destructor. */
+    virtual ~AbstractProtocol()
+    {}
 
     /**
      * Set the model being simulated by this protocol.
@@ -71,22 +75,6 @@ public:
      * Run this protocol.
      */
     void Run();
-
-    /**
-     * Add some output data from the model being simulated.
-     *
-     * @param rSteppers  the steppers controlling the simulation, from which
-     *   we can determine which portion of the output to fill
-     */
-    virtual void AddOutputData(const std::vector<boost::shared_ptr<AbstractStepper> >& rSteppers)=0;
-
-    /**
-     * If this just-completed simulation is controlled by a while loop, then we might need to
-     * shrink any outputs to the final extent of the loop.
-     *
-     * @param pSimulation  the outermost simulation which has just finished
-     */
-    void SetFinalOutputSizes(boost::shared_ptr<AbstractSimulation> pSimulation);
 
     /**
      * Write protocol outputs to a collection of files.
@@ -262,14 +250,6 @@ public:
      * @param pModel  the model being simulated
      */
     void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
-
-    /**
-     * Add some output data from the model being simulated.
-     *
-     * @param rSteppers  the steppers controlling the simulation, from which
-     *   we can determine which portion of the output to fill
-     */
-    void AddOutputData(const std::vector<boost::shared_ptr<AbstractStepper> >& rSteppers);
 
     /** Get the model being simulated in this protocol. */
     boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel();

@@ -39,7 +39,7 @@ class TimecourseSimulation : public AbstractSimulation
 public:
     /**
      * Constructor.
-     * 
+     *
      * @param pCell  the cell model the protocol is being run on
      * @param pStepper  controls the iteration around this simulation's loop
      * @param pModifiers  details any modifications to be made to the cell or
@@ -48,13 +48,14 @@ public:
     TimecourseSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
                          boost::shared_ptr<AbstractStepper> pStepper,
                          boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
-    
+
+protected:
     /**
-     * Run a simulation, filling in the given outputs collection.
-     * 
-     * @param rOutputs  will be filled with the simulation protocol outputs.
+     * Run a simulation, filling in the results.
+     *
+     * @param pResults  an Environment containing results arrays to fill in
      */
-    void Run(AbstractProtocolOutputs& rOutputs);
+    void Run(EnvironmentPtr pResults);
 };
 
 #endif /*TIMECOURSESIMULATION_HPP_*/

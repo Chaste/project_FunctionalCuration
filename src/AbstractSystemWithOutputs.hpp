@@ -32,32 +32,17 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 /**
- * An additional base class for cells that have outputs specified via a protocol.
- *
- * The template parameter is the type used by the cell for vectors of real numbers.
- * It will be either std::vector<double> (for AbstractCardiacCell subclasses) or
- * N_Vector (for AbstractCvodeCell subclasses).
+ * Base class for AbstractSystemWithOutputs which contains all the data and functionality
+ * that doesn't depend on the underlying vector type.  In particular, this class allows
+ * querying what outputs are available, but not actually computing them.
  */
-template<typename VECTOR>
-class AbstractSystemWithOutputs
+class AbstractUntemplatedSystemWithOutputs
 {
 public:
     /**
      * Get the number of system outputs.
      */
     unsigned GetNumberOfOutputs() const;
-
-    /**
-     * Compute the system outputs from the given system state.
-     * Uses the current values for the parameters.
-     *
-     * \todo  Is using current param values safe for all protocols?  Will need to watch out for this.
-     *
-     * @param time  the time at which to compute the outputs
-     * @param rState  values for the state variables
-     */
-    VECTOR ComputeOutputs(double time,
-                          const VECTOR& rState);
 
     /**
      * Get the vector of output names.
@@ -75,15 +60,6 @@ public:
      * @param rName  the name of an output.
      */
     unsigned GetOutputIndex(const std::string& rName) const;
-
-    /**
-     * Compute the system outputs which are vectors of variables from the given system state.
-     * Uses the current values for the parameters.
-     *
-     * @param time  the time at which to compute the outputs
-     * @param rState  values for the state variables
-     */
-    std::vector<VECTOR> ComputeVectorOutputs(double time, const VECTOR& rState);
 
     /**
      * Get the names of system outputs which are vectors of variables.  Currently these names
@@ -108,7 +84,7 @@ public:
     };
 
     /** Virtual destructor to force this class to be polymorphic. */
-    virtual ~AbstractSystemWithOutputs();
+    virtual ~AbstractUntemplatedSystemWithOutputs();
 
 protected:
     /**
@@ -127,6 +103,39 @@ protected:
 
     /** Names of system outputs that are vectors of variables. */
     std::vector<std::string> mVectorOutputNames;
+};
+
+/**
+ * An additional base class for cells that have outputs specified via a protocol.
+ *
+ * The template parameter is the type used by the cell for vectors of real numbers.
+ * It will be either std::vector<double> (for AbstractCardiacCell subclasses) or
+ * N_Vector (for AbstractCvodeCell subclasses).
+ */
+template<typename VECTOR>
+class AbstractSystemWithOutputs : public AbstractUntemplatedSystemWithOutputs
+{
+public:
+    /**
+     * Compute the system outputs from the given system state.
+     * Uses the current values for the parameters.
+     *
+     * \todo  Is using current param values safe for all protocols?  Will need to watch out for this.
+     *
+     * @param time  the time at which to compute the outputs
+     * @param rState  values for the state variables
+     */
+    VECTOR ComputeOutputs(double time,
+                          const VECTOR& rState);
+
+    /**
+     * Compute the system outputs which are vectors of variables from the given system state.
+     * Uses the current values for the parameters.
+     *
+     * @param time  the time at which to compute the outputs
+     * @param rState  values for the state variables
+     */
+    std::vector<VECTOR> ComputeVectorOutputs(double time, const VECTOR& rState);
 };
 
 #endif /*ABSTRACTSYSTEMWITHOUTPUTS_HPP_*/

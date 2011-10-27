@@ -39,6 +39,151 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 
+unsigned AbstractUntemplatedSystemWithOutputs::GetNumberOfOutputs() const
+{
+    return mOutputsInfo.size();
+}
+
+
+std::vector<unsigned> AbstractUntemplatedSystemWithOutputs::GetVectorOutputLengths() const
+{
+    std::vector<unsigned> lengths(mVectorOutputsInfo.size());
+    for (unsigned i=0; i<lengths.size(); ++i)
+    {
+        lengths[i] = mVectorOutputsInfo[i].size();
+    }
+    return lengths;
+}
+
+
+const std::vector<std::string>& AbstractUntemplatedSystemWithOutputs::rGetVectorOutputNames() const
+{
+    return mVectorOutputNames;
+}
+
+
+std::vector<std::string> AbstractUntemplatedSystemWithOutputs::GetOutputNames() const
+{
+    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
+    assert(p_this);
+
+    std::vector<std::string> names;
+    names.reserve(GetNumberOfOutputs());
+    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
+    {
+        switch (mOutputsInfo[i].second)
+        {
+        case FREE:
+            // Special-case for the free variable, assuming it is time
+            names.push_back("time");
+            break;
+        case STATE:
+            names.push_back(p_this->rGetStateVariableNames()[mOutputsInfo[i].first]);
+            break;
+        case PARAMETER:
+            names.push_back(p_this->rGetParameterNames()[mOutputsInfo[i].first]);
+            break;
+        case DERIVED:
+            names.push_back(p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first]);
+            break;
+        }
+    }
+    return names;
+}
+
+
+std::vector<std::string> AbstractUntemplatedSystemWithOutputs::GetOutputUnits() const
+{
+    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
+
+    std::vector<std::string> units;
+    units.reserve(GetNumberOfOutputs());
+    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
+    {
+        switch (mOutputsInfo[i].second)
+        {
+        case FREE:
+            // Special-case for the free variable, assuming it is time (which is always ms in Chaste)
+            units.push_back("milliseconds");
+            break;
+        case STATE:
+            units.push_back(p_this->rGetStateVariableUnits()[mOutputsInfo[i].first]);
+            break;
+        case PARAMETER:
+            units.push_back(p_this->rGetParameterUnits()[mOutputsInfo[i].first]);
+            break;
+        case DERIVED:
+            units.push_back(p_this->rGetDerivedQuantityUnits()[mOutputsInfo[i].first]);
+            break;
+        }
+    }
+    return units;
+}
+
+
+unsigned AbstractUntemplatedSystemWithOutputs::GetOutputIndex(const std::string& rName) const
+{
+    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
+
+    unsigned index = UNSIGNED_UNSET;
+
+    // Check each output in turn
+    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
+    {
+        switch (mOutputsInfo[i].second)
+        {
+        case FREE:
+            // Special-case for the free variable.  There's probably a better way to do this, as the model might call it something else...
+            if (rName == "time")
+            {
+                index = i;
+            }
+            break;
+        case STATE:
+            if (p_this->rGetStateVariableNames()[mOutputsInfo[i].first] == rName)
+            {
+                index = i;
+            }
+            break;
+        case PARAMETER:
+            if (p_this->rGetParameterNames()[mOutputsInfo[i].first] == rName)
+            {
+                index = i;
+            }
+            break;
+        case DERIVED:
+            if (p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first] == rName)
+            {
+                index = i;
+            }
+            break;
+        }
+        if (index != UNSIGNED_UNSET)
+        {
+            break; // Found it, so stop searching
+        }
+    }
+
+    if (index == UNSIGNED_UNSET)
+    {
+        EXCEPTION("No output named '" + rName + "'.");
+    }
+    return index;
+}
+
+
+AbstractUntemplatedSystemWithOutputs::~AbstractUntemplatedSystemWithOutputs()
+{
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// The templated sub-class with compute methods, and helper functions
+//
+//////////////////////////////////////////////////////////////////////
+
+
 /**
  * Helper function to create a new vector with given size.  All entries
  * will be initialised to zero.
@@ -82,14 +227,6 @@ inline void CreateNewVector(N_Vector& rVec, unsigned size)
 }
 #endif // CHASTE_CVODE
 
-
-
-
-template<typename VECTOR>
-unsigned AbstractSystemWithOutputs<VECTOR>::GetNumberOfOutputs() const
-{
-    return mOutputsInfo.size();
-}
 
 template<typename VECTOR>
 VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
@@ -188,145 +325,6 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(doub
 
     return outputs;
 }
-
-
-template<typename VECTOR>
-std::vector<unsigned> AbstractSystemWithOutputs<VECTOR>::GetVectorOutputLengths() const
-{
-    std::vector<unsigned> lengths(mVectorOutputsInfo.size());
-    for (unsigned i=0; i<lengths.size(); ++i)
-    {
-        lengths[i] = mVectorOutputsInfo[i].size();
-    }
-    return lengths;
-}
-
-
-template<typename VECTOR>
-const std::vector<std::string>& AbstractSystemWithOutputs<VECTOR>::rGetVectorOutputNames() const
-{
-    return mVectorOutputNames;
-}
-
-
-template<typename VECTOR>
-std::vector<std::string> AbstractSystemWithOutputs<VECTOR>::GetOutputNames() const
-{
-    const AbstractParameterisedSystem<VECTOR> * const p_this = dynamic_cast<const AbstractParameterisedSystem<VECTOR> * const>(this);
-    assert(p_this);
-
-    std::vector<std::string> names;
-    names.reserve(GetNumberOfOutputs());
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
-    {
-        switch (mOutputsInfo[i].second)
-        {
-        case FREE:
-            // Special-case for the free variable, assuming it is time
-            names.push_back("time");
-            break;
-        case STATE:
-            names.push_back(p_this->rGetStateVariableNames()[mOutputsInfo[i].first]);
-            break;
-        case PARAMETER:
-            names.push_back(p_this->rGetParameterNames()[mOutputsInfo[i].first]);
-            break;
-        case DERIVED:
-            names.push_back(p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first]);
-            break;
-        }
-    }
-    return names;
-}
-
-
-template<typename VECTOR>
-std::vector<std::string> AbstractSystemWithOutputs<VECTOR>::GetOutputUnits() const
-{
-    const AbstractParameterisedSystem<VECTOR> * const p_this = dynamic_cast<const AbstractParameterisedSystem<VECTOR> * const>(this);
-
-    std::vector<std::string> units;
-    units.reserve(GetNumberOfOutputs());
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
-    {
-        switch (mOutputsInfo[i].second)
-        {
-        case FREE:
-            // Special-case for the free variable, assuming it is time (which is always ms in Chaste)
-            units.push_back("milliseconds");
-            break;
-        case STATE:
-            units.push_back(p_this->rGetStateVariableUnits()[mOutputsInfo[i].first]);
-            break;
-        case PARAMETER:
-            units.push_back(p_this->rGetParameterUnits()[mOutputsInfo[i].first]);
-            break;
-        case DERIVED:
-            units.push_back(p_this->rGetDerivedQuantityUnits()[mOutputsInfo[i].first]);
-            break;
-        }
-    }
-    return units;
-}
-
-
-template<typename VECTOR>
-unsigned AbstractSystemWithOutputs<VECTOR>::GetOutputIndex(const std::string& rName) const
-{
-    const AbstractParameterisedSystem<VECTOR> * const p_this = dynamic_cast<const AbstractParameterisedSystem<VECTOR> * const>(this);
-
-    unsigned index = UNSIGNED_UNSET;
-
-    // Check each output in turn
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
-    {
-        switch (mOutputsInfo[i].second)
-        {
-        case FREE:
-            // Special-case for the free variable.  There's probably a better way to do this, as the model might call it something else...
-            if (rName == "time")
-            {
-                index = i;
-            }
-            break;
-        case STATE:
-            if (p_this->rGetStateVariableNames()[mOutputsInfo[i].first] == rName)
-            {
-                index = i;
-            }
-            break;
-        case PARAMETER:
-            if (p_this->rGetParameterNames()[mOutputsInfo[i].first] == rName)
-            {
-                index = i;
-            }
-            break;
-        case DERIVED:
-            if (p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first] == rName)
-            {
-                index = i;
-            }
-            break;
-        }
-        if (index != UNSIGNED_UNSET)
-        {
-            break; // Found it, so stop searching
-        }
-    }
-
-    if (index == UNSIGNED_UNSET)
-    {
-        EXCEPTION("No output named '" + rName + "'.");
-    }
-    return index;
-}
-
-
-template<typename VECTOR>
-AbstractSystemWithOutputs<VECTOR>::~AbstractSystemWithOutputs()
-{
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Explicit instantiation

@@ -48,28 +48,18 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This class encapsulates a complete protocol description, at least as far as the C++ code is concerned.
- * It defines the interface, but omits part of the implementation - that is delegated to a derived class
- * templated over the underlying model state vector type.
  */
-class AbstractProtocol : boost::noncopyable
+class Protocol : boost::noncopyable
 {
 public:
     /**
      * Default constructor.
      */
-    AbstractProtocol();
+    Protocol();
 
     /** Virtual destructor. */
-    virtual ~AbstractProtocol()
+    virtual ~Protocol()
     {}
-
-    /**
-     * Set the model being simulated by this protocol.
-     * This method then sets up empty arrays to store the direct model outputs.
-     *
-     * @param pModel  the model being simulated
-     */
-    virtual void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)=0;
 
     /**
      * Run this protocol.
@@ -187,9 +177,14 @@ public:
     boost::shared_ptr<ModelStateCollection> GetStateCollection();
 
     /**
-     * Get the model being simulated in this protocol.
+     * Set the model being simulated by this protocol.
+     *
+     * @param pModel  the model being simulated
      */
-    virtual boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel() =0;
+    void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
+
+    /** Get the model being simulated in this protocol. */
+    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel();
 
 protected:
     /** Which simulation is currently being run. */
@@ -231,45 +226,19 @@ protected:
 
     /** What plots to produce by default. */
     std::vector<boost::shared_ptr<PlotSpecification> > mPlotSpecifications;
-};
-
-/** Most users will access a protocol via this smart pointer type. */
-typedef boost::shared_ptr<AbstractProtocol> ProtocolPtr;
-
-/**
- * This class encapsulates a complete protocol description, at least as far as the C++ code is concerned.
- */
-template<typename VECTOR>
-class Protocol : public AbstractProtocol
-{
-public:
-    /**
-     * Set the model being simulated by this protocol.
-     * This method then sets up empty arrays to store the direct model outputs.
-     *
-     * @param pModel  the model being simulated
-     */
-    void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
-
-    /** Get the model being simulated in this protocol. */
-    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel();
-
-private:
-    /** Type of a raw pointer to a model with outputs. */
-    typedef AbstractSystemWithOutputs<VECTOR> RawModelPtr;
-
-    /** Type of a pointer to a model with outputs. */
-    typedef boost::shared_ptr<RawModelPtr> ModelPtr;
 
     /** The model being simulated by this protocol. */
-    ModelPtr mpModel;
+    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> mpModel;
 
     /**
      * Check that the supplied model does have outputs, and cast it.
      *
      * @param pModel  the model
      */
-    ModelPtr CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const;
+    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const;
 };
+
+/** Most users will access a protocol via this smart pointer type. */
+typedef boost::shared_ptr<Protocol> ProtocolPtr;
 
 #endif // PROTOCOL_HPP_

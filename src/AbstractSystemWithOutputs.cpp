@@ -28,10 +28,17 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include "AbstractSystemWithOutputs.hpp"
 
+#include <boost/foreach.hpp>
+
+#include "ModelWrapperEnvironment.hpp"
+#include "NullDeleter.hpp"
+
+#include "AbstractParameterisedSystem.hpp"
 #include "AbstractCardiacCell.hpp"
 #include "AbstractCvodeCell.hpp"
 #include "VectorHelperFunctions.hpp"
 #include "Exception.hpp"
+#include "Warnings.hpp"
 
 #ifdef CHASTE_CVODE
 // CVODE headers
@@ -169,6 +176,12 @@ unsigned AbstractUntemplatedSystemWithOutputs::GetOutputIndex(const std::string&
         EXCEPTION("No output named '" + rName + "'.");
     }
     return index;
+}
+
+
+const std::map<std::string, EnvironmentPtr>& AbstractUntemplatedSystemWithOutputs::rGetEnvironmentMap() const
+{
+    return mEnvironmentMap;
 }
 
 
@@ -324,6 +337,28 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(doub
     }
 
     return outputs;
+}
+
+
+template<typename VECTOR>
+void AbstractSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings)
+{
+    assert(mEnvironmentMap.empty());
+    // Create the wrapper Environment(s)
+    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system(dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this),
+                                                                     NullDeleter());
+    EnvironmentPtr p_model_env(new ModelWrapperEnvironment<VECTOR>(p_system));
+    typedef std::pair<std::string, std::string> StringPair;
+    BOOST_FOREACH(StringPair binding, rNamespaceBindings)
+    {
+        if (binding.second != "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#" &&
+            binding.second != "http://www.cellml.org/cellml/1.0#")
+        {
+            WARNING("This implementation currently only supports using the oxmeta annotations to access model variables."
+                    " The namespace '" << binding.second << "' is unsupported.");
+        }
+        mEnvironmentMap[binding.first] = p_model_env;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

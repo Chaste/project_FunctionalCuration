@@ -30,6 +30,9 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <string>
+#include <map>
+
+#include "Environment.hpp"
 
 /**
  * Base class for AbstractSystemWithOutputs which contains all the data and functionality
@@ -73,6 +76,23 @@ public:
     std::vector<unsigned> GetVectorOutputLengths() const;
 
     /**
+     * Set the bindings from prefix to namespace URI used by the protocol for accessing model
+     * variables.  The Environment wrappers around this model can then be created and
+     * retrieved with rGetEnvironmentMap.
+     *
+     * @param rNamespaceBindings  the prefix->URI map
+     */
+    virtual void SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings) =0;
+
+    /**
+     * Get the environments to use for easy access to (annotated) model variables.
+     * The returned map associates each Environment wrapping some portion of the model
+     * variables with the prefix to use for accessing it.  SetNamespaceBindings must
+     * have been called before using this method.
+     */
+    const std::map<std::string, EnvironmentPtr>& rGetEnvironmentMap() const;
+
+    /**
      * What types of variable can be system outputs.
      */
     enum OutputTypes
@@ -103,6 +123,9 @@ protected:
 
     /** Names of system outputs that are vectors of variables. */
     std::vector<std::string> mVectorOutputNames;
+
+    /** Environments wrapping model variables, with their prefixes. */
+    std::map<std::string, EnvironmentPtr> mEnvironmentMap;
 };
 
 /**
@@ -136,6 +159,15 @@ public:
      * @param rState  values for the state variables
      */
     std::vector<VECTOR> ComputeVectorOutputs(double time, const VECTOR& rState);
+
+    /**
+     * Set the bindings from prefix to namespace URI used by the protocol for accessing model
+     * variables.  The Environment wrappers around this model can then be created and
+     * retrieved with rGetEnvironmentMap.
+     *
+     * @param rNamespaceBindings  the prefix->URI map
+     */
+    void SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings);
 };
 
 #endif /*ABSTRACTSYSTEMWITHOUTPUTS_HPP_*/

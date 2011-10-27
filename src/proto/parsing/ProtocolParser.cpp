@@ -66,18 +66,11 @@ public:
     /**
      * Create the object containing the parsed protocol.
      *
-     * \todo Eventually this will determine the correct template parameter from the protocol file,
-     * but for now it just defaults to CVODE if available, STL otherwise.
-     *
      * @param pRootElement  the root of the protocol XML tree
      */
     ProtocolPtr CreateProtocolObject(DOMElement* pRootElement)
     {
-#ifdef CHASTE_CVODE
-        ProtocolPtr p_proto(new Protocol<N_Vector>);
-#else
-        ProtocolPtr p_proto(new Protocol<std::vector<double> >);
-#endif
+        ProtocolPtr p_proto(new Protocol);
         SetProtocolObject(p_proto);
         StoreNamespaceMappings(pRootElement);
         return p_proto;

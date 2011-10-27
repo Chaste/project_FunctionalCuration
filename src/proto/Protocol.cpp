@@ -36,15 +36,12 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <boost/assign/list_of.hpp>
 
 #include "Exception.hpp"
-#include "Warnings.hpp"
 
 #include "ProtoHelperMacros.hpp"
-#include "ModelWrapperEnvironment.hpp"
 #include "VectorStreaming.hpp"
 #include "BacktraceException.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
-typedef std::pair<std::string, std::string> StringPair;
 typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
 
 /*
@@ -53,7 +50,7 @@ typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
  *
  */
 
-AbstractProtocol::AbstractProtocol()
+Protocol::Protocol()
     : mInputs(true),
       mpModelStateCollection(new ModelStateCollection)
 {
@@ -79,7 +76,7 @@ void AddSimulationResultsDelegatees(Environment& rEnv, std::map<std::string, Env
 }
 
 
-void AbstractProtocol::Run()
+void Protocol::Run()
 {
     std::cout << "Running protocol..." << std::endl;
     // Ensure the final outputs environment exists
@@ -166,7 +163,7 @@ void AbstractProtocol::Run()
 }
 
 
-void AbstractProtocol::WriteToFile(const OutputFileHandler& rHandler,
+void Protocol::WriteToFile(const OutputFileHandler& rHandler,
                                    const std::string& rFileNameBase) const
 {
     ///\todo Improve format?
@@ -312,7 +309,7 @@ void AbstractProtocol::WriteToFile(const OutputFileHandler& rHandler,
 }
 
 
-unsigned AbstractProtocol::GetNumberOfOutputs(unsigned simulation) const
+unsigned Protocol::GetNumberOfOutputs(unsigned simulation) const
 {
     if (simulation == static_cast<unsigned>(-1))
     {
@@ -324,7 +321,7 @@ unsigned AbstractProtocol::GetNumberOfOutputs(unsigned simulation) const
 }
 
 
-const Environment& AbstractProtocol::rGetOutputsCollection(unsigned simulation) const
+const Environment& Protocol::rGetOutputsCollection(unsigned simulation) const
 {
     if (simulation == static_cast<unsigned>(-1))
     {
@@ -336,7 +333,7 @@ const Environment& AbstractProtocol::rGetOutputsCollection(unsigned simulation) 
 }
 
 
-unsigned AbstractProtocol::GetNumberOfOutputs(const std::string& rPrefix) const
+unsigned Protocol::GetNumberOfOutputs(const std::string& rPrefix) const
 {
     std::map<std::string, EnvironmentPtr>::const_iterator it = mOutputs.find(rPrefix);
     EXCEPT_IF_NOT(it != mOutputs.end());
@@ -344,7 +341,7 @@ unsigned AbstractProtocol::GetNumberOfOutputs(const std::string& rPrefix) const
 }
 
 
-const Environment& AbstractProtocol::rGetOutputsCollection(const std::string& rPrefix) const
+const Environment& Protocol::rGetOutputsCollection(const std::string& rPrefix) const
 {
     std::map<std::string, EnvironmentPtr>::const_iterator it = mOutputs.find(rPrefix);
     EXCEPT_IF_NOT(it != mOutputs.end());
@@ -352,20 +349,20 @@ const Environment& AbstractProtocol::rGetOutputsCollection(const std::string& rP
 }
 
 
-void AbstractProtocol::SetInput(const std::string& rName, AbstractExpressionPtr pValue)
+void Protocol::SetInput(const std::string& rName, AbstractExpressionPtr pValue)
 {
     AbstractValuePtr p_value = (*pValue)(mInputs);
     mInputs.OverwriteDefinition(rName, p_value, "Setting protocol input");
 }
 
 
-Environment& AbstractProtocol::rGetInputsEnvironment()
+Environment& Protocol::rGetInputsEnvironment()
 {
     return mInputs;
 }
 
 
-Environment& AbstractProtocol::rGetLibrary()
+Environment& Protocol::rGetLibrary()
 {
     mLibrary.ExecuteStatements(mLibraryStatements);
     mLibraryStatements.clear();
@@ -373,65 +370,63 @@ Environment& AbstractProtocol::rGetLibrary()
 }
 
 
-std::vector<AbstractStatementPtr>& AbstractProtocol::rGetPostProcessing()
+std::vector<AbstractStatementPtr>& Protocol::rGetPostProcessing()
 {
     return mPostProcessing;
 }
 
 
-void AbstractProtocol::SetNamespaceBindings(const std::map<std::string, std::string>& rBindings)
+void Protocol::SetNamespaceBindings(const std::map<std::string, std::string>& rBindings)
 {
     mOntologyNamespaceBindings = rBindings;
 }
 
 
-void AbstractProtocol::AddPostProcessing(const std::vector<AbstractStatementPtr>& rStatements)
+void Protocol::AddPostProcessing(const std::vector<AbstractStatementPtr>& rStatements)
 {
     mPostProcessing.resize(mPostProcessing.size() + rStatements.size());
     std::copy(rStatements.begin(), rStatements.end(), mPostProcessing.end()-rStatements.size());
 }
 
 
-void AbstractProtocol::AddLibrary(const std::vector<AbstractStatementPtr>& rStatements)
+void Protocol::AddLibrary(const std::vector<AbstractStatementPtr>& rStatements)
 {
     mLibraryStatements.resize(mLibraryStatements.size() + rStatements.size());
     std::copy(rStatements.begin(), rStatements.end(), mLibraryStatements.end()-rStatements.size());
 }
 
 
-void AbstractProtocol::AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation)
+void Protocol::AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation)
 {
     mSimulations.push_back(pSimulation);
 }
 
 
-boost::shared_ptr<ModelStateCollection> AbstractProtocol::GetStateCollection()
+boost::shared_ptr<ModelStateCollection> Protocol::GetStateCollection()
 {
     return mpModelStateCollection;
 }
 
 
-void AbstractProtocol::SetProtocolOutputs(const std::vector<boost::shared_ptr<OutputSpecification> >& rSpecifications)
+void Protocol::SetProtocolOutputs(const std::vector<boost::shared_ptr<OutputSpecification> >& rSpecifications)
 {
     mOutputSpecifications = rSpecifications;
 }
 
-void AbstractProtocol::SetDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications)
+void Protocol::SetDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications)
 {
     mPlotSpecifications = rSpecifications;
 }
 
 
-/*
- *
- * Templated concrete class implementation.
- *
- */
+//
+// Associating a protocol with a model
+//
 
-template<typename VECTOR>
-typename Protocol<VECTOR>::ModelPtr Protocol<VECTOR>::CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const
+boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> Protocol::CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const
 {
-    ModelPtr p_model = boost::dynamic_pointer_cast<RawModelPtr>(pModel);
+    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_model
+        = boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(pModel);
     if (!p_model)
     {
         EXCEPTION("Given model doesn't have any protocol outputs.");
@@ -440,7 +435,7 @@ typename Protocol<VECTOR>::ModelPtr Protocol<VECTOR>::CheckModel(boost::shared_p
     {
         EXCEPTION("Number of model outputs is zero.");
     }
-    if (!boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(p_model))
+    if (!boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(p_model))
     {
         EXCEPTION("Model has an incorrect base class!");
     }
@@ -448,24 +443,16 @@ typename Protocol<VECTOR>::ModelPtr Protocol<VECTOR>::CheckModel(boost::shared_p
 }
 
 
-template<typename VECTOR>
-void Protocol<VECTOR>::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)
+void Protocol::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)
 {
     mpModel = CheckModel(pModel);
-
-    // Create an environment wrapping the model variables, and ensure every other environment can
-    // delegate to it for ontology prefixes.
-    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(mpModel);
-    mpModelEnvironment.reset(new ModelWrapperEnvironment<VECTOR>(p_system));
-    BOOST_FOREACH(StringPair binding, mOntologyNamespaceBindings)
+    // Get the model wrapper environments, and ensure every other environment can
+    // delegate to them for ontology prefixes.
+    mpModel->SetNamespaceBindings(mOntologyNamespaceBindings);
+    const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
+    BOOST_FOREACH(StringEnvPair binding, r_model_envs)
     {
-        if (binding.second != "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#" &&
-            binding.second != "http://www.cellml.org/cellml/1.0#")
-        {
-            WARNING("This implementation currently only supports using the oxmeta annotations to access model variables."
-                    " The namespace '" << binding.second << "' is unsupported.");
-        }
-        mInputs.SetDelegateeEnvironment(mpModelEnvironment, binding.first);
+        mInputs.SetDelegateeEnvironment(binding.second, binding.first);
     }
 
     // Associate each simulation with this model
@@ -476,21 +463,10 @@ void Protocol<VECTOR>::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> 
 }
 
 
-template<typename VECTOR>
-boost::shared_ptr<AbstractUntemplatedParameterisedSystem> Protocol<VECTOR>::GetModel()
+boost::shared_ptr<AbstractUntemplatedParameterisedSystem> Protocol::GetModel()
 {
     EXCEPT_IF_NOT(mpModel);
     boost::shared_ptr<AbstractUntemplatedParameterisedSystem> p_system = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(mpModel);
     assert(p_system);
     return p_system;
 }
-
-
-//////////////////////////////////////////////////////////////////////
-// Explicit instantiation
-//////////////////////////////////////////////////////////////////////
-
-#ifdef CHASTE_CVODE
-template class Protocol<N_Vector>;
-#endif
-template class Protocol<std::vector<double> >;

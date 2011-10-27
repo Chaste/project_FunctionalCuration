@@ -192,6 +192,18 @@ public:
         {}
 
         /**
+         * Constructor allowing us to get an iterator to the element indexed by some indices.
+         * @param rIndices  indices into an array
+         * @param rArray  the array being indexed
+         */
+        explicit IteratorImpl(const Indices& rIndices, NdArray<DATA>& rArray)
+            : mPointer(&(rArray[rIndices])),
+              mIndices(rIndices),
+              mpStrides(&(rArray.mpInternalData->mIndicesMultipliers)),
+              mpExtents(&(rArray.mpInternalData->mExtents))
+        {}
+
+        /**
          * Converter constructor allowing us to pass an Iterator where a ConstIterator is expected.
          * @param rOther  the other iterator
          */

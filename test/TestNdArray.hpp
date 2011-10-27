@@ -109,10 +109,14 @@ public:
         {
             TS_ASSERT_EQUALS(*it, verify);
             verify++;
+            // We can get an indices collection from an iterator...
             for (unsigned i=0; i<3u; i++)
             {
                 TS_ASSERT_EQUALS(it.rGetIndices()[i], indices[i]);
             }
+            // ...and vice versa
+            TS_ASSERT_EQUALS(it, ConstIterator(indices, arr));
+            TS_ASSERT_EQUALS(it, Iterator(indices, arr));
             arr.IncrementIndices(indices);
         }
 

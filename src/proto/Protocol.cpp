@@ -61,6 +61,24 @@ AbstractProtocol::AbstractProtocol()
 }
 
 
+/**
+ * Ensure the given environment can access simulation results.
+ *
+ * @param rEnv  the environment that needs access
+ * @param rResultsEnvs  mapping from prefix to results environment
+ */
+void AddSimulationResultsDelegatees(Environment& rEnv, std::map<std::string, EnvironmentPtr>& rResultsEnvs)
+{
+    BOOST_FOREACH(StringEnvPair binding, rResultsEnvs)
+    {
+        if (!binding.first.empty())
+        {
+            rEnv.SetDelegateeEnvironment(binding.second, binding.first);
+        }
+    }
+}
+
+
 void AbstractProtocol::Run()
 {
     std::cout << "Running protocol..." << std::endl;
@@ -82,6 +100,7 @@ void AbstractProtocol::Run()
             const std::string prefix = p_sim->GetOutputsPrefix();
             std::cout << "Running simulation " << mSimulationNumber << " " << prefix << "..." << std::endl;
             p_sim->rGetEnvironment().SetDelegateeEnvironment(mLibrary.GetAsDelegatee());
+            AddSimulationResultsDelegatees(p_sim->rGetEnvironment(), mOutputs);
             p_sim->InitialiseSteppers();
             EnvironmentPtr p_results = p_sim->Run();
             if (!prefix.empty())
@@ -101,13 +120,7 @@ void AbstractProtocol::Run()
         errors.push_back(e);
     }
     // Ensure post-processing can access simulation results
-    BOOST_FOREACH(StringEnvPair binding, mOutputs)
-    {
-        if (!binding.first.empty())
-        {
-            post_proc_env.SetDelegateeEnvironment(binding.second, binding.first);
-        }
-    }
+    AddSimulationResultsDelegatees(post_proc_env, mOutputs);
     // Post-process the results
     if (errors.empty())
     {

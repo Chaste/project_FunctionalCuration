@@ -74,6 +74,10 @@ public:
                                   "Name " + names[0] + " is already defined and may not be re-bound.");
         TS_ASSERT_THROWS_CONTAINS(env.DefineNames(names, values, ""),
                                   "Name " + names[0] + " is already defined and may not be re-bound.");
+
+        Environment env2;
+        env2.Merge(env, "test");
+        TS_ASSERT_EQUALS(env.GetDefinedNames(), env2.GetDefinedNames());
     }
 
     void TestOverwritingEnv() throw (Exception)

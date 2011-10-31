@@ -122,6 +122,14 @@ public:
                      const std::string& rCallerLocation);
 
     /**
+     * Merge two environments - add all the definitions from rEnv to this environment.
+     *
+     * @param rEnv  environment to merge into this one
+     * @param rCallerLocation  location information to use in error backtrace if a name is already defined
+     */
+    void Merge(const Environment& rEnv, const std::string& rCallerLocation);
+
+    /**
      * Modify a name-value mapping in the environment.
      * This is provided to support the definition of protocol inputs, and is only permitted if the
      * environment has been created with the allowOverwrite flag on.

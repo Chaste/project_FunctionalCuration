@@ -29,6 +29,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "Environment.hpp"
 
 #include <sstream>
+#include <boost/foreach.hpp>
 
 #include "BacktraceException.hpp"
 #include "NullDeleter.hpp"
@@ -149,6 +150,14 @@ void Environment::DefineNames(const std::vector<std::string>& rNames,
     for (unsigned i=0; i<rNames.size(); ++i)
     {
         DefineName(rNames[i], rValues[i], rCallerLocation);
+    }
+}
+
+void Environment::Merge(const Environment& rEnv, const std::string& rCallerLocation)
+{
+    BOOST_FOREACH(const std::string& r_name, rEnv.GetDefinedNames())
+    {
+        DefineName(r_name, rEnv.Lookup(r_name, rCallerLocation), rCallerLocation);
     }
 }
 

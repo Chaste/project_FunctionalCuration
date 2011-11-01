@@ -47,14 +47,12 @@ public:
     {
         std::string dirname = "TestS1S2ProtocolOutputs";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
+        // Assume we get to steady state quickly
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
 
-        // Assume we get to steady state quickly
-        runner.GetProtocol()->SetInput("steady_state_beats", CONST(10));
-        runner.GetProtocol()->SetInput("timecourse_duration", CONST(2000));
-        // And don't do too many runs
+        // Don't do too many runs
         std::vector<AbstractExpressionPtr> s2_intervals
             = EXPR_LIST(CONST(1000))(CONST(900))(CONST(800))(CONST(700))(CONST(600))(CONST(500));
         DEFINE(s2_intervals_expr, boost::make_shared<ArrayCreate>(s2_intervals));

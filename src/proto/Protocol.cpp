@@ -42,6 +42,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "BacktraceException.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
+typedef std::pair<std::string, std::string> StringPair;
 typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
 
 /*
@@ -91,11 +92,11 @@ void Protocol::Run()
     // Run the simulation(s)
     try
     {
-        mSimulationNumber = 0u;
+        unsigned simulation_number = 0u;
         BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
         {
             const std::string prefix = p_sim->GetOutputsPrefix();
-            std::cout << "Running simulation " << mSimulationNumber << " " << prefix << "..." << std::endl;
+            std::cout << "Running simulation " << simulation_number << " " << prefix << "..." << std::endl;
             p_sim->rGetEnvironment().SetDelegateeEnvironment(mLibrary.GetAsDelegatee());
             AddSimulationResultsDelegatees(p_sim->rGetEnvironment(), mOutputs);
             p_sim->InitialiseSteppers();
@@ -109,7 +110,7 @@ void Protocol::Run()
                               p_sim->GetLocationInfo());
                 mOutputs[prefix] = p_results;
             }
-            mSimulationNumber++;
+            simulation_number++;
         }
     }
     catch (const Exception& e)
@@ -349,10 +350,34 @@ const Environment& Protocol::rGetOutputsCollection(const std::string& rPrefix) c
 }
 
 
+boost::shared_ptr<ModelStateCollection> Protocol::GetStateCollection()
+{
+    return mpModelStateCollection;
+}
+
+
 void Protocol::SetInput(const std::string& rName, AbstractExpressionPtr pValue)
 {
     AbstractValuePtr p_value = (*pValue)(mInputs);
     mInputs.OverwriteDefinition(rName, p_value, "Setting protocol input");
+}
+
+
+const FileFinder& Protocol::rGetSourceFile() const
+{
+    return mSourceFilePath;
+}
+
+
+ProtocolPtr Protocol::GetImportedProtocol(const std::string& rPrefix)
+{
+    return mImports[rPrefix];
+}
+
+
+const std::map<std::string, std::string>& Protocol::rGetNamespaceBindings() const
+{
+    return mOntologyNamespaceBindings;
 }
 
 
@@ -370,15 +395,67 @@ Environment& Protocol::rGetLibrary()
 }
 
 
+std::vector<AbstractStatementPtr>& Protocol::rGetLibraryStatements()
+{
+    return mLibraryStatements;
+}
+
+
+std::vector<boost::shared_ptr<AbstractSimulation> >& Protocol::rGetSimulations()
+{
+    return mSimulations;
+}
+
+
 std::vector<AbstractStatementPtr>& Protocol::rGetPostProcessing()
 {
     return mPostProcessing;
 }
 
 
-void Protocol::SetNamespaceBindings(const std::map<std::string, std::string>& rBindings)
+std::vector<boost::shared_ptr<OutputSpecification> >& Protocol::rGetOutputSpecifications()
 {
-    mOntologyNamespaceBindings = rBindings;
+    return mOutputSpecifications;
+}
+
+
+std::vector<boost::shared_ptr<PlotSpecification> >& Protocol::rGetPlotSpecifications()
+{
+    return mPlotSpecifications;
+}
+
+
+void Protocol::SetSourceFile(const FileFinder& rSourceFile)
+{
+    mSourceFilePath = rSourceFile;
+}
+
+
+void Protocol::AddImport(const std::string& rPrefix, ProtocolPtr pImport, const std::string& rLoc)
+{
+    std::pair<std::map<std::string, ProtocolPtr>::iterator, bool> result = mImports.insert(std::make_pair(rPrefix, pImport));
+    PROTO_ASSERT2(result.second,
+                  "The prefix " << rPrefix << " has already been used for an imported protocol.",
+                  rLoc);
+    // Make the import's library, if any, available to our library and hence its users
+    mLibrary.SetDelegateeEnvironment(pImport->rGetLibrary().GetAsDelegatee(), rPrefix);
+}
+
+
+void Protocol::AddNamespaceBindings(const std::map<std::string, std::string>& rBindings)
+{
+    BOOST_FOREACH(StringPair new_binding, rBindings)
+    {
+        std::pair<std::map<std::string, std::string>::iterator,bool> result = mOntologyNamespaceBindings.insert(new_binding);
+        if (!result.second)
+        {
+            // Binding of this prefix already existed.  Check it used the same URI.
+            PROTO_ASSERT2(result.first->second == new_binding.second,
+                          "Conflicting definitions of namespace prefix " << new_binding.first << ": was "
+                          << result.first->second << " but tried to bind to " << new_binding.second,
+                          "Protocol definition");
+        }
+    }
 }
 
 
@@ -402,20 +479,16 @@ void Protocol::AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation)
 }
 
 
-boost::shared_ptr<ModelStateCollection> Protocol::GetStateCollection()
+void Protocol::AddOutputSpecs(const std::vector<boost::shared_ptr<OutputSpecification> >& rSpecifications)
 {
-    return mpModelStateCollection;
+    mOutputSpecifications.resize(mOutputSpecifications.size() + rSpecifications.size());
+    std::copy(rSpecifications.begin(), rSpecifications.end(), mOutputSpecifications.end()-rSpecifications.size());
 }
 
-
-void Protocol::SetProtocolOutputs(const std::vector<boost::shared_ptr<OutputSpecification> >& rSpecifications)
+void Protocol::AddDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications)
 {
-    mOutputSpecifications = rSpecifications;
-}
-
-void Protocol::SetDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications)
-{
-    mPlotSpecifications = rSpecifications;
+    mPlotSpecifications.resize(mPlotSpecifications.size() + rSpecifications.size());
+    std::copy(rSpecifications.begin(), rSpecifications.end(), mPlotSpecifications.end()-rSpecifications.size());
 }
 
 

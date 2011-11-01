@@ -43,8 +43,14 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "PlotSpecification.hpp"
 
 #include "OutputFileHandler.hpp"
+#include "FileFinder.hpp"
 #include "AbstractCardiacCellInterface.hpp"
-#include "AbstractParameterisedSystem.hpp"
+
+// See below!
+class Protocol;
+
+/** Most users will access a protocol via this smart pointer type. */
+typedef boost::shared_ptr<Protocol> ProtocolPtr;
 
 /**
  * This class encapsulates a complete protocol description, at least as far as the C++ code is concerned.
@@ -56,10 +62,6 @@ public:
      * Default constructor.
      */
     Protocol();
-
-    /** Virtual destructor. */
-    virtual ~Protocol()
-    {}
 
     /**
      * Run this protocol.
@@ -108,40 +110,76 @@ public:
     const Environment& rGetOutputsCollection(const std::string& rPrefix="") const;
 
     /**
+     * Get the model state collection associated with this protocol.
+     */
+    boost::shared_ptr<ModelStateCollection> GetStateCollection();
+
+    /**
      * Set the value of a protocol input.
      * @param rName  the input name
      * @param pValue  an expression giving its new value
      */
     void SetInput(const std::string& rName, AbstractExpressionPtr pValue);
 
-    /**
-     * Get the protocol input definitions.
-     */
+    //
+    // Get methods for the constituent parts of a protocol
+    //
+
+    /** Get the file the protocol was loaded from. */
+    const FileFinder& rGetSourceFile() const;
+
+    /** Get the imported protocol associated with the given prefix. */
+    ProtocolPtr GetImportedProtocol(const std::string& rPrefix);
+
+    /** Get the namespaces available for use in referencing model variables. */
+    const std::map<std::string, std::string>& rGetNamespaceBindings() const;
+
+    /** Get the protocol input definitions. */
     Environment& rGetInputsEnvironment();
 
-    /**
-     * Get the library of definitions in this protocol.
-     */
+    /** Get the library of definitions in this protocol. */
     Environment& rGetLibrary();
 
-    /**
-     * Get the post-processing program part of the protocol.
-     */
+    /** Get the statements comprising the library part of the protocol. */
+    std::vector<AbstractStatementPtr>& rGetLibraryStatements();
+
+    /** Get the list of simulations to be performed. */
+    std::vector<boost::shared_ptr<AbstractSimulation> >& rGetSimulations();
+
+    /** Get the post-processing program part of the protocol. */
     std::vector<AbstractStatementPtr>& rGetPostProcessing();
 
+    /** Get specifications of which variables should be considered as the outputs of this protocol. */
+    std::vector<boost::shared_ptr<OutputSpecification> >& rGetOutputSpecifications();
+
+    /** Get specifications of what plots to produce by default. */
+    std::vector<boost::shared_ptr<PlotSpecification> >& rGetPlotSpecifications();
+
+    /** Get the model being simulated in this protocol. */
+    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel();
+
+    //
+    // Methods for setting up a protocol, used by the parser
+    //
+
+    /** Record the file the protocol was loaded from. */
+    void SetSourceFile(const FileFinder& rSourceFile);
+
     /**
-     * Set the namespaces available for use in referencing model variables.
+     * Add an imported protocol that can be referred to by a prefix.
+     *
+     * @param rPrefix  the prefix to use
+     * @param pImport  the imported protocol
+     * @param rLoc  the location of the import element, for error messages
+     */
+    void AddImport(const std::string& rPrefix, ProtocolPtr pImport, const std::string& rLoc);
+
+    /**
+     * Add to the namespaces available for use in referencing model variables.
      *
      * @param rBindings  mapping from prefix to namespace URI
      */
-    void SetNamespaceBindings(const std::map<std::string, std::string>& rBindings);
-
-    /**
-     * Add a simulation to run.  Simulations will be run in the order in which they are added.
-     *
-     * @param pSimulation  the simulation
-     */
-    void AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation);
+    void AddNamespaceBindings(const std::map<std::string, std::string>& rBindings);
 
     /**
      * Add some post-processing commands to the library available for this protocol.
@@ -151,6 +189,13 @@ public:
     void AddLibrary(const std::vector<AbstractStatementPtr>& rStatements);
 
     /**
+     * Add a simulation to run.  Simulations will be run in the order in which they are added.
+     *
+     * @param pSimulation  the simulation
+     */
+    void AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation);
+
+    /**
      * Add some additional post-processing commands to the program.
      *
      * @param rStatements  the statements to append
@@ -158,37 +203,31 @@ public:
     void AddPostProcessing(const std::vector<AbstractStatementPtr>& rStatements);
 
     /**
-     * Set which variables should be considered as the outputs of this protocol.
+     * Add specifications for which variables should be considered as the outputs of this protocol.
      *
      * @param rSpecifications  the output variable specifications
      */
-    void SetProtocolOutputs(const std::vector<boost::shared_ptr<OutputSpecification> >& rSpecifications);
+    void AddOutputSpecs(const std::vector<boost::shared_ptr<OutputSpecification> >& rSpecifications);
 
     /**
-     * Set what plots to produce by default.
+     * Add some plots to produce by default.
      *
      * @param rSpecifications  the plot specifications
      */
-    void SetDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications);
-
-    /**
-     * Get the model state collection associated with this protocol.
-     */
-    boost::shared_ptr<ModelStateCollection> GetStateCollection();
+    void AddDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications);
 
     /**
      * Set the model being simulated by this protocol.
+     *
+     * \todo #1872 set model for imported protos too
      *
      * @param pModel  the model being simulated
      */
     void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
 
-    /** Get the model being simulated in this protocol. */
-    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel();
-
 protected:
-    /** Which simulation is currently being run. */
-    unsigned mSimulationNumber;
+    /** Where the protocol was loaded from, for resolving relative imports. */
+    FileFinder mSourceFilePath;
 
     /** The namespaces available for use in referencing model variables. */
     std::map<std::string, std::string> mOntologyNamespaceBindings;
@@ -199,6 +238,9 @@ protected:
      * for specific simulations are indexed by their defined prefix.
      */
     std::map<std::string, EnvironmentPtr> mOutputs;
+
+    /** Imported protocols associated with a prefix for access. */
+    std::map<std::string, ProtocolPtr> mImports;
 
     /** The environment containing the protocol inputs. */
     Environment mInputs;
@@ -237,8 +279,5 @@ protected:
      */
     boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const;
 };
-
-/** Most users will access a protocol via this smart pointer type. */
-typedef boost::shared_ptr<Protocol> ProtocolPtr;
 
 #endif // PROTOCOL_HPP_

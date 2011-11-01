@@ -450,12 +450,8 @@ public:
 
         // Test with simulation & post-processing loaded from file
         ProtocolParser parser;
-        FileFinder core_proto_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
-        FileFinder cardiac_proto_file("projects/FunctionalCuration/src/proto/library/CardiacLibrary.xml", RelativeTo::ChasteSourceRoot);
         FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
-        parser.ParseLibrary(core_proto_file, p_proto);
-        parser.ParseLibrary(cardiac_proto_file, p_proto);
         p_proto->SetModel(p_cell);
         p_proto->Run();
         p_proto->WriteToFile(handler, "TestBasicSimulationAndApd");

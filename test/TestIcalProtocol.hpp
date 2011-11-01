@@ -76,7 +76,7 @@ public:
 			FileFinder test_output = handler.FindFile(output_name + ".csv");
 
 			NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-			TS_ASSERT(comp.CompareFiles(2e-4));
+			TS_ASSERT(comp.CompareFiles(5e-4));
 
 			std::cout << "done.\n";
         }

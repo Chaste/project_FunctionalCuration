@@ -76,12 +76,8 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     boost::shared_ptr<AbstractCvodeCell> p_cell(dynamic_cast<AbstractCvodeCell*>(p_loader->CreateCell(p_solver, p_stimulus)));
 
     // Load the XML protocol
-    FileFinder core_library_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
-    FileFinder cardiac_library_file("projects/FunctionalCuration/src/proto/library/CardiacLibrary.xml", RelativeTo::ChasteSourceRoot);
     ProtocolParser parser;
     mpProtocol = parser.ParseFile(rProtoXmlFile);
-    parser.ParseLibrary(core_library_file, mpProtocol);
-    parser.ParseLibrary(cardiac_library_file, mpProtocol);
 
     p_cell->SetMaxSteps(2e7); // We need to allow CVODE to take lots of internal steps for some protocols
     p_cell->SetTimestep(0.5); // Max dt = 0.5ms to ensure stimulus isn't missed

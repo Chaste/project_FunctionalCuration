@@ -54,7 +54,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <xsd/cxx/xml/sax/bits/error-handler-proxy.hxx>
 using namespace xercesc;
 
-#include "Debug.hpp"
 /**
  * Implementation of the protocol file parser, containing methods to parse all the different
  * constructs.  We use a separate class for this, rather than putting all the methods in the
@@ -86,6 +85,59 @@ public:
     }
 
     /**
+     * Parse a global import element, load the imported protocol, and merge constituents
+     * as required.
+     *
+     * @param pImportElt  the import definition
+     * @param rParser  parser to use to load imported protocols
+     */
+    void ParseImport(DOMElement* pImportElt, ProtocolParser& rParser)
+    {
+        SetContext(pImportElt);
+        PROTO_ASSERT(pImportElt->hasAttribute(X("source")), "Imports must have a source attribute.");
+        std::string source_uri = X2C(pImportElt->getAttribute(X("source")));
+        ///\todo handle absolute paths?
+        FileFinder imported_proto_file(source_uri, mpCurrentProtocolObject->rGetSourceFile());
+        ProtocolPtr p_imported_proto = rParser.ParseFile(imported_proto_file);
+        // Set inputs for imported protocol
+        std::vector<DOMElement*> inputs = XmlTools::FindElements(pImportElt, "setInput");
+        BOOST_FOREACH(DOMElement* p_input, inputs)
+        {
+            PROTO_ASSERT(p_input->hasAttribute(X("name")), "A setInput element must specify which input to set.");
+            std::string input_name = X2C(p_input->getAttribute(X("name")));
+            AbstractExpressionPtr p_input_value = ParseNumberOrExpression(p_input);
+            p_imported_proto->SetInput(input_name, p_input_value);
+        }
+        // Merge or store protocol
+        if (pImportElt->hasAttribute(X("prefix")))
+        {
+            mpCurrentProtocolObject->AddImport(X2C(pImportElt->getAttribute(X("prefix"))), p_imported_proto,
+                                               GetLocationInfo());
+        }
+        else if (pImportElt->hasAttribute(X("mergeDefinitions")))
+        {
+            std::string merge = X2C(pImportElt->getAttribute(X("mergeDefinitions")));
+            PROTO_ASSERT(merge == "true" || merge == "1",
+                         "An import must define a prefix or merge definitions.");
+            mpCurrentProtocolObject->AddNamespaceBindings(p_imported_proto->rGetNamespaceBindings());
+            mpCurrentProtocolObject->rGetInputsEnvironment().Merge(p_imported_proto->rGetInputsEnvironment(),
+                                                                   GetLocationInfo());
+            mpCurrentProtocolObject->AddLibrary(p_imported_proto->rGetLibraryStatements());
+            BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, p_imported_proto->rGetSimulations())
+            {
+                mpCurrentProtocolObject->AddSimulation(p_sim);
+            }
+            mpCurrentProtocolObject->AddPostProcessing(p_imported_proto->rGetPostProcessing());
+            mpCurrentProtocolObject->AddOutputSpecs(p_imported_proto->rGetOutputSpecifications());
+            mpCurrentProtocolObject->AddDefaultPlots(p_imported_proto->rGetPlotSpecifications());
+        }
+        else
+        {
+            PROTO_EXCEPTION("An import must define a prefix or merge definitions.");
+        }
+    }
+
+    /**
      * Parse a cn element to obtain a constant number.
      *
      * \todo Cope with base, sep, etc.
@@ -98,6 +150,31 @@ public:
         SetContext(pElement);
         std::string text_value = X2C(pElement->getTextContent());
         return String2Double(text_value);
+    }
+
+    /**
+     * Parse an element that may contain either a constant number or an expression child element.
+     *
+     * @param pElement  the element
+     */
+    AbstractExpressionPtr ParseNumberOrExpression(DOMElement* pElement)
+    {
+        SetContext(pElement);
+        AbstractExpressionPtr p_result;
+        std::vector<DOMElement*> children = XmlTools::GetChildElements(pElement);
+        if (children.empty())
+        {
+            // Number
+            p_result = CONST(ParseNumber(pElement));
+        }
+        else
+        {
+            // Expression
+            PROTO_ASSERT(children.size() == 1, "Only one expression is allowed here.");
+            p_result = ParseExpression(children.front());
+        }
+        TransferContext(pElement, p_result);
+        return p_result;
     }
 
     /**
@@ -659,18 +736,7 @@ public:
             std::vector<AbstractExpressionPtr> params(3);
             for (unsigned i=0; i<3; ++i)
             {
-                std::vector<DOMElement*> param_children = XmlTools::GetChildElements(children[i]);
-                if (param_children.empty())
-                {
-                    params[i] = CONST(String2Double(X2C(children[i]->getTextContent())));
-                }
-                else
-                {
-                    SetContext(children[i]);
-                    PROTO_ASSERT(param_children.size() == 1,
-                                 "A uniform stepper parameter must have a single defining expression.");
-                    params[i] = ParseExpression(param_children.front());
-                }
+                params[i] = ParseNumberOrExpression(children[i]);
             }
             p_stepper.reset(new UniformStepper(name, units, params[0], params[1], params[2]));
         }
@@ -684,7 +750,7 @@ public:
                 SetContext(p_child);
                 if (X2C(p_child->getLocalName()) == "value")
                 {
-                    values.push_back(CONST(String2Double(X2C(p_child->getTextContent()))));
+                    values.push_back(ParseNumberOrExpression(p_child));
                 }
                 else
                 {
@@ -774,9 +840,7 @@ public:
         {
             PROTO_ASSERT(children.size() == 3, "A setVariable modifier requires 3 child elements.");
             std::string variable_name = X2C(children[1]->getTextContent());
-            std::vector<DOMElement*> value_children = XmlTools::GetChildElements(children[2]);
-            PROTO_ASSERT(value_children.size() == 1, "A setVariable modifier requires 1 value.");
-            AbstractExpressionPtr p_value = ParseExpression(value_children.front());
+            AbstractExpressionPtr p_value = ParseNumberOrExpression(children[2]);
             p_modifier.reset(new SetVariableModifier(when, variable_name, p_value));
         }
         else
@@ -1176,7 +1240,10 @@ private:
 
 
 /**
+ * Parse XML into a DOM tree.
  * Requires Xerces to be initialised by the caller.
+ *
+ * @param rProtocolFile  the file to parse
  */
 xsd::cxx::xml::dom::auto_ptr<DOMDocument> ParseFileToDom(const FileFinder& rProtocolFile)
 {
@@ -1231,6 +1298,83 @@ void ProtocolParser::ParseLibrary(const FileFinder& rProtocolFile, ProtocolPtr p
     }
 }
 
+/**
+ * Add constructs parsed from the given XML document into a protocol object.
+ * @param pProto  the protocol object to fill
+ * @param rParser  the protocol parser to use
+ * @param pRootElt  the root of the protocol XML document to parse
+ * @param rParentParser  the user-facing parser
+ */
+void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOMElement* pRootElt,
+                           ProtocolParser& rParentParser)
+{
+    // Parse protocol inputs (if present)
+    std::vector<DOMElement*> inputs = XmlTools::FindElements(pRootElt, "inputs/apply");
+    if (!inputs.empty())
+    {
+        Environment& r_inputs = pProto->rGetInputsEnvironment();
+        r_inputs.ExecuteStatements(rParser.ParseStatementList(inputs.front()));
+    }
+
+    // Parse imports (if present)
+    std::vector<DOMElement*> imports = XmlTools::FindElements(pRootElt, "import");
+    BOOST_FOREACH(DOMElement* p_import, imports)
+    {
+        rParser.ParseImport(p_import, rParentParser);
+    }
+
+    // Parse library (if present)
+    std::vector<DOMElement*> library = XmlTools::FindElements(pRootElt, "library/apply");
+    if (!library.empty())
+    {
+        pProto->AddLibrary(rParser.ParseStatementList(library.front()));
+    }
+
+    // Parse simulation definitions (if present)
+    std::vector<DOMElement*> simulations = XmlTools::FindElements(pRootElt, "simulations");
+    if (!simulations.empty())
+    {
+        std::vector<DOMElement*> children = XmlTools::GetChildElements(simulations.front());
+        BOOST_FOREACH(DOMElement* p_sim_elt, children)
+        {
+            pProto->AddSimulation(rParser.ParseSimulationDefinition(p_sim_elt));
+        }
+    }
+
+    // Parse post-processing program
+    std::vector<DOMElement*> post_proc = XmlTools::FindElements(pRootElt, "post-processing");
+    if (!post_proc.empty())
+    {
+        std::vector<DOMElement*> children = XmlTools::GetChildElements(post_proc.front());
+        BOOST_FOREACH(DOMElement* p_child, children)
+        {
+            // Check for useImports
+            // Local definitions
+            if (X2C(p_child->getLocalName()) == "apply")
+            {
+                pProto->AddPostProcessing(rParser.ParseStatementList(p_child));
+            }
+        }
+    }
+
+    // Parse identification of output variables
+    std::vector<DOMElement*> outputs = XmlTools::FindElements(pRootElt, "outputVariables");
+    if (!outputs.empty())
+    {
+        pProto->AddOutputSpecs(rParser.ParseOutputVariables(outputs.front()));
+    }
+
+    // Parse specification of plots
+    std::vector<DOMElement*> plots = XmlTools::FindElements(pRootElt, "plots");
+    if (!plots.empty())
+    {
+        pProto->AddDefaultPlots(rParser.ParsePlots(plots.front()));
+    }
+
+    // Transfer prefix bindings
+    pProto->AddNamespaceBindings(rParser.GetNamespaceDeclarations());
+
+}
 
 ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)
 {
@@ -1242,56 +1386,8 @@ ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)
     ProtocolParserImpl proto_parser;
     DOMElement* p_root_elt = p_proto_doc->getDocumentElement();
     ProtocolPtr p_proto = proto_parser.CreateProtocolObject(p_root_elt);
-
-    // Parse protocol inputs (if present)
-    std::vector<DOMElement*> inputs = XmlTools::FindElements(p_proto_doc->getDocumentElement(), "inputs/apply");
-    if (!inputs.empty())
-    {
-        Environment& r_inputs = p_proto->rGetInputsEnvironment();
-        r_inputs.ExecuteStatements(proto_parser.ParseStatementList(inputs.front()));
-    }
-
-    // Parse library (if present)
-    std::vector<DOMElement*> library = XmlTools::FindElements(p_proto_doc->getDocumentElement(), "library/apply");
-    if (!library.empty())
-    {
-        p_proto->AddLibrary(proto_parser.ParseStatementList(library.front()));
-    }
-
-    // Parse simulation definitions (if present)
-    std::vector<DOMElement*> simulations = XmlTools::FindElements(p_root_elt, "simulations");
-    if (!simulations.empty())
-    {
-        std::vector<DOMElement*> children = XmlTools::GetChildElements(simulations.front());
-        BOOST_FOREACH(DOMElement* p_sim_elt, children)
-        {
-            p_proto->AddSimulation(proto_parser.ParseSimulationDefinition(p_sim_elt));
-        }
-    }
-
-    // Parse post-processing program
-    std::vector<DOMElement*> post_proc = XmlTools::FindElements(p_root_elt, "post-processing/apply");
-    if (!post_proc.empty())
-    {
-        p_proto->AddPostProcessing(proto_parser.ParseStatementList(post_proc.front()));
-    }
-
-    // Parse identification of output variables
-    std::vector<DOMElement*> outputs = XmlTools::FindElements(p_root_elt, "outputVariables");
-    if (!outputs.empty())
-    {
-        p_proto->SetProtocolOutputs(proto_parser.ParseOutputVariables(outputs.front()));
-    }
-
-    // Parse specification of plots
-    std::vector<DOMElement*> plots = XmlTools::FindElements(p_root_elt, "plots");
-    if (!plots.empty())
-    {
-        p_proto->SetDefaultPlots(proto_parser.ParsePlots(plots.front()));
-    }
-
-    // Transfer prefix bindings
-    p_proto->SetNamespaceBindings(proto_parser.GetNamespaceDeclarations());
+    p_proto->SetSourceFile(rProtocolFile);
+    AddElementsToProtocol(p_proto, proto_parser, p_root_elt, *this);
 
     return p_proto;
 }

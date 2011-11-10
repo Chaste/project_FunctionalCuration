@@ -35,7 +35,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <boost/make_shared.hpp> // Requires Boost 1.39 (available in Lucid and newer)
 
 #include "ProtocolLanguage.hpp"
-#include "ProtoBasicPostProc.hpp"
 
 using boost::assign::list_of;
 using boost::make_shared;
@@ -646,30 +645,6 @@ public:
         TS_ASSERT(env.Lookup("two")->IsDouble());
         TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(env.Lookup("one")), 1.0);
         TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(env.Lookup("two")), 2.0);
-    }
-
-    void TestCoreLibrary() throw (Exception)
-    {
-        EnvironmentPtr p_env(new Environment);
-        Environment& env = *p_env; // Save typing!
-        ProtoBasicPostProc library;
-
-        library.DefineAll(env);
-
-        // diff(array, dimension=array.num_dims-1)
-        {
-            std::vector<AbstractExpressionPtr> values = EXPR_LIST(CONST(1))(CONST(2))(CONST(4))(CONST(8));
-            DEFINE(input, make_shared<ArrayCreate>(values));
-            std::vector<AbstractExpressionPtr> args = EXPR_LIST(input)(DEFAULT_EXPR);
-            DEFINE(call, make_shared<FunctionCall>("diff", args));
-            AbstractValuePtr p_result = (*call)(env);
-            TS_ASSERT(p_result->IsArray());
-            NdArray<double> array = GET_ARRAY(p_result);
-            TS_ASSERT_EQUALS(array.GetNumDimensions(), 1u);
-            TS_ASSERT_EQUALS(array.GetNumElements(), 3u);
-            std::vector<double> result_values(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, list_of(1)(2)(4));
-        }
     }
 };
 

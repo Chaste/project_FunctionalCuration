@@ -136,6 +136,28 @@ public:
 
 protected:
     /**
+     * This method must be called by subclasses as the first thing within their simulation loop.
+     *
+     * @param pResults  the results Environment
+     */
+    void LoopBodyStartHook(EnvironmentPtr pResults);
+
+    /**
+     * This method must be called by subclasses as the last thing within their simulation loop,
+     * just before their stepper is incremented.
+     *
+     * @param pResults  the results Environment
+     */
+    void LoopBodyEndHook(EnvironmentPtr pResults);
+
+    /**
+     * This method must be called by subclasses after their simulation loop has completed.
+     *
+     * @param pResults  the results Environment
+     */
+    void LoopEndHook(EnvironmentPtr pResults);
+
+    /**
      * Initialise a simulation results environment, creating all the output arrays
      * defined from the model.
      *
@@ -163,15 +185,6 @@ protected:
     void CreateResultViews(EnvironmentPtr pResults);
 
     /**
-     * Add the model outputs at the current simulation step to the results environment.
-     * This method will exit early if we're not storing results for the current
-     * simulation - there's no need to test before calling.
-     *
-     * @param pResults  the results Environment
-     */
-    void AddOutputData(EnvironmentPtr pResults);
-
-    /**
      * The cell model the protocol is being run on.
      */
     boost::shared_ptr<AbstractCardiacCellInterface> mpCell;
@@ -197,15 +210,6 @@ protected:
     EnvironmentPtr mpEnvironment;
 
 private:
-    /**
-     * Add model outputs for the current simulation step.  Called by AddOutputData
-     * to do the actual work.
-     *
-     * @param pResults  the results Environment
-     */
-    template<typename VECTOR>
-    void AddOutputDataTemplated(EnvironmentPtr pResults);
-
     /** The namespace prefix to use for outputs from this simulation. */
     std::string mOutputsPrefix;
 };

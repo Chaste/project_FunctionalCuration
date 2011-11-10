@@ -34,7 +34,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <boost/assign/list_of.hpp>
 
 #include "AbstractSystemWithOutputs.hpp"
-#include "AbstractParameterisedSystem.hpp"
 #include "BacktraceException.hpp"
 #include "NdArray.hpp"
 #include "ValueTypes.hpp"
@@ -43,7 +42,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "NameLookup.hpp"
 #include "TupleExpression.hpp"
 
-#include "VectorHelperFunctions.hpp"
 
 AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
                                        boost::shared_ptr<AbstractStepper> pStepper,
@@ -126,6 +124,45 @@ EnvironmentPtr AbstractSimulation::Run()
     }
     return p_results;
 }
+
+
+void AbstractSimulation::LoopBodyStartHook(EnvironmentPtr pResults)
+{
+    if (mpModifiers)
+    {
+        (*mpModifiers)(mpCell, mpStepper);
+    }
+    // If this is a while loop, we may need to allocate more memory for the results arrays
+    if (pResults)
+    {
+        const std::string any_name = pResults->GetDefinedNames().front();
+        NdArray<double> array = GET_ARRAY(pResults->Lookup(any_name, GetLocationInfo()));
+        if (!mpStepper->IsEndFixed() && mpStepper->GetNumberOfOutputPoints() >= array.GetShape()[0])
+        {
+            ResizeOutputs(pResults);
+        }
+    }
+}
+
+
+void AbstractSimulation::LoopBodyEndHook(EnvironmentPtr pResults)
+{
+    // If this is a while loop, update the views of the results thus far
+    if (!mpStepper->IsEndFixed())
+    {
+        CreateResultViews(pResults);
+    }
+}
+
+
+void AbstractSimulation::LoopEndHook(EnvironmentPtr pResults)
+{
+    if (mpModifiers)
+    {
+        mpModifiers->ApplyAtEnd(mpCell, mpStepper);
+    }
+}
+
 
 void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
 {
@@ -218,102 +255,4 @@ void AbstractSimulation::CreateResultViews(EnvironmentPtr pResults)
             }
         }
    }
-}
-
-void AbstractSimulation::AddOutputData(EnvironmentPtr pResults)
-{
-    if (!pResults)
-    {
-        // Not storing output
-        return;
-    }
-    boost::shared_ptr<AbstractSystemWithOutputs<N_Vector> > p_system
-        = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<N_Vector> >(mpCell);
-    if (p_system)
-    {
-        AddOutputDataTemplated<N_Vector>(pResults);
-    }
-    else
-    {
-        boost::shared_ptr<AbstractSystemWithOutputs<std::vector<double> > > p_system2
-            = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<std::vector<double> > >(mpCell);
-        if (p_system2)
-        {
-            AddOutputDataTemplated<std::vector<double> >(pResults);
-        }
-        else
-        {
-            PROTO_EXCEPTION("Unexpected template parameter for model.");
-        }
-    }
-}
-
-
-template<typename VECTOR>
-void AbstractSimulation::AddOutputDataTemplated(EnvironmentPtr pResults)
-{
-    // Get the model information
-    boost::shared_ptr<AbstractSystemWithOutputs<VECTOR> > p_system
-        = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<VECTOR> >(mpCell);
-    assert(p_system);
-    const VECTOR& r_state = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(mpCell)->rGetStateVariables();
-    const bool is_while_loop = !mpStepper->IsEndFixed();
-    std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = rGetSteppers();
-
-    // Figure out which part of the output arrays to fill
-    const unsigned nesting_depth = r_steppers.size();
-    NdArray<double>::Indices indices(nesting_depth);
-    bool about_to_outer_loop = true;
-    for (unsigned dim=0; dim<nesting_depth; ++dim)
-    {
-        indices[dim] = r_steppers[dim]->GetCurrentOutputNumber();
-        if (dim > 0 && indices[dim] < r_steppers[dim]->GetNumberOfOutputPoints())
-        {
-            about_to_outer_loop = false;
-        }
-    }
-
-    // Fill in outputs
-    const std::vector<std::string> output_names = p_system->GetOutputNames();
-    const unsigned num_outputs = output_names.size();
-    const double time = rGetSteppers().back()->GetCurrentOutputPoint();
-    VECTOR outputs = p_system->ComputeOutputs(time, r_state);
-    assert(GetVectorSize(outputs) == num_outputs);
-    for (unsigned i=0; i<num_outputs; ++i)
-    {
-        NdArray<double> array = GET_ARRAY(pResults->Lookup(output_names[i], GetLocationInfo()));
-        // Resize all outputs if a while loop has gone beyond the current allocation
-        if (i == 0 && is_while_loop && indices[0] >= array.GetShape()[0])
-        {
-            ResizeOutputs(pResults);
-        }
-        // Assign value
-        array[indices] = GetVectorComponent(outputs, i);
-    }
-    DeleteVector(outputs);
-
-    // Fill in vector outputs
-    const std::vector<std::string>& r_vector_output_names = p_system->rGetVectorOutputNames();
-    const unsigned num_vector_outputs = r_vector_output_names.size();
-    std::vector<VECTOR> vector_outputs = p_system->ComputeVectorOutputs(time, r_state);
-    assert(vector_outputs.size() == num_vector_outputs);
-    for (unsigned i=0; i<num_vector_outputs; ++i)
-    {
-        NdArray<double>::Indices our_indices(indices);
-        our_indices.push_back(0u);
-        NdArray<double> array = GET_ARRAY(pResults->Lookup(r_vector_output_names[i], GetLocationInfo()));
-        // Fill in the vector
-        const unsigned vector_length = GetVectorSize(vector_outputs[i]);
-        assert(vector_length == array.GetShape().back());
-        for (unsigned j=0; j<vector_length; ++j)
-        {
-            array[our_indices] = GetVectorComponent(vector_outputs[i], j);
-            our_indices.back()++;
-        }
-    }
-
-    if (about_to_outer_loop && is_while_loop)
-    {
-        CreateResultViews(pResults);
-    }
 }

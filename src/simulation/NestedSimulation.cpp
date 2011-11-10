@@ -46,18 +46,12 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
         std::cout << "Nested simulation " << mpStepper->GetIndexName() << " step "
                   << mpStepper->GetCurrentOutputNumber() << " value " << mpStepper->GetCurrentOutputPoint()
                   << "..." << std::endl;
-        /// \todo  Move modifiers invocation to base class method?
-        if (mpModifiers)
-        {
-            (*mpModifiers)(mpCell, mpStepper);
-        }
+        LoopBodyStartHook(pResults);
         // Run the nested simulation, which will add any outputs produced
         mpNestedSimulation->Run(pResults);
+        LoopBodyEndHook(pResults);
     }
-    if (mpModifiers)
-    {
-        mpModifiers->ApplyAtEnd(mpCell, mpStepper);
-    }
+    LoopEndHook(pResults);
 }
 
 void NestedSimulation::SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell)

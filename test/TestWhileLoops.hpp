@@ -70,16 +70,7 @@ public:
             CheckFinalV(r_outputs, r_name, N);
         }
         CheckFinalV(r_outputs, "V_3001", 3001);
-    }
-
-    void TestErrorOnEmptyLoop() throw (Exception)
-    {
-        std::string dirname = "TestWhileLoops/EmptyLoop";
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_while_loop.xml", RelativeTo::ChasteSourceRoot);
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
-        runner.GetProtocol()->SetInput("num_iters", CONST(0));
-        TS_ASSERT_THROWS_CONTAINS(runner.RunProtocol(), "A while loop condition must hold initially.");
+        CheckFinalV(r_outputs, "V_empty", 1);
     }
 private:
     void CheckFinalV(const Environment& rOutputs, const std::string& rOutputName, unsigned N)

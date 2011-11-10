@@ -89,6 +89,9 @@ private:
 
     /** The loop condition. */
     AbstractExpressionPtr mpCondition;
+
+    /** Whether after the last call to Step the loop condition was false. */
+    bool mAtEnd;
 };
 
 #endif // WHILESTEPPER_HPP_

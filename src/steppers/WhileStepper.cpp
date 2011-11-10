@@ -36,7 +36,8 @@ WhileStepper::WhileStepper(const std::string& rIndexName,
                            const AbstractExpressionPtr pStoppingCondition)
     : AbstractStepper(rIndexName, rIndexUnits),
       mNumberOfOutputPoints(1000u),
-      mpCondition(pStoppingCondition)
+      mpCondition(pStoppingCondition),
+      mAtEnd(false)
 {
     assert(mpCondition);
     SetCurrentOutputPoint(0.0);
@@ -64,27 +65,14 @@ bool WhileStepper::IsEndFixed() const
 void WhileStepper::Reset()
 {
     mCurrentStep = 0;
+    mAtEnd = false;
     SetCurrentOutputPoint(0.0);
 }
 
 
 bool WhileStepper::AtEnd()
 {
-    AbstractValuePtr p_result = (*mpCondition)(*mpEnvironment);
-    PROTO_ASSERT(p_result->IsDouble(), "A while loop condition must evaluate to a number.");
-    bool at_end = !GET_SIMPLE_VALUE(p_result);
-    if (at_end)
-    {
-        // Ensure that the while condition holds initially, or we get an empty output
-        PROTO_ASSERT(mCurrentStep > 0, "A while loop condition must hold initially.");
-
-        mNumberOfOutputPoints = mCurrentStep;
-    }
-    else if (mCurrentStep == mNumberOfOutputPoints)
-    {
-        mNumberOfOutputPoints += 1000u;
-    }
-    return at_end;
+    return mAtEnd;
 }
 
 
@@ -92,5 +80,19 @@ double WhileStepper::Step()
 {
     ++mCurrentStep;
     SetCurrentOutputPoint(mCurrentStep);
+
+    // Check the loop condition
+    AbstractValuePtr p_result = (*mpCondition)(*mpEnvironment);
+    PROTO_ASSERT(p_result->IsDouble(), "A while loop condition must evaluate to a number.");
+    mAtEnd = !GET_SIMPLE_VALUE(p_result);
+    if (mAtEnd)
+    {
+        mNumberOfOutputPoints = mCurrentStep;
+    }
+    else if (mCurrentStep == mNumberOfOutputPoints)
+    {
+        mNumberOfOutputPoints += 1000u;
+    }
+
     return GetCurrentOutputPoint();
 }

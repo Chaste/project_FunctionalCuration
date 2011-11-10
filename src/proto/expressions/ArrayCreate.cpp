@@ -139,9 +139,9 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
         NdArray<double>::Indices generator_indices(generator_extents.size(), 0u);
         for (Index i=0; i<num_sub_arrays; ++i)
         {
-            Environment sub_env(rEnv.GetAsDelegatee());
-            SetIndexValues(sub_env, index_names, generator_indices, generation_ranges, GetLocationInfo());
-            AbstractValuePtr p_sub_array = (*mpElementGenerator)(sub_env);
+            EnvironmentPtr p_sub_env(new Environment(rEnv.GetAsDelegatee()));
+            SetIndexValues(*p_sub_env, index_names, generator_indices, generation_ranges, GetLocationInfo());
+            AbstractValuePtr p_sub_array = (*mpElementGenerator)(*p_sub_env);
             PROTO_ASSERT(p_sub_array->IsArray(),
                          "The generator expression in an array comprehension must yield arrays.");
             NdArray<double> sub_array = GET_ARRAY(p_sub_array);

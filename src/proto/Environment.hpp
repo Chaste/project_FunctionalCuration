@@ -34,6 +34,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "AbstractStatement.hpp"
 #include "AbstractValue.hpp"
@@ -44,8 +45,11 @@ typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
 /**
  * A mapping of names to values in the protocol language.
+ *
+ * Note that the class requires that all instances are managed by shared pointers.  The
+ * delegatee functionality will produce tr1::bad_weak_ptr exceptions if this is not done.
  */
-class Environment : boost::noncopyable
+class Environment : boost::noncopyable, public boost::enable_shared_from_this<Environment>
 {
 public:
     /**

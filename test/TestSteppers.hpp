@@ -169,8 +169,8 @@ public:
         TS_ASSERT_EQUALS(p_stst_runner->GetCurrentOutputPoint(), DOUBLE_UNSET);
         TS_ASSERT(p_stst_runner->AtEnd());
         // Evaluate the expressions
-        Environment env;
-        p_stst_runner->SetEnvironment(env);
+        EnvironmentPtr p_env(new Environment);
+        p_stst_runner->SetEnvironment(p_env);
         p_stst_runner->Initialise();
         TS_ASSERT_EQUALS(p_stst_runner->GetNumberOfOutputPoints(), 2u);
         TS_ASSERT_EQUALS(p_stst_runner->GetCurrentOutputPoint(), 0);
@@ -188,7 +188,7 @@ public:
         TS_ASSERT_EQUALS(p_timecourse->GetCurrentOutputPoint(), DOUBLE_UNSET);
         TS_ASSERT(p_timecourse->AtEnd());
         // Evaluate the expressions
-        p_timecourse->SetEnvironment(env);
+        p_timecourse->SetEnvironment(p_env);
         p_timecourse->Initialise();
         TS_ASSERT_EQUALS(p_timecourse->GetNumberOfOutputPoints(), 2001u);
         for (unsigned i=0; i<=2000; i++)
@@ -207,8 +207,8 @@ public:
         std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(N));
         DEFINE(cond, make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper, ("i", "number", cond));
-        Environment env;
-        p_stepper->SetEnvironment(env);
+        EnvironmentPtr p_env(new Environment);
+        p_stepper->SetEnvironment(p_env);
         p_stepper->Initialise();
 
         DoAbstractTest(p_stepper, "i");
@@ -231,7 +231,7 @@ public:
         args = EXPR_LIST(LOOKUP("i2"))(CONST(N));
         DEFINE(cond2, make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper2, ("i2", "number", cond2));
-        p_stepper2->SetEnvironment(env);
+        p_stepper2->SetEnvironment(p_env);
         p_stepper2->Initialise();
         TS_ASSERT(!p_stepper2->IsEndFixed());
         TS_ASSERT_LESS_THAN(p_stepper2->GetNumberOfOutputPoints(), N);
@@ -252,7 +252,7 @@ public:
         args = EXPR_LIST(LOOKUP("i3"))(CONST(N));
         DEFINE(cond3, make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper3, ("i3", "number", cond3));
-        p_stepper3->SetEnvironment(env);
+        p_stepper3->SetEnvironment(p_env);
         p_stepper3->Initialise();
         TS_ASSERT_THROWS_CONTAINS(p_stepper3->AtEnd(), "A while loop condition must hold initially.");
     }

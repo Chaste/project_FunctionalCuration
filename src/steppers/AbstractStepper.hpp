@@ -31,11 +31,15 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 #include "Environment.hpp"
 #include "ValueTypes.hpp"
 #include "AbstractExpression.hpp"
 #include "LocatableConstruct.hpp"
+
+class AbstractStepper;
+typedef boost::shared_ptr<AbstractStepper> AbstractStepperPtr;
 
 /**
  * Base class for simulation protocol steppers - the objects that control
@@ -120,9 +124,9 @@ public:
     /**
      * Set the environment in which this stepper's value is bound.
      *
-     * @param rEnv
+     * @param pEnv
      */
-    void SetEnvironment(Environment& rEnv);
+    void SetEnvironment(EnvironmentPtr pEnv);
 
     /** Get the environment in which this stepper's value is bound. */
     Environment& rGetEnvironment() const;
@@ -138,7 +142,7 @@ protected:
     unsigned mCurrentStep;
 
     /** The environment in which this stepper's value is bound. */
-    Environment* mpEnvironment;
+    EnvironmentPtr mpEnvironment;
 
     /** Expressions which should evaluate to the parameters for this stepper. */
     std::vector<AbstractExpressionPtr> mExpressions;

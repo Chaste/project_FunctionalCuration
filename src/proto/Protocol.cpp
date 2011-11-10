@@ -31,6 +31,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 #include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/foreach.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/assign/list_of.hpp>
@@ -44,6 +45,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 // Typedefs for use with BOOST_FOREACH and std::maps
 typedef std::pair<std::string, std::string> StringPair;
 typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
+typedef std::pair<std::string, ProtocolPtr> StringProtoPair;
 
 /*
  *
@@ -52,10 +54,11 @@ typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
  */
 
 Protocol::Protocol()
-    : mInputs(true),
+    : mpInputs(new Environment(true)),
+      mpLibrary(new Environment),
       mpModelStateCollection(new ModelStateCollection)
 {
-    mLibrary.SetDelegateeEnvironment(mInputs.GetAsDelegatee());
+    mpLibrary->SetDelegateeEnvironment(mpInputs->GetAsDelegatee());
 }
 
 
@@ -77,15 +80,46 @@ void AddSimulationResultsDelegatees(Environment& rEnv, std::map<std::string, Env
 }
 
 
-void Protocol::Run()
+void Protocol::FinaliseSetup()
 {
-    std::cout << "Running protocol..." << std::endl;
+    // Set default input definitions
+    mpInputs->ExecuteStatements(mInputStatements);
+    // Add delegatees for any imported libraries
+    Environment& r_library = rGetLibrary();
+    BOOST_FOREACH(StringProtoPair import, mImports)
+    {
+        r_library.SetDelegateeEnvironment(import.second->rGetLibrary().GetAsDelegatee(), import.first);
+    }
     // Ensure the final outputs environment exists
     EnvironmentPtr p_proto_outputs(new Environment);
     mOutputs[""] = p_proto_outputs;
-    // Load our library, if present
-    rGetLibrary();
-    Environment post_proc_env(mLibrary.GetAsDelegatee());
+    // Set delegatees for simulations
+    BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
+    {
+        Environment& r_sim_env = p_sim->rGetEnvironment();
+        // Don't change the delegatee for an imported simulation
+        if (!r_sim_env.GetDelegateeEnvironment())
+        {
+            r_sim_env.SetDelegateeEnvironment(r_library.GetAsDelegatee());
+        }
+    }
+}
+
+
+void Protocol::InitialiseLibrary()
+{
+    const unsigned library_size = mpLibrary->GetNumberOfDefinitions();
+    assert(library_size == 0 || library_size == mLibraryStatements.size());
+    if (library_size == 0)
+    {
+        mpLibrary->ExecuteStatements(mLibraryStatements);
+    }
+}
+
+
+void Protocol::Run()
+{
+    std::cout << "Running protocol..." << std::endl;
     // If we get an error at any stage, we want to ensure as many partial results as possible
     // are stored, but still report the error(s)
     std::vector<Exception> errors;
@@ -97,7 +131,6 @@ void Protocol::Run()
         {
             const std::string prefix = p_sim->GetOutputsPrefix();
             std::cout << "Running simulation " << simulation_number << " " << prefix << "..." << std::endl;
-            p_sim->rGetEnvironment().SetDelegateeEnvironment(mLibrary.GetAsDelegatee());
             AddSimulationResultsDelegatees(p_sim->rGetEnvironment(), mOutputs);
             p_sim->InitialiseSteppers();
             EnvironmentPtr p_results = p_sim->Run();
@@ -118,14 +151,15 @@ void Protocol::Run()
         errors.push_back(e);
     }
     // Ensure post-processing can access simulation results
-    AddSimulationResultsDelegatees(post_proc_env, mOutputs);
+    EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
+    AddSimulationResultsDelegatees(*p_post_proc_env, mOutputs);
     // Post-process the results
     if (errors.empty())
     {
         std::cout << "Running post-processing..." << std::endl;
         try
         {
-            post_proc_env.ExecuteStatements(mPostProcessing);
+            p_post_proc_env->ExecuteStatements(mPostProcessing);
         }
         catch (const Exception& e)
         {
@@ -133,6 +167,7 @@ void Protocol::Run()
         }
     }
     // Transfer requested outputs to mOutputs
+    EnvironmentPtr p_proto_outputs = mOutputs[""];
     BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
     {
         const std::string& r_loc = p_spec->GetLocationInfo();
@@ -140,7 +175,7 @@ void Protocol::Run()
         const std::string& r_name = p_spec->rGetOutputName();
         try
         {
-            AbstractValuePtr p_output = post_proc_env.Lookup(r_ref, r_loc);
+            AbstractValuePtr p_output = p_post_proc_env->Lookup(r_ref, r_loc);
             if (p_spec->rGetOutputType() == "Post-processed")
             {
                 const std::string& r_units = p_spec->rGetOutputUnits();
@@ -221,12 +256,19 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         {
             if (p_stepper) // See #1911
             {
-                (*p_file) << '"' << p_stepper->GetIndexName() << "\",\"" << p_stepper->GetUnits() << '"';
-                for (p_stepper->Reset(); !p_stepper->AtEnd(); p_stepper->Step())
+                try
                 {
-                    (*p_file) << "," << p_stepper->GetCurrentOutputPoint();
+                    (*p_file) << '"' << p_stepper->GetIndexName() << "\",\"" << p_stepper->GetUnits() << '"';
+                    for (p_stepper->Reset(); !p_stepper->AtEnd(); p_stepper->Step())
+                    {
+                        (*p_file) << "," << p_stepper->GetCurrentOutputPoint();
+                    }
+                    (*p_file) << std::endl;
                 }
-                (*p_file) << std::endl;
+                catch (const Exception& e)
+                {
+                    std::cerr << "Error writing stepper " << p_stepper->GetIndexName() << ":" << e.GetMessage();
+                }
             }
         }
     }
@@ -358,8 +400,8 @@ boost::shared_ptr<ModelStateCollection> Protocol::GetStateCollection()
 
 void Protocol::SetInput(const std::string& rName, AbstractExpressionPtr pValue)
 {
-    AbstractValuePtr p_value = (*pValue)(mInputs);
-    mInputs.OverwriteDefinition(rName, p_value, "Setting protocol input");
+    AbstractValuePtr p_value = (*pValue)(*mpInputs);
+    mpInputs->OverwriteDefinition(rName, p_value, "Setting protocol input");
 }
 
 
@@ -383,15 +425,19 @@ const std::map<std::string, std::string>& Protocol::rGetNamespaceBindings() cons
 
 Environment& Protocol::rGetInputsEnvironment()
 {
-    return mInputs;
+    return *mpInputs;
+}
+
+
+std::vector<AbstractStatementPtr>& Protocol::rGetInputStatements()
+{
+    return mInputStatements;
 }
 
 
 Environment& Protocol::rGetLibrary()
 {
-    mLibrary.ExecuteStatements(mLibraryStatements);
-    mLibraryStatements.clear();
-    return mLibrary;
+    return *mpLibrary;
 }
 
 
@@ -438,7 +484,7 @@ void Protocol::AddImport(const std::string& rPrefix, ProtocolPtr pImport, const 
                   "The prefix " << rPrefix << " has already been used for an imported protocol.",
                   rLoc);
     // Make the import's library, if any, available to our library and hence its users
-    mLibrary.SetDelegateeEnvironment(pImport->rGetLibrary().GetAsDelegatee(), rPrefix);
+    mpLibrary->SetDelegateeEnvironment(pImport->rGetLibrary().GetAsDelegatee(), rPrefix);
 }
 
 
@@ -459,6 +505,12 @@ void Protocol::AddNamespaceBindings(const std::map<std::string, std::string>& rB
 }
 
 
+void Protocol::AddInputDefinitions(const std::vector<AbstractStatementPtr>& rStatements)
+{
+    std::copy(rStatements.begin(), rStatements.end(), std::back_inserter(mInputStatements));
+}
+
+
 void Protocol::AddPostProcessing(const std::vector<AbstractStatementPtr>& rStatements)
 {
     mPostProcessing.resize(mPostProcessing.size() + rStatements.size());
@@ -476,6 +528,12 @@ void Protocol::AddLibrary(const std::vector<AbstractStatementPtr>& rStatements)
 void Protocol::AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation)
 {
     mSimulations.push_back(pSimulation);
+}
+
+
+void Protocol::AddSimulations(const std::vector<boost::shared_ptr<AbstractSimulation> >& rSimulations)
+{
+    std::copy(rSimulations.begin(), rSimulations.end(), std::back_inserter(mSimulations));
 }
 
 
@@ -516,18 +574,29 @@ boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> Protocol::CheckModel(boo
 }
 
 
+void Protocol::SetModelEnvironments(const std::map<std::string, EnvironmentPtr>& rModelEnvs)
+{
+    BOOST_FOREACH(StringEnvPair binding, rModelEnvs)
+    {
+        mpInputs->SetDelegateeEnvironment(binding.second, binding.first);
+    }
+    BOOST_FOREACH(StringProtoPair import, mImports)
+    {
+        import.second->SetModelEnvironments(rModelEnvs);
+    }
+    // Now run the library program, if present
+    InitialiseLibrary();
+}
+
+
 void Protocol::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)
 {
     mpModel = CheckModel(pModel);
-    // Get the model wrapper environments, and ensure every other environment can
-    // delegate to them for ontology prefixes.
+    // Get the model wrapper environments, and ensure that every other environment (including in
+    // imported protocols) can delegate to them for ontology prefixes.
     mpModel->SetNamespaceBindings(mOntologyNamespaceBindings);
     const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
-    BOOST_FOREACH(StringEnvPair binding, r_model_envs)
-    {
-        mInputs.SetDelegateeEnvironment(binding.second, binding.first);
-    }
-
+    SetModelEnvironments(r_model_envs);
     // Associate each simulation with this model
     for (unsigned simulation=0; simulation<mSimulations.size(); ++simulation)
     {

@@ -55,7 +55,8 @@ LambdaExpression::LambdaExpression(const std::vector<std::string>& rFormalParame
 
 AbstractValuePtr LambdaExpression::operator()(const Environment& rEnv) const
 {
-    boost::shared_ptr<LambdaClosure> p_closure(new LambdaClosure(rEnv, mFormalParameters, mBody, mDefaultParameters));
+    boost::shared_ptr<LambdaClosure> p_closure(new LambdaClosure(rEnv.GetAsDelegatee(),
+                                                                 mFormalParameters, mBody, mDefaultParameters));
     p_closure->SetLocationInfo(GetLocationInfo());
     return p_closure;
 }

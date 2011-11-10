@@ -35,7 +35,7 @@ NestedSimulation::NestedSimulation(boost::shared_ptr<AbstractSimulation> pNested
     : AbstractSimulation(pNestedSimulation->GetCell(), pStepper, pModifiers, pNestedSimulation->GetSteppers()),
       mpNestedSimulation(pNestedSimulation)
 {
-    mpNestedSimulation->rGetEnvironment().SetDelegateeEnvironment(mEnvironment.GetAsDelegatee());
+    mpNestedSimulation->rGetEnvironment().SetDelegateeEnvironment(mpEnvironment->GetAsDelegatee());
 }
 
 

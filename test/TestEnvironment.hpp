@@ -40,12 +40,15 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "ValueTypes.hpp"
 #include "ProtoHelperMacros.hpp"
 
+#define NEW_ENV_A(name, args)  EnvironmentPtr _p_##name(new Environment args); Environment& name = *_p_##name;
+#define NEW_ENV(name)  NEW_ENV_A(name, ())
+
 class TestEnvironment : public CxxTest::TestSuite
 {
 public:
     void TestDefiningNames() throw (Exception)
     {
-        Environment env;
+        NEW_ENV(env);
         AbstractValuePtr p_val = CV(123.4);
         const std::string name = "a_test_value";
 
@@ -75,14 +78,14 @@ public:
         TS_ASSERT_THROWS_CONTAINS(env.DefineNames(names, values, ""),
                                   "Name " + names[0] + " is already defined and may not be re-bound.");
 
-        Environment env2;
+        NEW_ENV(env2);
         env2.Merge(env, "test");
         TS_ASSERT_EQUALS(env.GetDefinedNames(), env2.GetDefinedNames());
     }
 
     void TestOverwritingEnv() throw (Exception)
     {
-        Environment env(true);
+        NEW_ENV_A(env, (true));
         const std::string name = "test_value";
         TS_ASSERT_THROWS_CONTAINS(env.Lookup(name), "Name " + name + " is not defined in this environment.");
 
@@ -101,9 +104,9 @@ public:
 
     void TestDelegation() throw (Exception)
     {
-        Environment root_env;
-        Environment middle_env(root_env.GetAsDelegatee());
-        Environment top_env;
+        NEW_ENV(root_env);
+        NEW_ENV_A(middle_env, (root_env.GetAsDelegatee()));
+        NEW_ENV(top_env);
         top_env.SetDelegateeEnvironment(middle_env.GetAsDelegatee());
 
         TS_ASSERT(!root_env.GetDelegateeEnvironment());
@@ -128,10 +131,10 @@ public:
 
     void TestPrefixedDelegation() throw (Exception)
     {
-        Environment root_env;
-        Environment env(root_env.GetAsDelegatee());
-        Environment env_a;
-        Environment env_b;
+        NEW_ENV(root_env);
+        NEW_ENV_A(env, (root_env.GetAsDelegatee()));
+        NEW_ENV(env_a);
+        NEW_ENV(env_b);
         root_env.SetDelegateeEnvironment(env_a.GetAsDelegatee(), "a");
         root_env.SetDelegateeEnvironment(env_b.GetAsDelegatee(), "b");
 
@@ -159,7 +162,7 @@ public:
         TS_ASSERT_THROWS_CONTAINS(root_env.Lookup("a:n"), "Name n is not defined in this environment.");
         TS_ASSERT_THROWS_CONTAINS(root_env.Lookup("c:c"), "No environment associated with the prefix 'c'.");
 
-        Environment env_aa;
+        NEW_ENV(env_aa);
         env_a.SetDelegateeEnvironment(env_aa.GetAsDelegatee(), "a");
         AbstractValuePtr p_three = CV(3);
         env_aa.DefineName("a", p_three, "");
@@ -169,9 +172,9 @@ public:
 
     void TestOverwritingDelegation() throw (Exception)
     {
-        Environment root_env(true);
-        Environment env1(root_env.GetAsDelegatee());
-        Environment env2;
+        NEW_ENV_A(root_env, (true));
+        NEW_ENV_A(env1, (root_env.GetAsDelegatee()));
+        NEW_ENV(env2);
         const std::string prefix("root");
         env2.SetDelegateeEnvironment(root_env.GetAsDelegatee(), prefix);
 

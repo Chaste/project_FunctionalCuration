@@ -30,11 +30,11 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BacktraceException.hpp"
 
-LambdaClosure::LambdaClosure(const Environment& rDefiningEnv,
+LambdaClosure::LambdaClosure(EnvironmentCPtr pDefiningEnv,
                              const std::vector<std::string>& rFormalParameters,
                              const std::vector<AbstractStatementPtr>& rBody,
                              const std::vector<AbstractValuePtr>& rDefaultParameters)
-    : mrDefiningEnv(rDefiningEnv),
+    : mpDefiningEnv(pDefiningEnv),
       mFormalParameters(rFormalParameters),
       mBody(rBody),
       mDefaultParameters(rDefaultParameters)
@@ -67,10 +67,10 @@ AbstractValuePtr LambdaClosure::operator()(const Environment& rCallersEnv,
         }
     }
     // Create local environment and execute function body
-    Environment local_env(mrDefiningEnv.GetAsDelegatee());
-    local_env.DefineNames(mFormalParameters, params, GetLocationInfo());
+    EnvironmentPtr p_local_env(new Environment(mpDefiningEnv->GetAsDelegatee()));
+    p_local_env->DefineNames(mFormalParameters, params, GetLocationInfo());
     AbstractValuePtr p_result;
-    PROPAGATE_BACKTRACE(p_result = local_env.ExecuteStatements(mBody, true /* says return is allowed */));
+    PROPAGATE_BACKTRACE(p_result = p_local_env->ExecuteStatements(mBody, true /* says return is allowed */));
     return p_result;
 }
 

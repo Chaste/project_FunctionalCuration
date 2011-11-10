@@ -38,25 +38,30 @@ Environment::Environment(bool allowOverwrite)
     : mAllowOverwrite(allowOverwrite)
 {}
 
+
 Environment::Environment(const EnvironmentCPtr pDelegateeEnv)
     : mAllowOverwrite(false)
 {
     mpDelegateeEnvs[""] = pDelegateeEnv;
 }
 
-EnvironmentCPtr Environment::GetAsDelegatee() const
-{
-    return EnvironmentCPtr(this, NullDeleter());
-}
 
 Environment::~Environment()
 {}
+
+
+EnvironmentCPtr Environment::GetAsDelegatee() const
+{
+    return shared_from_this();
+}
+
 
 void Environment::SetDelegateeEnvironment(const EnvironmentCPtr pDelegateeEnv,
                                           std::string prefix)
 {
     mpDelegateeEnvs[prefix] = pDelegateeEnv;
 }
+
 
 EnvironmentCPtr Environment::GetDelegateeEnvironment(std::string prefix) const
 {
@@ -68,6 +73,7 @@ EnvironmentCPtr Environment::GetDelegateeEnvironment(std::string prefix) const
     }
     return delegatee;
 }
+
 
 /**
  * Find a suitable environment to delegate to when looking up the given name.
@@ -102,6 +108,7 @@ EnvironmentCPtr FindDelegatee(const Environment& rEnv, std::string& rName, const
     return delegatee;
 }
 
+
 AbstractValuePtr Environment::Lookup(const std::string& rName, const std::string& rCallerLocation) const
 {
     AbstractValuePtr p_result;
@@ -126,6 +133,7 @@ AbstractValuePtr Environment::Lookup(const std::string& rName, const std::string
     return p_result;
 }
 
+
 void Environment::DefineName(const std::string& rName, const AbstractValuePtr pValue,
                              const std::string& rCallerLocation)
 {
@@ -142,6 +150,7 @@ void Environment::DefineName(const std::string& rName, const AbstractValuePtr pV
     mBindings[rName] = pValue;
 }
 
+
 void Environment::DefineNames(const std::vector<std::string>& rNames,
                               const std::vector<AbstractValuePtr>& rValues,
                               const std::string& rCallerLocation)
@@ -153,6 +162,7 @@ void Environment::DefineNames(const std::vector<std::string>& rNames,
     }
 }
 
+
 void Environment::Merge(const Environment& rEnv, const std::string& rCallerLocation)
 {
     BOOST_FOREACH(const std::string& r_name, rEnv.GetDefinedNames())
@@ -160,6 +170,7 @@ void Environment::Merge(const Environment& rEnv, const std::string& rCallerLocat
         DefineName(r_name, rEnv.Lookup(r_name, rCallerLocation), rCallerLocation);
     }
 }
+
 
 void Environment::OverwriteDefinition(const std::string& rName, const AbstractValuePtr pValue,
                                       const std::string& rCallerLocation)
@@ -192,10 +203,12 @@ void Environment::OverwriteDefinition(const std::string& rName, const AbstractVa
     }
 }
 
+
 unsigned Environment::GetNumberOfDefinitions() const
 {
     return mBindings.size();
 }
+
 
 std::vector<std::string> Environment::GetDefinedNames() const
 {
@@ -209,6 +222,7 @@ std::vector<std::string> Environment::GetDefinedNames() const
     return names;
 }
 
+
 AbstractValuePtr Environment::ExecuteStatement(const AbstractStatementPtr pStatement,
                                                bool returnAllowed)
 {
@@ -220,6 +234,7 @@ AbstractValuePtr Environment::ExecuteStatement(const AbstractStatementPtr pState
     }
     return p_result;
 }
+
 
 AbstractValuePtr Environment::ExecuteStatements(const std::vector<AbstractStatementPtr>& rStatements,
                                                 bool returnAllowed)
@@ -234,6 +249,7 @@ AbstractValuePtr Environment::ExecuteStatements(const std::vector<AbstractStatem
     }
     return p_result;
 }
+
 
 std::string Environment::FreshIdent()
 {

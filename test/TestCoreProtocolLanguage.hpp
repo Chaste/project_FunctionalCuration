@@ -176,7 +176,8 @@ public:
         /*
          * Do the interpretation
          */
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
         env.ExecuteStatements(program);
 
         /* Extract and test results */
@@ -269,7 +270,8 @@ public:
 
     void TestFindAndIndex() throw (Exception)
     {
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
 
         // Create a 2d array to operate on
         NdArray<double>::Extents input_shape = boost::assign::list_of(3)(5);
@@ -517,18 +519,18 @@ public:
 
     void TestIf() throw (Exception)
     {
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
         // if (1, 2, 3)  --> 2
         {
             DEFINE(if_t, make_shared<If>(CONST(1), CONST(2), CONST(3)));
-            AbstractValuePtr p_result = (*if_t)(env);
+            AbstractValuePtr p_result = (*if_t)(*p_env);
             TS_ASSERT(p_result->IsDouble());
             TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(p_result), 2.0);
         }
         // if (0, 2, 3)  --> 3
         {
             DEFINE(if_t, make_shared<If>(CONST(0), CONST(2), CONST(3)));
-            AbstractValuePtr p_result = (*if_t)(env);
+            AbstractValuePtr p_result = (*if_t)(*p_env);
             TS_ASSERT(p_result->IsDouble());
             TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(p_result), 3.0);
         }
@@ -536,13 +538,13 @@ public:
 
     void TestArrayComprehensions() throw (Exception)
     {
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
         // counting1d = { i for #0#i=0:10 }  --> {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
         {
             DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(10))(VALUE(StringValue, "i")));
             std::vector<AbstractExpressionPtr> comp_args = list_of(i_range);
             DEFINE(array_exp, make_shared<ArrayCreate>(LOOKUP("i"), comp_args));
-            AbstractValuePtr p_array = (*array_exp)(env);
+            AbstractValuePtr p_array = (*array_exp)(*p_env);
             TS_ASSERT(p_array->IsArray());
             NdArray<double> array = static_cast<ArrayValue*>(p_array.get())->GetArray();
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 1u);
@@ -565,7 +567,7 @@ public:
             args = list_of<AbstractExpressionPtr>(times)(LOOKUP("j"));
             DEFINE(plus, make_shared<MathmlPlus>(args));
             DEFINE(array_exp, make_shared<ArrayCreate>(plus, comp_args));
-            AbstractValuePtr p_array = (*array_exp)(env);
+            AbstractValuePtr p_array = (*array_exp)(*p_env);
             TS_ASSERT(p_array->IsArray());
             NdArray<double> array = static_cast<ArrayValue*>(p_array.get())->GetArray();
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 2u);
@@ -599,7 +601,7 @@ public:
             DEFINE(subarray, make_shared<ArrayCreate>(sub_array_elts));
 
             DEFINE(array_exp, make_shared<ArrayCreate>(subarray, comp_args));
-            AbstractValuePtr p_array = (*array_exp)(env);
+            AbstractValuePtr p_array = (*array_exp)(*p_env);
             TS_ASSERT(p_array->IsArray());
             NdArray<double> array = static_cast<ArrayValue*>(p_array.get())->GetArray();
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 3u);
@@ -618,7 +620,8 @@ public:
 
     void TestMultipleReturns() throw (Exception)
     {
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
 
         // swap = lambda a, b: return b, a
         {
@@ -647,7 +650,8 @@ public:
 
     void TestCoreLibrary() throw (Exception)
     {
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
         ProtoBasicPostProc library;
 
         library.DefineAll(env);

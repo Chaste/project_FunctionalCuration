@@ -90,7 +90,8 @@ public:
                                   "Name none is not defined and may not be overwritten.");
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
         TS_ASSERT_THROWS_CONTAINS(env.OverwriteDefinition("blah", CV(0), ""),
                                   "This environment does not support overwriting mappings.");
         env.ExecuteStatements(r_program);
@@ -181,7 +182,8 @@ public:
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
         bool threw = false;
         try
         {
@@ -214,7 +216,8 @@ public:
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
-        Environment env;
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
         env.ExecuteStatements(r_program);
 
         NdArray<double> input = LookupArray(env, "input");
@@ -245,6 +248,7 @@ public:
         ProtocolParser parser;
         FileFinder proto_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
+        p_proto->InitialiseLibrary();
         Environment& env = p_proto->rGetLibrary();
 
         {

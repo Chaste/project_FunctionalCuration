@@ -75,6 +75,7 @@ bool VectorStepper::IsEndFixed() const
 
 void VectorStepper::Reset()
 {
+    PROTO_ASSERT(!mValues.empty(), "Un-initialised stepper!");
     mCurrentStep = 0;
     SetCurrentOutputPoint(mValues.front());
 }

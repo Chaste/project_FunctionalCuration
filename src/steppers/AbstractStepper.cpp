@@ -63,11 +63,11 @@ std::string AbstractStepper::GetUnits() const
 }
 
 
-void AbstractStepper::SetEnvironment(Environment& rEnv)
+void AbstractStepper::SetEnvironment(EnvironmentPtr pEnv)
 {
-    mpEnvironment = &rEnv;
+    mpEnvironment = pEnv;
     AbstractValuePtr p_this(this, NullDeleter());
-    rEnv.DefineName(mIndexName, p_this, GetLocationInfo());
+    pEnv->DefineName(mIndexName, p_this, GetLocationInfo());
 }
 
 Environment& AbstractStepper::rGetEnvironment() const

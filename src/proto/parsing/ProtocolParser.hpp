@@ -46,14 +46,6 @@ public:
      * @param rProtocolFile  the file to parse
      */
     ProtocolPtr ParseFile(const FileFinder& rProtocolFile);
-
-    /**
-     * Parse a library of protocol language functions and add them to a protocol.
-     *
-     * @param rProtocolFile  the library file to parse
-     * @param pProtocol  the protocol to which to add the definitions
-     */
-    void ParseLibrary(const FileFinder& rProtocolFile, ProtocolPtr pProtocol);
 };
 
 #endif // PROTOCOLPARSER_HPP_

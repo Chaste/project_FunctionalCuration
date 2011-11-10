@@ -52,7 +52,8 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInte
     : mpCell(pCell),
       mpStepper(pStepper),
       mpModifiers(pModifiers),
-      mpSteppers(pSteppers)
+      mpSteppers(pSteppers),
+      mpEnvironment(new Environment)
 {
     if (!mpSteppers)
     {
@@ -63,7 +64,7 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInte
                  "A while loop may only be the outermost loop for a simulation.");
     // Add our stepper to the front of the shared collection (innermost is last)
     mpSteppers->insert(mpSteppers->begin(), mpStepper);
-    mpStepper->SetEnvironment(mEnvironment);
+    mpStepper->SetEnvironment(mpEnvironment);
 }
 
 
@@ -83,7 +84,7 @@ void AbstractSimulation::InitialiseSteppers()
 
 Environment& AbstractSimulation::rGetEnvironment()
 {
-    return mEnvironment;
+    return *mpEnvironment;
 }
 
 
@@ -95,7 +96,7 @@ void AbstractSimulation::SetOutputsPrefix(const std::string& rPrefix)
         // Create an environment to contain views of the simulation outputs thus far, for
         // use in the loop condition test if needed.
         EnvironmentPtr p_view_env(new Environment(true/* allow overwrite */));
-        mEnvironment.SetDelegateeEnvironment(p_view_env, rPrefix);
+        mpEnvironment->SetDelegateeEnvironment(p_view_env, rPrefix);
     }
 }
 

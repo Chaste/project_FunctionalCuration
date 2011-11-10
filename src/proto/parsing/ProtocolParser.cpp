@@ -29,6 +29,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "ProtocolParser.hpp"
 
 #include <sstream>
+#include <iterator>
+#include <algorithm>
 #include <boost/foreach.hpp>
 
 #include "XmlTools.hpp"
@@ -111,6 +113,7 @@ public:
         // Merge or store protocol
         if (pImportElt->hasAttribute(X("prefix")))
         {
+            mpCurrentProtocolObject->AddNamespaceBindings(p_imported_proto->rGetNamespaceBindings());
             mpCurrentProtocolObject->AddImport(X2C(pImportElt->getAttribute(X("prefix"))), p_imported_proto,
                                                GetLocationInfo());
         }
@@ -120,21 +123,61 @@ public:
             PROTO_ASSERT(merge == "true" || merge == "1",
                          "An import must define a prefix or merge definitions.");
             mpCurrentProtocolObject->AddNamespaceBindings(p_imported_proto->rGetNamespaceBindings());
-            mpCurrentProtocolObject->rGetInputsEnvironment().Merge(p_imported_proto->rGetInputsEnvironment(),
-                                                                   GetLocationInfo());
+            mpCurrentProtocolObject->AddInputDefinitions(p_imported_proto->rGetInputStatements());
             mpCurrentProtocolObject->AddLibrary(p_imported_proto->rGetLibraryStatements());
-            BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, p_imported_proto->rGetSimulations())
-            {
-                mpCurrentProtocolObject->AddSimulation(p_sim);
-            }
+            mpCurrentProtocolObject->AddSimulations(p_imported_proto->rGetSimulations());
             mpCurrentProtocolObject->AddPostProcessing(p_imported_proto->rGetPostProcessing());
             mpCurrentProtocolObject->AddOutputSpecs(p_imported_proto->rGetOutputSpecifications());
             mpCurrentProtocolObject->AddDefaultPlots(p_imported_proto->rGetPlotSpecifications());
+            // Merged simulations need to delegate to this protocol's library
+            Environment& r_library = mpCurrentProtocolObject->rGetLibrary();
+            BOOST_FOREACH(AbstractSimulationPtr p_sim, p_imported_proto->rGetSimulations())
+            {
+                p_sim->rGetEnvironment().SetDelegateeEnvironment(r_library.GetAsDelegatee());
+            }
         }
         else
         {
             PROTO_EXCEPTION("An import must define a prefix or merge definitions.");
         }
+    }
+
+    template<typename OBJ_VEC>
+    bool CheckUseImports(DOMElement* pElt,
+                         OBJ_VEC& (Protocol::*pGetter)(),
+                         void (Protocol::*pAdder)(const OBJ_VEC&))
+    {
+        bool matched = (X2C(pElt->getLocalName()) == "useImports");
+        if (matched)
+        {
+            SetContext(pElt);
+            PROTO_ASSERT(pElt->hasAttribute(X("prefix")),
+                         "A useImports element must have a prefix attribute.");
+            const std::string prefix = X2C(pElt->getAttribute(X("prefix")));
+            ProtocolPtr p_imported_proto = mpCurrentProtocolObject->GetImportedProtocol(prefix);
+            PROTO_ASSERT(p_imported_proto, "No protocol imported with the prefix " << prefix);
+            OBJ_VEC& r_items = (p_imported_proto.get()->*pGetter)();
+            (mpCurrentProtocolObject.get()->*pAdder)(r_items);
+        }
+        return matched;
+    }
+
+    template<typename OBJ_VEC>
+    bool CheckUseImportsVec(DOMElement* pElt, OBJ_VEC& (Protocol::*pGetter)(), OBJ_VEC& rDestVec)
+    {
+        bool matched = (X2C(pElt->getLocalName()) == "useImports");
+        if (matched)
+        {
+            SetContext(pElt);
+            PROTO_ASSERT(pElt->hasAttribute(X("prefix")),
+                         "A useImports element must have a prefix attribute.");
+            const std::string prefix = X2C(pElt->getAttribute(X("prefix")));
+            ProtocolPtr p_imported_proto = mpCurrentProtocolObject->GetImportedProtocol(prefix);
+            PROTO_ASSERT(p_imported_proto, "No protocol imported with the prefix " << prefix);
+            OBJ_VEC& r_items = (p_imported_proto.get()->*pGetter)();
+            std::copy(r_items.begin(), r_items.end(), std::back_inserter(rDestVec));
+        }
+        return matched;
     }
 
     /**
@@ -954,6 +997,10 @@ public:
         variable_specs.reserve(spec_elts.size());
         BOOST_FOREACH(DOMElement* p_spec_elt, spec_elts)
         {
+            if (CheckUseImportsVec(p_spec_elt, &Protocol::rGetOutputSpecifications, variable_specs))
+            {
+                continue;
+            }
             SetContext(p_spec_elt);
             std::string elt_name = X2C(p_spec_elt->getLocalName());
             std::string type;
@@ -1005,6 +1052,10 @@ public:
         plots.reserve(plot_elts.size());
         BOOST_FOREACH(DOMElement* p_plot_elt, plot_elts)
         {
+            if (CheckUseImportsVec(p_plot_elt, &Protocol::rGetPlotSpecifications, plots))
+            {
+                continue;
+            }
             SetContext(p_plot_elt);
             boost::shared_ptr<PlotSpecification> p_plot;
             std::vector<DOMElement*> children = XmlTools::GetChildElements(p_plot_elt);
@@ -1282,22 +1333,6 @@ xsd::cxx::xml::dom::auto_ptr<DOMDocument> ParseFileToDom(const FileFinder& rProt
 }
 
 
-void ProtocolParser::ParseLibrary(const FileFinder& rProtocolFile, ProtocolPtr pProtocol)
-{
-    // Read the file to a DOM tree
-    xsd::cxx::xml::auto_initializer init_fini(true, true);
-    xsd::cxx::xml::dom::auto_ptr<DOMDocument> p_proto_doc(ParseFileToDom(rProtocolFile));
-
-    // Parse the DOM into language constructs
-    ProtocolParserImpl proto_parser;
-    proto_parser.SetProtocolObject(pProtocol);
-    std::vector<DOMElement*> library = XmlTools::FindElements(p_proto_doc->getDocumentElement(), "library/apply");
-    if (!library.empty())
-    {
-        pProtocol->AddLibrary(proto_parser.ParseStatementList(library.front()));
-    }
-}
-
 /**
  * Add constructs parsed from the given XML document into a protocol object.
  * @param pProto  the protocol object to fill
@@ -1312,8 +1347,7 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
     std::vector<DOMElement*> inputs = XmlTools::FindElements(pRootElt, "inputs/apply");
     if (!inputs.empty())
     {
-        Environment& r_inputs = pProto->rGetInputsEnvironment();
-        r_inputs.ExecuteStatements(rParser.ParseStatementList(inputs.front()));
+        pProto->AddInputDefinitions(rParser.ParseStatementList(inputs.front()));
     }
 
     // Parse imports (if present)
@@ -1337,7 +1371,10 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
         std::vector<DOMElement*> children = XmlTools::GetChildElements(simulations.front());
         BOOST_FOREACH(DOMElement* p_sim_elt, children)
         {
-            pProto->AddSimulation(rParser.ParseSimulationDefinition(p_sim_elt));
+            if (!rParser.CheckUseImports(p_sim_elt, &Protocol::rGetSimulations, &Protocol::AddSimulations))
+            {
+                pProto->AddSimulation(rParser.ParseSimulationDefinition(p_sim_elt));
+            }
         }
     }
 
@@ -1349,9 +1386,10 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
         BOOST_FOREACH(DOMElement* p_child, children)
         {
             // Check for useImports
-            // Local definitions
-            if (X2C(p_child->getLocalName()) == "apply")
+            if (!rParser.CheckUseImports(p_child, &Protocol::rGetPostProcessing, &Protocol::AddPostProcessing)
+                && X2C(p_child->getLocalName()) == "apply")
             {
+                // Local definitions
                 pProto->AddPostProcessing(rParser.ParseStatementList(p_child));
             }
         }
@@ -1374,6 +1412,8 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
     // Transfer prefix bindings
     pProto->AddNamespaceBindings(rParser.GetNamespaceDeclarations());
 
+    // All parsed
+    pProto->FinaliseSetup();
 }
 
 ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)

@@ -39,6 +39,9 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "Environment.hpp"
 #include "LocatableConstruct.hpp"
 
+class AbstractSimulation;
+typedef boost::shared_ptr<AbstractSimulation> AbstractSimulationPtr;
+
 /**
  * Base class for the simulation execution logic in a protocol.
  */
@@ -46,7 +49,7 @@ class AbstractSimulation : public LocatableConstruct, boost::noncopyable
 {
 public:
     /** For readability - it's a long type! */
-    typedef boost::shared_ptr<std::vector<boost::shared_ptr<AbstractStepper> > > StepperCollection;
+    typedef boost::shared_ptr<std::vector<AbstractStepperPtr> > StepperCollection;
 
     /**
      * Constructor.
@@ -59,7 +62,7 @@ public:
      *     collection of steppers.  pStepper will be added by this constructor.
      */
     AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
-                       boost::shared_ptr<AbstractStepper> pStepper,
+                       AbstractStepperPtr pStepper,
                        boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>(),
                        StepperCollection pSteppers=StepperCollection());
 
@@ -98,7 +101,7 @@ public:
     }
 
     /** Get method for what #mpSteppers points to. */
-    std::vector<boost::shared_ptr<AbstractStepper> >& rGetSteppers()
+    std::vector<AbstractStepperPtr>& rGetSteppers()
     {
         return *mpSteppers;
     }
@@ -176,7 +179,7 @@ protected:
     /**
      * The stepper controlling this simulation's loop.
      */
-    boost::shared_ptr<AbstractStepper> mpStepper;
+    AbstractStepperPtr mpStepper;
 
     /**
      * Collection of modifiers which can alter the cell or simulation settings
@@ -191,7 +194,7 @@ protected:
     StepperCollection mpSteppers;
 
     /** The environment in which this simulation is run. */
-    Environment mEnvironment;
+    EnvironmentPtr mpEnvironment;
 
 private:
     /**

@@ -47,12 +47,12 @@ public:
     /**
      * Create a function closure.
      *
-     * @param rDefiningEnv  the environment in which the lambda was defined
+     * @param pDefiningEnv  the environment in which the lambda was defined
      * @param rFormalParameters  the names of the function's parameters
      * @param rBody  the body of the function - the statements to execute when the function is called
      * @param rDefaultParameters  default values for parameters, if any are defined
      */
-    LambdaClosure(const Environment& rDefiningEnv,
+    LambdaClosure(EnvironmentCPtr pDefiningEnv,
                   const std::vector<std::string>& rFormalParameters,
                   const std::vector<AbstractStatementPtr>& rBody,
                   const std::vector<AbstractValuePtr>& rDefaultParameters);
@@ -71,7 +71,7 @@ public:
 
 private:
     /** The environment in which this lambda was defined. */
-    const Environment& mrDefiningEnv;
+    EnvironmentCPtr mpDefiningEnv;
 
     /** The names of the function's parameters. */
     std::vector<std::string> mFormalParameters;

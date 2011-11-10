@@ -137,14 +137,17 @@ public:
     /** Get the protocol input definitions. */
     Environment& rGetInputsEnvironment();
 
-    /** Get the library of definitions in this protocol. */
+    /** Get the statements defining the protocol inputs. */
+    std::vector<AbstractStatementPtr>& rGetInputStatements();
+
+    /**Get the library of definitions in this protocol. */
     Environment& rGetLibrary();
 
     /** Get the statements comprising the library part of the protocol. */
     std::vector<AbstractStatementPtr>& rGetLibraryStatements();
 
     /** Get the list of simulations to be performed. */
-    std::vector<boost::shared_ptr<AbstractSimulation> >& rGetSimulations();
+    std::vector<AbstractSimulationPtr>& rGetSimulations();
 
     /** Get the post-processing program part of the protocol. */
     std::vector<AbstractStatementPtr>& rGetPostProcessing();
@@ -182,6 +185,13 @@ public:
     void AddNamespaceBindings(const std::map<std::string, std::string>& rBindings);
 
     /**
+     * Add default definitions for this protocol's inputs.
+     *
+     * @param rStatements  the statements to append
+     */
+    void AddInputDefinitions(const std::vector<AbstractStatementPtr>& rStatements);
+
+    /**
      * Add some post-processing commands to the library available for this protocol.
      *
      * @param rStatements  the statements to append
@@ -193,7 +203,14 @@ public:
      *
      * @param pSimulation  the simulation
      */
-    void AddSimulation(boost::shared_ptr<AbstractSimulation> pSimulation);
+    void AddSimulation(AbstractSimulationPtr pSimulation);
+
+    /**
+     * Add a list of simulations to run.  Simulations will be run in the order in which they are added.
+     *
+     * @param rSimulations  the simulations
+     */
+    void AddSimulations(const std::vector<AbstractSimulationPtr>& rSimulations);
 
     /**
      * Add some additional post-processing commands to the program.
@@ -217,6 +234,19 @@ public:
     void AddDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications);
 
     /**
+     * Once all components are added to the protocol, this method should be called to finish
+     * initialisation before the protocol may be run, or used as an import.
+     */
+    void FinaliseSetup();
+
+    /**
+     * This method runs the library program.  In normal usage it is run by SetModel, as the
+     * library may reference model variables.  However, a separate method is provided so that
+     * tests of protocol libraries don't need to provide a model.
+     */
+    void InitialiseLibrary();
+
+    /**
      * Set the model being simulated by this protocol.
      *
      * \todo #1872 set model for imported protos too
@@ -225,7 +255,7 @@ public:
      */
     void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
 
-protected:
+private:
     /** Where the protocol was loaded from, for resolving relative imports. */
     FileFinder mSourceFilePath;
 
@@ -243,19 +273,22 @@ protected:
     std::map<std::string, ProtocolPtr> mImports;
 
     /** The environment containing the protocol inputs. */
-    Environment mInputs;
+    EnvironmentPtr mpInputs;
 
     /** The environment containing the library of functionality available for use. */
-    Environment mLibrary;
+    EnvironmentPtr mpLibrary;
 
     /** The simulations to run. */
-    std::vector<boost::shared_ptr<AbstractSimulation> > mSimulations;
+    std::vector<AbstractSimulationPtr> mSimulations;
 
     /** Our collection of saved model states. */
     boost::shared_ptr<ModelStateCollection> mpModelStateCollection;
 
     /** The environment wrapping the model's state, parameters, etc. */
-    boost::shared_ptr<Environment> mpModelEnvironment;
+    EnvironmentPtr mpModelEnvironment;
+
+    /** The protocol input default definitions. */
+    std::vector<AbstractStatementPtr> mInputStatements;
 
     /** The library program. */
     std::vector<AbstractStatementPtr> mLibraryStatements;
@@ -278,6 +311,18 @@ protected:
      * @param pModel  the model
      */
     boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const;
+
+    /**
+     * Ensure that this protocol, and any it imports, can access model variables through the
+     * given environment wrappers.  We do this by making the inputs environment delegate to
+     * model environment(s) for ontology prefixes.
+     *
+     * This method also executes the library program for this protocol and any inports, which
+     * may need to reference model variables.
+     *
+     * @param rModelEnvs  environments wrapping the model
+     */
+    void SetModelEnvironments(const std::map<std::string, EnvironmentPtr>& rModelEnvs);
 };
 
 #endif // PROTOCOL_HPP_

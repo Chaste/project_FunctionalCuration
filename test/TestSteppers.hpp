@@ -247,14 +247,16 @@ public:
         TS_ASSERT(p_stepper2->AtEnd());
         TS_ASSERT_EQUALS(N, p_stepper2->GetNumberOfOutputPoints());
 
-        // While i<0 - empty loop is not allowed
+        // While i<0 - empty loop is impossble
         N = 0;
         args = EXPR_LIST(LOOKUP("i3"))(CONST(N));
         DEFINE(cond3, make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper3, ("i3", "number", cond3));
         p_stepper3->SetEnvironment(p_env);
         p_stepper3->Initialise();
-        TS_ASSERT_THROWS_CONTAINS(p_stepper3->AtEnd(), "A while loop condition must hold initially.");
+        TS_ASSERT(!p_stepper3->AtEnd());
+        p_stepper3->Step();
+        TS_ASSERT(p_stepper3->AtEnd());
     }
 
 };

@@ -80,6 +80,19 @@ void AddSimulationResultsDelegatees(Environment& rEnv, std::map<std::string, Env
 }
 
 
+/**
+ * Reset the provided outputs collection, in order to allow a protocol to be (re-)run.
+ * @param rOutputs  the protocol outputs
+ */
+void ResetOutputs(std::map<std::string, EnvironmentPtr>& rOutputs)
+{
+    rOutputs.clear();
+    // Ensure the final outputs environment exists
+    EnvironmentPtr p_proto_outputs(new Environment);
+    rOutputs[""] = p_proto_outputs;
+}
+
+
 void Protocol::FinaliseSetup()
 {
     // Set default input definitions
@@ -90,9 +103,6 @@ void Protocol::FinaliseSetup()
     {
         r_library.SetDelegateeEnvironment(import.second->rGetLibrary().GetAsDelegatee(), import.first);
     }
-    // Ensure the final outputs environment exists
-    EnvironmentPtr p_proto_outputs(new Environment);
-    mOutputs[""] = p_proto_outputs;
     // Set delegatees for simulations
     BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
     {
@@ -120,6 +130,7 @@ void Protocol::InitialiseLibrary()
 void Protocol::Run()
 {
     std::cout << "Running protocol..." << std::endl;
+    ResetOutputs(mOutputs);
     // If we get an error at any stage, we want to ensure as many partial results as possible
     // are stored, but still report the error(s)
     std::vector<Exception> errors;
@@ -196,6 +207,7 @@ void Protocol::Run()
         ///\todo Make an Exception subclass which reports a set of errors?
         throw errors.front();
     }
+    std::cout << "Finished running protocol." << std::endl;
 }
 
 

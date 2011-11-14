@@ -343,7 +343,9 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(doub
 template<typename VECTOR>
 void AbstractSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings)
 {
-    assert(mEnvironmentMap.empty());
+    ///\todo Go back to the assert when nested protocols are done properly
+//    assert(mEnvironmentMap.empty());
+    mEnvironmentMap.clear();
     // Create the wrapper Environment(s)
     boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system(dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this),
                                                                      NullDeleter());

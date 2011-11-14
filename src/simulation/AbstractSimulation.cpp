@@ -115,7 +115,10 @@ EnvironmentPtr AbstractSimulation::Run()
     if (store_results)
     {
         p_results.reset(new Environment);
-        CreateOutputArrays(p_results);
+        if (mpSteppers->back()->GetNumberOfOutputPoints() > 0u) // Not a nested protocol
+        {
+            CreateOutputArrays(p_results);
+        }
     }
     Run(p_results);
     if (store_results)
@@ -133,11 +136,11 @@ void AbstractSimulation::LoopBodyStartHook(EnvironmentPtr pResults)
         (*mpModifiers)(mpCell, mpStepper);
     }
     // If this is a while loop, we may need to allocate more memory for the results arrays
-    if (pResults)
+    if (pResults && !mpStepper->IsEndFixed() && pResults->GetNumberOfDefinitions() > 0u)
     {
         const std::string any_name = pResults->GetDefinedNames().front();
         NdArray<double> array = GET_ARRAY(pResults->Lookup(any_name, GetLocationInfo()));
-        if (!mpStepper->IsEndFixed() && mpStepper->GetNumberOfOutputPoints() >= array.GetShape()[0])
+        if (mpStepper->GetNumberOfOutputPoints() >= array.GetShape()[0])
         {
             ResizeOutputs(pResults);
         }

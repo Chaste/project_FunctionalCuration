@@ -42,6 +42,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractSimulation.hpp"
 #include "NestedSimulation.hpp"
 #include "TimecourseSimulation.hpp"
+#include "NestedProtocol.hpp"
 #include "AbstractModifier.hpp"
 #include "ModelResetModifier.hpp"
 #include "StateSaverModifier.hpp"
@@ -87,29 +88,74 @@ public:
     }
 
     /**
-     * Parse a global import element, load the imported protocol, and merge constituents
-     * as required.
+     * Parse a nested protocol definition.
      *
-     * @param pImportElt  the import definition
-     * @param rParser  parser to use to load imported protocols
+     * @param pDefnElt  the defining element
      */
-    void ParseImport(DOMElement* pImportElt, ProtocolParser& rParser)
+    AbstractSimulationPtr ParseNestedProtocol(DOMElement* pDefnElt)
     {
-        SetContext(pImportElt);
+        ProtocolPtr p_proto = ImportProtocol(pDefnElt);
+        // Input specifications for imported protocol
+        std::vector<DOMElement*> inputs = XmlTools::FindElements(pDefnElt, "setInput");
+        std::map<std::string, AbstractExpressionPtr> input_specs;
+        BOOST_FOREACH(DOMElement* p_input, inputs)
+        {
+            SetContext(p_input);
+            PROTO_ASSERT(p_input->hasAttribute(X("name")), "A setInput element must specify which input to set.");
+            std::string input_name = X2C(p_input->getAttribute(X("name")));
+            AbstractExpressionPtr p_input_value = ParseNumberOrExpression(p_input);
+            PROTO_ASSERT(!input_specs[input_name], "Duplicate definition for nested protocol input");
+            input_specs[input_name] = p_input_value;
+        }
+        // Output specifications for imported protocol
+        std::vector<DOMElement*> outputs = XmlTools::FindElements(pDefnElt, "selectOutput");
+        std::vector<std::string> output_specs;
+        BOOST_FOREACH(DOMElement* p_output, outputs)
+        {
+            SetContext(p_output);
+            PROTO_ASSERT(p_output->hasAttribute(X("name")), "A selectOutput element must specify an output name.");
+            std::string output_name = X2C(p_output->getAttribute(X("name")));
+            output_specs.push_back(output_name);
+        }
+        AbstractSimulationPtr p_sim(new NestedProtocol(p_proto, input_specs, output_specs));
+        return p_sim;
+    }
+
+    /**
+     * Import the protocol specified by the given element.
+     *
+     * @param pImportElt  the element defining the import
+     */
+    ProtocolPtr ImportProtocol(DOMElement* pImportElt)
+    {
         PROTO_ASSERT(pImportElt->hasAttribute(X("source")), "Imports must have a source attribute.");
         std::string source_uri = X2C(pImportElt->getAttribute(X("source")));
         ///\todo handle absolute paths?
         FileFinder imported_proto_file(source_uri, mpCurrentProtocolObject->rGetSourceFile());
-        ProtocolPtr p_imported_proto = rParser.ParseFile(imported_proto_file);
+        return mrParser.ParseFile(imported_proto_file);
+    }
+
+    /**
+     * Parse a global import element, load the imported protocol, and merge constituents
+     * as required.
+     *
+     * @param pImportElt  the import definition
+     */
+    void ParseImport(DOMElement* pImportElt)
+    {
+        SetContext(pImportElt);
+        ProtocolPtr p_imported_proto = ImportProtocol(pImportElt);
         // Set inputs for imported protocol
         std::vector<DOMElement*> inputs = XmlTools::FindElements(pImportElt, "setInput");
         BOOST_FOREACH(DOMElement* p_input, inputs)
         {
+            SetContext(p_input);
             PROTO_ASSERT(p_input->hasAttribute(X("name")), "A setInput element must specify which input to set.");
             std::string input_name = X2C(p_input->getAttribute(X("name")));
             AbstractExpressionPtr p_input_value = ParseNumberOrExpression(p_input);
             p_imported_proto->SetInput(input_name, p_input_value);
         }
+        SetContext(pImportElt);
         // Merge or store protocol
         if (pImportElt->hasAttribute(X("prefix")))
         {
@@ -957,22 +1003,29 @@ public:
         SetContext(pDefnElt);
         boost::shared_ptr<AbstractSimulation> p_sim;
         std::string sim_type = X2C(pDefnElt->getLocalName());
-        std::vector<DOMElement*> children = XmlTools::GetChildElements(pDefnElt);
-        PROTO_ASSERT(children.size() >= 2,
-                     "A simulation definition must contain stepper and modifier definitions.");
-        boost::shared_ptr<AbstractStepper> p_stepper = ParseStepper(children[0]);
-        boost::shared_ptr<ModifierCollection> p_modifiers = ParseModifiers(children[1]);
-        if (sim_type == "nestedSimulation")
+        if (sim_type == "nestedProtocol")
         {
-            p_sim = ParseNestedSimulation(pDefnElt, p_stepper, p_modifiers);
-        }
-        else if (sim_type == "timecourseSimulation")
-        {
-            p_sim = ParseTimecourseSimulation(pDefnElt, p_stepper, p_modifiers);
+            p_sim = ParseNestedProtocol(pDefnElt);
         }
         else
         {
-            PROTO_EXCEPTION("Unexpected simulation definition element named " << sim_type << ".");
+            std::vector<DOMElement*> children = XmlTools::GetChildElements(pDefnElt);
+            PROTO_ASSERT(children.size() >= 2,
+                         "A simulation definition must contain stepper and modifier definitions.");
+            boost::shared_ptr<AbstractStepper> p_stepper = ParseStepper(children[0]);
+            boost::shared_ptr<ModifierCollection> p_modifiers = ParseModifiers(children[1]);
+            if (sim_type == "nestedSimulation")
+            {
+                p_sim = ParseNestedSimulation(pDefnElt, p_stepper, p_modifiers);
+            }
+            else if (sim_type == "timecourseSimulation")
+            {
+                p_sim = ParseTimecourseSimulation(pDefnElt, p_stepper, p_modifiers);
+            }
+            else
+            {
+                PROTO_EXCEPTION("Unexpected simulation definition element named " << sim_type << ".");
+            }
         }
         if (pDefnElt->hasAttribute(X("prefix")))
         {
@@ -1097,15 +1150,20 @@ public:
     }
 
     /**
-     * Default constructor sets up constant member variables.
+     * Main constructor sets up constant member variables.
+     *
+     * @param rParser  the root parser creating this implementation
      */
-    ProtocolParserImpl()
-        : mMathmlNs("http://www.w3.org/1998/Math/MathML"),
+    ProtocolParserImpl(ProtocolParser& rParser)
+        : mrParser(rParser),
+          mMathmlNs("http://www.w3.org/1998/Math/MathML"),
           mCsymbolBaseUrl("https://chaste.cs.ox.ac.uk/nss/protocol/")
     {}
 
-
 private:
+    /** The root parser that created this parser implementation. */
+    ProtocolParser& mrParser;
+
     /** The protocol object that parsed language constructs will be added to. */
     ProtocolPtr mpCurrentProtocolObject;
 
@@ -1338,10 +1396,8 @@ xsd::cxx::xml::dom::auto_ptr<DOMDocument> ParseFileToDom(const FileFinder& rProt
  * @param pProto  the protocol object to fill
  * @param rParser  the protocol parser to use
  * @param pRootElt  the root of the protocol XML document to parse
- * @param rParentParser  the user-facing parser
  */
-void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOMElement* pRootElt,
-                           ProtocolParser& rParentParser)
+void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOMElement* pRootElt)
 {
     // Parse protocol inputs (if present)
     std::vector<DOMElement*> inputs = XmlTools::FindElements(pRootElt, "inputs/apply");
@@ -1354,7 +1410,7 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
     std::vector<DOMElement*> imports = XmlTools::FindElements(pRootElt, "import");
     BOOST_FOREACH(DOMElement* p_import, imports)
     {
-        rParser.ParseImport(p_import, rParentParser);
+        rParser.ParseImport(p_import);
     }
 
     // Parse library (if present)
@@ -1423,11 +1479,11 @@ ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)
     xsd::cxx::xml::dom::auto_ptr<DOMDocument> p_proto_doc(ParseFileToDom(rProtocolFile));
 
     // Parse the DOM into language constructs
-    ProtocolParserImpl proto_parser;
+    ProtocolParserImpl proto_parser(*this);
     DOMElement* p_root_elt = p_proto_doc->getDocumentElement();
     ProtocolPtr p_proto = proto_parser.CreateProtocolObject(p_root_elt);
     p_proto->SetSourceFile(rProtocolFile);
-    AddElementsToProtocol(p_proto, proto_parser, p_root_elt, *this);
+    AddElementsToProtocol(p_proto, proto_parser, p_root_elt);
 
     return p_proto;
 }

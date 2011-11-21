@@ -33,7 +33,9 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * A stepper that implements a while loop, continuing to increment the loop counter
- * variable (which starts at 0) until a stopping condition evaluates as true.
+ * variable (which starts at 0) as long as the loop condition evaluates as true.
+ * The condition is tested each time Step is called, just after incrementing the loop
+ * counter.  It is thus impossible to define an empty while loop.
  */
 class WhileStepper : public AbstractStepper
 {
@@ -43,7 +45,7 @@ public:
      *
      * @param rIndexName  the name of the index variable iterated over by this stepper
      * @param rIndexUnits  the units of the index variable
-     * @param pStoppingCondition  the loop condition expression
+     * @param pCondition  the loop condition expression
      */
     WhileStepper(const std::string& rIndexName,
                  const std::string& rIndexUnits,
@@ -73,7 +75,7 @@ public:
     void Reset();
 
     /**
-     * Test whether this stepper has reached the end, by evaluating the loop condition.
+     * Test whether this stepper has reached the end.
      */
     bool AtEnd();
 

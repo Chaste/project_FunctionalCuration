@@ -72,12 +72,13 @@ private:
      * @param rModelName  the name of the model, and hence the CellML file
      * @param rProtocolName  the protocol name
      * @param rOutputFileNames  the names of the output variables to compare (i.e. no extension)
-     * @param tolerance  absolute tolerance
+     * @param relTol  relative tolerance
+     * @param absTol  absolute tolerance
      */
     void CompareToHistoricalResults(const std::string& rModelName,
                                     const std::string& rProtocolName,
                                     const std::vector<std::string>& rOutputNames,
-                                    double tolerance)
+                                    double relTol, double absTol)
     {
         BOOST_FOREACH(std::string output_name, rOutputNames)
         {
@@ -101,7 +102,7 @@ private:
             }
 
             NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-            TS_ASSERT(comp.CompareFiles(tolerance));
+            TS_ASSERT(comp.CompareFiles(absTol, 0, relTol));
             std::cout << "done." << std::endl;
         }
     }
@@ -373,8 +374,7 @@ public:
             {
                 OUR_WARN(e.GetMessage(), cellml_files[i], "S1S2");
             }
-            // Values are usually O(100) so abstol 0.5 is O(0.5%)
-            CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.5);
+            CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6); // 0.5% rel tol
 
             if (RunICaLVoltageClampProtocol(cellml_files[i]))
             {
@@ -387,8 +387,7 @@ public:
                     OUR_WARN(e.GetMessage(), cellml_files[i], "ICaL");
                 }
             }
-            // Values are O(1) so abstol 0.005 is O(0.5%)
-            CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005);
+            CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-6); // 0.5% rel tol
         }
 
         ////////////////////////////////////////////////////////////////////////////////////

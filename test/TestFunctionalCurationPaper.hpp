@@ -45,6 +45,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "ProtocolRunner.hpp"
 #include "ProtoHelperMacros.hpp"
 #include "NumericFileComparison.hpp"
+#include "PetscTools.hpp"
 
 #include "PetscSetupAndFinalize.hpp"
 
@@ -334,8 +335,19 @@ public:
         std::vector<std::string> ical_outputs = boost::assign::list_of("outputs_min_LCC")("outputs_final_membrane_voltage");
         std::vector<std::string> s1s2_outputs = boost::assign::list_of("outputs_APD90")("outputs_DI");
 
+        // Collectively ensure the root output folder exists, then isolate processes
+        {
+            OutputFileHandler("FunctionalCuration", false);
+            PetscTools::IsolateProcesses(true);
+        }
+
         for (unsigned i=0; i<cellml_files.size(); ++i)
         {
+            if (PetscTools::IsParallel() && i % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
+            {
+                // Let someone else do this model
+                continue;
+            }
             std::cout << "\nRunning protocols for " << cellml_files[i] << std::endl << std::flush;
 
             // Figure out if it is a dog model (different S1 to match experimental data)
@@ -393,6 +405,10 @@ public:
         ////////////////////////////////////////////////////////////////////////////////////
         // Also make plots of some experimental data we got by digitising some paper graphs.
         ////////////////////////////////////////////////////////////////////////////////////
+        if (!PetscTools::AmMaster())
+        {
+            return;
+        }
 
         std::vector<std::string> exp_data;
         exp_data.push_back("sicouri_dog_ventricle");

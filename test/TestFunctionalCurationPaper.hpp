@@ -405,6 +405,7 @@ public:
         ////////////////////////////////////////////////////////////////////////////////////
         // Also make plots of some experimental data we got by digitising some paper graphs.
         ////////////////////////////////////////////////////////////////////////////////////
+        PetscTools::IsolateProcesses(false);
         if (!PetscTools::AmMaster())
         {
             return;

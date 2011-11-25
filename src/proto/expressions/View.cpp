@@ -58,7 +58,7 @@ AbstractValuePtr View::operator()(const Environment& rEnv) const
     std::map<Index, R> range_specs;
     ExtractRangeSpecs(range_specs, tuples, GetLocationInfo());
     const Index max_dimension = range_specs.rbegin()->first;
-    PROTO_ASSERT(max_dimension == R::END || max_dimension < N,
+    PROTO_ASSERT(max_dimension == (Index)R::END || max_dimension < N,
                  "Range specifications must be for a dimension that exists; a specification is given for dimension "
                  << max_dimension << " but the array only has " << N << " dimensions.");
 

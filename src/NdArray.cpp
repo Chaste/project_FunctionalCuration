@@ -236,23 +236,23 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
         {
             ASSERT_MSG(begin != end, "Start and end of range for dimension " << dim
                        << " are equal but the step is not zero.");
-            ASSERT_MSG(begin <= mpInternalData->mExtents[dim], "Range start " << begin << " for dimension "
+            ASSERT_MSG(begin <= (RangeIndex)mpInternalData->mExtents[dim], "Range start " << begin << " for dimension "
                        << dim << " is after the end (" << mpInternalData->mExtents[dim] << ") of the dimension.");
-            ASSERT_MSG(end <= mpInternalData->mExtents[dim], "Range end " << end << " for dimension "
+            ASSERT_MSG(end <= (RangeIndex)mpInternalData->mExtents[dim], "Range end " << end << " for dimension "
                        << dim << " is after the end (" << mpInternalData->mExtents[dim] << ") of the dimension.");
             ASSERT_MSG(r.mStep * (end-begin) > 0, "Range for dimension " << dim << " is inconsistent: "
                        << "step is " << r.mStep << " but (end-begin) is " << end-begin << ".");
             extents.push_back((Index)ceil((end - begin) / (double)r.mStep));
             if (r.mStep < 0)
             {
-                assert(begin > 0u); // This is covered by the assertions above, but let's be explicit
+                assert(begin > 0); // This is covered by the assertions above, but let's be explicit
                 begin--; // Avoid having to have different behaviour when indexing below
             }
         }
         else
         {
             // We'll always index at the given location in this dimension. Check it's valid.
-            ASSERT_MSG(begin < mpInternalData->mExtents[dim], "Index " << begin << " selected for dimension "
+            ASSERT_MSG(begin < (RangeIndex)mpInternalData->mExtents[dim], "Index " << begin << " selected for dimension "
                        << dim << " is after the end (" << mpInternalData->mExtents[dim] << ") of the dimension.");
             ASSERT_MSG(end == begin, "When the step is zero the start and end of a range must be equal; "
                        << end << " != " << begin << " for dimension " << dim << ".");

@@ -158,7 +158,7 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
                 Index sub_i = 0;
                 for (Index j=0; j<extents.size(); ++j)
                 {
-                    if (extents[j] == R::END)
+                    if (extents[j] == (Index)R::END)
                     {
                         extents[j] = sub_array_shape[sub_i++];
                     }

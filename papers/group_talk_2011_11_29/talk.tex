@@ -30,6 +30,7 @@
 \usepackage{url}
 \usepackage{amsmath,amssymb}
 \usepackage{comment}
+\usepackage{hyperref}
 
 % Author-date citations
 \usepackage[authoryear,round]{natbib}
@@ -42,8 +43,11 @@
 
 % Shortcuts
 \newcommand{\myhref}[2]{\href{#1}{\textcolor{Blue}{#2}}}
-\newcommand{\subitem}[1]{\begin{itemize}\item #1 \end{itemize}}
+\newcommand{\subitem}[1]{\begin{itemize}[<.->]\item #1 \end{itemize}}
 \newcommand{\ghead}[1]{{\tiny #1\\}}
+\newcommand{\doi}[1]{\myhref{http://dx.doi.org/#1}{doi:#1}}
+\newcommand{\csym}[1]{\textcolor{Blue}{\texttt{#1}}}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Functional Curation of Cardiac Cellular Models}
@@ -62,11 +66,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{Outline}
+\setcounter{tocdepth}{1}
 \tableofcontents
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{A brief history of me}
+\subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Start with personal slides v quickly as last done 2009/02/11 !
 
@@ -120,6 +126,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction to functional curation}
+\subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % * Explain problem, focus on sell, ability to describe and run a variety of experiments
 % * Outline functional curation, demonstrate 2 example protocols
@@ -169,7 +176,6 @@
 \end{frame}
 
 \begin{frame}{Example: S1-S2 restitution on canine models}
-TODO: update figures from latest code
 \begin{columns}[T]
 \begin{column}{.33\linewidth}
 \begin{center}
@@ -230,46 +236,117 @@ TODO: update figures from latest code
 
 \begin{frame}{Example: $I_{\textrm{Ca}_L}$ voltage clamp}
 Any suggestions for nice models to show?
+Include Corrias, Bondarenko.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Protocol language details}
+\subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{What goes in a protocol?}
+\begin{itemize}
+\item Definition of the interface with the model being experimented on
+\item Definition of simulations to perform
+\item Post-processing operations on simulation results
+\item Description of what to plot
+\item ``Extra bits''
+  \begin{itemize}
+  \item Inputs to the protocol
+  \item Library of functions and/or variables
+  \item Specify protocol outputs of interest
+  \item Imports of other protocols
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Protocol structure}
+\begin{center}
+\vspace{-.1cm}
+\includegraphics[height=.9\textheight]{proto_diag}
+\end{center}
+\end{frame}
 
 \begin{frame}{Notes}
  * Further details on features, emphasis on what other kinds of protocol can be represented
+ * Expressivity vs simplicity
  * Use flowcharts sent to Dave
  * Have a `describe your favourite protocol' challenge
  * Use some stuff from COMBINE talk: model interface, seq and nest sims, post-proc, libraries
 \end{frame}
 
-\begin{frame}{Technical challenges}% From DTC proj talk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Interfacing protocols and models}
+
+\begin{frame}{Interfacing protocols and models}
 \begin{itemize}
-\item Dealing with variations in modelling conventions
+\item Challenges arise from desire to apply a single experiment description to any model
+  \subitem{And need to compare results for different models}
+\item There are variations in modelling conventions
   \begin{itemize}
-  \item Need to run the same protocol on any model
-    \subitem{e.g.\ variations in naming $\rightarrow$ annotation with \alert{ontologies}}
-  \item Need to be able to compare models coherently
-    \subitem{e.g.\ units conversions}
+  \item Different names for the same `thing'
+  \item Different ways of representing biology in mathematics
   \end{itemize}
-\item Expressivity vs simplicity for the protocol language
+\item An experiment may isolate a sub-component of the model (e.g.\ voltage clamp)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Referring to model variables}
+\begin{itemize}
+\item How do we cope with different variable names for the same entity?
   \begin{itemize}
-  \item both for inputs
-  \item and post-processing
+  \item Transmembrane potential: $V$, $V_m$, $E$
+  \item Stimulus current: $i_{\mathrm{Stim}}$, $I_{\mathrm{st}}$, $i_{\mathrm{pulse}}$, $i_{\mathrm{ext}}$
+  \item Membrane capacitance: $C$, $C_m$, $\mathit{Acap}$
+  \end{itemize}
+\item Use \alert{ontological annotation} of variables
+\item Protocol can use \texttt{prefix:name} notation as for XML namespaces
+\item No need for `approved' ontology --- just need model \& protocol to agree
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Units conversions}
+\begin{itemize}
+\item Different models use different units
+\item Protocol declares the units it uses, and conversions applied automatically
+  \note{This is easy for scalings within a dimension, but models can use different approaches to representing the same biology, e.g.\ different normalisation for ionic currents}
+\item ``Biology-aware'' conversion rules can be defined
+  \begin{itemize}
+  \item A unary function for converting a value from one dimension to another
+  \item Can refer to model variables using ontology terms
+  \item Fall-back to next rule if required variables don't exist
+  \item See also \doi{10.1016/j.pbiomolbio.2011.06.002}
   \end{itemize}
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Model modifications}
+\begin{itemize}
+\item A model is viewed as a \alert{system of equations}, independent of modelling language
+\item<2-> Protocol specifies which variables are \alert{inputs} and \alert{outputs}
+\item<2-> Inputs become parameters that can be set by the protocol
+  \subitem{e.g.\ voltage clamp experiment}
+\item<2-> Only those equations required for the given outputs need be computed
+\item<3-> Equations may also be \alert{added or replaced}
+  \subitem{e.g.\ to specify a stimulus current waveform}
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Interfacing protocols and models}
+This will probably move, if we use it at all.
+\begin{center}
 \includegraphics[width=.9\textwidth]{schematic_v4}
+\end{center}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions and future directions}
+\subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{}
  * Caveats: usability, performance, still prototype; but lots of scope!
+   * Example: FR00 APD
  * Conclusions and plans
 \end{frame}
 

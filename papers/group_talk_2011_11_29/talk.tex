@@ -166,6 +166,8 @@
   \subitem{Build up a published library thereof}
 \item Parameter fitting to a set of protocols
 \item Parameter sweeps, sensitivity analysis, \ldots
+\item Build into a framework that stores models, protocols, and associated data
+  \subitem{Publish alongside paper}
 \end{itemize}
 \end{frame}
 
@@ -234,8 +236,29 @@
 \end{frame}
 
 \begin{frame}{Example: $I_{\textrm{Ca}_L}$ voltage clamp}
-Any suggestions for nice models to show?
-Include Corrias, Bondarenko.
+\begin{columns}[T]
+\begin{column}{.33\linewidth}
+\begin{center}
+\includegraphics[width=\textwidth]{sun_rat_ventricle_ICaL_IV_curve}\\
+\vspace{.1cm}
+\includegraphics[width=\textwidth]{bondarenko_szigeti_bett_kim_rasmusson_2004_apical_ICaL_IV_curve}
+\end{center}
+\end{column}
+\begin{column}{.33\linewidth}
+\begin{center}
+\includegraphics[width=\textwidth]{corrias_purkinje_2011_ICaL_IV_curve}\\
+\vspace{.1cm}
+\includegraphics[width=\textwidth]{grandi_pasqualini_bers_2010_ss_ICaL_IV_curve}
+\end{center}
+\end{column}
+\begin{column}{.33\linewidth}
+\begin{center}
+\includegraphics[width=\textwidth]{fink_noble_giles_model_2008_ICaL_IV_curve}\\
+\vspace{.1cm}
+\includegraphics[width=\textwidth]{ten_tusscher_model_2006_epi_ICaL_IV_curve}
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -266,14 +289,6 @@ Include Corrias, Bondarenko.
 \end{center}
 \end{frame}
 
-\begin{frame}{Notes}
- * Further details on features, emphasis on what other kinds of protocol can be represented
- * Expressivity vs simplicity
- * Use flowcharts sent to Dave
- * Have a `describe your favourite protocol' challenge
- * Use some stuff from COMBINE talk: model interface, seq and nest sims, post-proc, libraries
-\end{frame}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Interfacing protocols and models}
 
@@ -299,7 +314,7 @@ Include Corrias, Bondarenko.
   \item Membrane capacitance: $C$, $C_m$, $\mathit{Acap}$
   \end{itemize}
 \item Use \alert{ontological annotation} of variables
-\item Protocol can use \texttt{prefix:name} notation as for XML namespaces
+%\item Protocol can use \texttt{prefix:name} notation as for XML namespaces
 \item No need for `approved' ontology --- just need model \& protocol to agree
 \end{itemize}
 \end{frame}
@@ -331,12 +346,12 @@ Include Corrias, Bondarenko.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Interfacing protocols and models}
-This will probably move, if we use it at all.
-\begin{center}
-\includegraphics[width=.9\textwidth]{schematic_v4}
-\end{center}
-\end{frame}
+%\begin{frame}{Interfacing protocols and models}
+%This will probably move, if we use it at all.
+%\begin{center}
+%\includegraphics[width=.9\textwidth]{schematic_v4}
+%\end{center}
+%\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Defining simulations}
@@ -355,9 +370,9 @@ This will probably move, if we use it at all.
 \item Each simulation requires a \alert{range} over which to iterate for generating output points
 \item These are given a name for the loop variable, and its units
   \begin{description}
-  \item[\texttt{UniformStepper}] has start, stride, and end parameters
-  \item[\texttt{VectorStepper}] allows irregular steps, using post-processing language constructs to define an array of values for the loop variable
-  \item[\texttt{WhileStepper}] enables an outer loop to continue as long as a condition is met
+  \item[UniformStepper] has start, stride, and end parameters
+  \item[VectorStepper] allows irregular steps, using post-processing language constructs to define an array of values for the loop variable
+  \item[WhileStepper] enables an outer loop to continue as long as a condition is met
   \end{description}
 \end{itemize}
 \end{frame}
@@ -379,31 +394,38 @@ This will probably move, if we use it at all.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Post-processing}
 
-% Slides from COMBINE:
+\begin{frame}{Post-processing}
+\begin{itemize}
+\item Raw simulation results are rarely what we're after
+\item Post-processing required to obtain markers of interest
+\item For a protocol exchange language, we need something more restrictive (and easier to implement) than general Matlab or similar
+\item But we still need the ability to describe complex operations
+  \subitem{e.g. APD, \ldots}
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Post-processing language}
 \begin{itemize}
-\item Aim to support complex operations with minimal implementation overhead
-\item Therefore base on MathML, with as few as possible added \csym{csymbol}s
-\item Key features:
+\item For minimal implementation overhead, based on MathML, with as few as possible added features
+\item Key additions:
   \begin{itemize}
   \item Operators for working with $n$-dimensional arrays
-  \item Sequencing operations (assignments to variables, assertions)
+  \item Sequencing operations (defining variables, assertions)
   \item Defining functions (that can also be passed to other functions)
   \end{itemize}
 \item Not just used for post-processing: also input specifications, library definitions, etc.
-\item Technically, this is a pure functional $n$-dimensional array based programming language
+\item Technically, this is a \alert{pure} functional $n$-dimensional array based programming language
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Main special expressions}
+\note{Go through these in more detail on whiteboard!}
 \footnotesize
 \begin{description}
 \item[\csym{newArray}] Create a new array
   \begin{itemize}
   \item by listing elements (which may be arrays)
-  \item by \alert{comprehension} using a generator expression with index ranges
-  (abusing \texttt{domainofapplication})
+  \item by \alert{comprehension} using a generator expression with index ranges% (abusing \texttt{domainofapplication})
   \end{itemize}
 \item[\csym{view}] Extract a sub-array
   \subitem{Can use arbitrary (even negative) strides over any dimension, with wildcards}
@@ -416,31 +438,30 @@ This will probably move, if we use it at all.
 \end{description}
 \end{frame}
 
-\begin{frame}{Statements}
+\begin{frame}{Miscellaneous extra features}
 \begin{itemize}
-\item The \csym{statementList} is used for function bodies, and the library \& post-processing sections
-\item 3 kinds of statement:
-  \begin{itemize}
-  \item Assignment: MathML \texttt{eq}
-  \item Return: \csym{return} --- only valid in functions
-  \item Assert: \csym{assert} --- for checking arguments etc.
-  \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Miscellaneous technicalities}
-\begin{itemize}
-\item Environments binding names to (immutable) values
-\item Accessors (IS\_ARRAY, SHAPE, etc.)
-\item Tuples
-\item Default parameters
-\item Wrapping MathML operators as functions
+\item Accessor operation for testing values (IS\_ARRAY, SHAPE, etc.)
+\item Functions can have default parameters, and the default can be asked for explicitly
+\item Can define tuples (pairs, triples, etc.), e.g.\ to return multiple values
 \item Location information for user-friendly error messages
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Example: APD}
+\begin{itemize}
+\item Find the maximum upstroke velocity locations to locate APs
+  \subitem{Localised max above threshold}
+\item Work with extended arrays: extra dimension of size `max num APs'
+\item Find the peaks: First \texttt{t} s.t.\ \texttt{V == local\_Vmax \&\& t > t\_up}
+\item Assume resting potential is global minimum, and calculate relaxation potential
+\item Find (with interpolation) the first time before and after each peak where the relaxation potential is crossed
+\item APDs are differences between these arrays
+\item DIs = \texttt{diff(t\_ap\_starts) - apds[:-1]}
+\end{itemize}
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Other features}
+\subsection{Other protocol features}
 
 \begin{frame}{Nested protocols}
 \begin{itemize}
@@ -451,20 +472,75 @@ This will probably move, if we use it at all.
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Importing protocols}
+\begin{itemize}
+\item Define libraries of common protocol components
+  \begin{itemize}
+  \item Especially useful for post-processing functions
+  \item Can also define standard simulations, model changes, etc.
+  \end{itemize}
+\item Specialise generic protocol for particular scenario
+  \subitem{e.g.\ set basic cycle length for species-specific S1-S2}
+\end{itemize}
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions and future directions}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}{}
- * Caveats: usability, performance, still prototype; but lots of scope!
-   * Example: FR00 APD
- * Conclusions and plans
+\begin{frame}{Challenge the speaker}
+I think the language now has all the features required for cardiac cell electrophysiology.
+
+Describe your favourite protocol, and I'll try to outline how it would be encoded.
 \end{frame}
+
+\begin{frame}{Limitations of current implementation}
+\begin{itemize}
+\item System implemented as Chaste user project
+\item It's still a prototype!
+\item Usability is limited
+  \begin{itemize}
+  \item Protocol language is XML, lacking nice front-end
+  \item Especially difficult to write good post-processing functions (see next slide)
+  \end{itemize}
+\item Performance improvements and parallelisation needed for large protocols
+\end{itemize}
+\end{frame}
+
+\begin{frame}{S1-S2 on Faber-Rudy 2000}
+\begin{center}
+\includegraphics<1>{faber_rudy_2000_s1s2_curve}
+\only<2>{\vspace{-.5cm}}
+\includegraphics<2>[height=.9\textheight]{faber_rudy_2000_COR_comparison}
+\end{center}
+\end{frame}
+
+\begin{frame}{Conclusions and plans}
+\begin{itemize}
+\item Functional curation offers great scope for transforming our approach to modelling
+\item Initial prototype is promising
+\item Lots to do to demonstrate this fully
+  \begin{itemize}
+  \item (With Gary) Explore more cardiac protocols
+  \item (With OCISB) Apply to cell-cycle models
+  \item (With MSRC) Apply to immunology and synthetic biology
+  \item (With Mark) Work on interface and data storage
+  \item (With ?) Improve performance
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Acknowledgments}
-Gary Mirams, Chaste team, Alan Garny, Steven Niederer
+Gary Mirams\\
+Chaste team\\
+Alan Garny, Steven Niederer
+
+Reference publication: \doi{10.1016/j.pbiomolbio.2011.06.003}
+
+Funding:
 
 \begin{center}
 \includegraphics[scale=.9]{chaste-266x60}\\ \vspace{.4cm}

@@ -202,7 +202,6 @@
 \end{frame}
 
 \begin{frame}{Example: S1-S2 restitution on human models}
-TODO: update figures from latest code
 \begin{columns}[T]
 \begin{column}{.33\linewidth}
 \begin{center}
@@ -262,7 +261,7 @@ Include Corrias, Bondarenko.
 
 \begin{frame}{Protocol structure}
 \begin{center}
-\vspace{-.1cm}
+\vspace{-.5cm}
 \includegraphics[height=.9\textheight]{proto_diag}
 \end{center}
 \end{frame}
@@ -337,6 +336,119 @@ This will probably move, if we use it at all.
 \begin{center}
 \includegraphics[width=.9\textwidth]{schematic_v4}
 \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Defining simulations}
+
+\begin{frame}{Sequenced and nested simulations}
+\begin{itemize}[<+->]
+\item Basic simulation: timecourse solve of model equations
+\item An experiment may have `setup' and `measurement' phases $\implies$ simulations should be able to run in sequence
+\item \alert{Nesting} simulations supports parameter scans, repeated runs, distribution sampling, etc.
+  \subitem{\alert{Model outputs therefore become regular $n$-dimensional arrays}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Simulation loops}
+\begin{itemize}
+\item Each simulation requires a \alert{range} over which to iterate for generating output points
+\item These are given a name for the loop variable, and its units
+  \begin{description}
+  \item[\texttt{UniformStepper}] has start, stride, and end parameters
+  \item[\texttt{VectorStepper}] allows irregular steps, using post-processing language constructs to define an array of values for the loop variable
+  \item[\texttt{WhileStepper}] enables an outer loop to continue as long as a condition is met
+  \end{description}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Modifiers}
+\begin{itemize}
+\item Each simulation can also have a collection of \alert{modifiers}
+  \begin{description}
+  \item[SaveState] store the current model state, giving it a name
+  \item[ResetState] reset the model to a stored state or initial conditions
+  \item[SetVariable] set the value of a model variable\\
+      The value is given by an expression in the post-processing language,
+      and can access the current range value for this or any outer loop.
+  \end{description}
+\item Each can be applied just at the start or end of a simulation, or prior to each loop
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Post-processing}
+
+% Slides from COMBINE:
+
+\begin{frame}{Post-processing language}
+\begin{itemize}
+\item Aim to support complex operations with minimal implementation overhead
+\item Therefore base on MathML, with as few as possible added \csym{csymbol}s
+\item Key features:
+  \begin{itemize}
+  \item Operators for working with $n$-dimensional arrays
+  \item Sequencing operations (assignments to variables, assertions)
+  \item Defining functions (that can also be passed to other functions)
+  \end{itemize}
+\item Not just used for post-processing: also input specifications, library definitions, etc.
+\item Technically, this is a pure functional $n$-dimensional array based programming language
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Main special expressions}
+\footnotesize
+\begin{description}
+\item[\csym{newArray}] Create a new array
+  \begin{itemize}
+  \item by listing elements (which may be arrays)
+  \item by \alert{comprehension} using a generator expression with index ranges
+  (abusing \texttt{domainofapplication})
+  \end{itemize}
+\item[\csym{view}] Extract a sub-array
+  \subitem{Can use arbitrary (even negative) strides over any dimension, with wildcards}
+\item[\csym{map}] Map an $n$-ary function onto $n$ arrays element-wise
+\item[\csym{fold}] Collapse an array along a single dimension using a binary function
+  \subitem{Used to define \texttt{sum}, \texttt{max}, etc.}
+\item[\csym{find}] Find indices where the operand array is non-zero
+\item[\csym{index}] Create a sub-array containing only the given indices
+  \subitem{Various options for avoiding irregular results}
+\end{description}
+\end{frame}
+
+\begin{frame}{Statements}
+\begin{itemize}
+\item The \csym{statementList} is used for function bodies, and the library \& post-processing sections
+\item 3 kinds of statement:
+  \begin{itemize}
+  \item Assignment: MathML \texttt{eq}
+  \item Return: \csym{return} --- only valid in functions
+  \item Assert: \csym{assert} --- for checking arguments etc.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Miscellaneous technicalities}
+\begin{itemize}
+\item Environments binding names to (immutable) values
+\item Accessors (IS\_ARRAY, SHAPE, etc.)
+\item Tuples
+\item Default parameters
+\item Wrapping MathML operators as functions
+\item Location information for user-friendly error messages
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Other features}
+
+\begin{frame}{Nested protocols}
+\begin{itemize}
+\item Since a protocol has inputs and outputs, it can be viewed as a kind of model
+\item The ``system of equations'' abstraction does not apply, so model modifications are not possible
+\item This does effectively allow us to interleave post-processing and simulation however
+\item So we can do e.g.\ dynamic restitution without breaking the `regular $n$-d array' data model
+\end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

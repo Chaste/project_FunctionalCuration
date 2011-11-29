@@ -400,7 +400,7 @@
 \item Post-processing required to obtain markers of interest
 \item For a protocol exchange language, we need something more restrictive (and easier to implement) than general Matlab or similar
 \item But we still need the ability to describe complex operations
-  \subitem{e.g. APD, \ldots}
+  \subitem{e.g.\ maximum, average, APD, \ldots}
 \end{itemize}
 \end{frame}
 
@@ -508,12 +508,14 @@ Describe your favourite protocol, and I'll try to outline how it would be encode
 \end{itemize}
 \end{frame}
 
-\begin{frame}{S1-S2 on Faber-Rudy 2000}
+\begin{frame}{Limitations in APD calculation}
 \begin{center}
 \includegraphics<1>{faber_rudy_2000_s1s2_curve}
 \only<2>{\vspace{-.5cm}}
 \includegraphics<2>[height=.9\textheight]{faber_rudy_2000_COR_comparison}
 \end{center}
+\only<3>{\vspace{-1.5cm}Nygren 1998 (atrial model)}
+\includegraphics<3>[height=.8\textheight]{nygren_s1s2_V}
 \end{frame}
 
 \begin{frame}{Conclusions and plans}
@@ -525,6 +527,7 @@ Describe your favourite protocol, and I'll try to outline how it would be encode
   \item (With Gary) Explore more cardiac protocols
   \item (With OCISB) Apply to cell-cycle models
   \item (With MSRC) Apply to immunology and synthetic biology
+  \item (With Ozzy) Apply to cell-based Chaste simulations
   \item (With Mark) Work on interface and data storage
   \item (With ?) Improve performance
   \end{itemize}

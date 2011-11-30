@@ -35,6 +35,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/cstdint.hpp>
 
 /**
  * An n-dimensional array datatype, with the number of dimensions specifiable at run-time.
@@ -45,14 +46,25 @@ template<typename DATA>
 class NdArray
 {
 public:
+#ifdef BOOST_HAS_LONG_LONG
     /** The type of an index into a single dimension of an array. */
-    typedef unsigned Index;
+    typedef uint32_t Index;
 
     /**
      * The type of indices used to define ranges,
      * which can be negative to count from the end of the dimension.
      */
-    typedef long RangeIndex;
+    typedef int64_t RangeIndex;
+#else
+    /** The type of an index into a single dimension of an array. */
+    typedef uint16_t Index;
+
+    /**
+     * The type of indices used to define ranges,
+     * which can be negative to count from the end of the dimension.
+     */
+    typedef int32_t RangeIndex;
+#endif // BOOST_HAS_LONG_LONG
 
     /** The type of objects defining the extents of an array. */
     typedef std::vector<Index> Extents;

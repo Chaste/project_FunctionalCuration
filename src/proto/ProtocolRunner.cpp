@@ -37,6 +37,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractCvodeCell.hpp"
 #include "CellMLToSharedLibraryConverter.hpp"
 #include "DynamicCellModelLoader.hpp"
+#include "AbstractDynamicallyLoadableEntity.hpp"
 #include "ProtocolParser.hpp"
 
 
@@ -74,6 +75,9 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     boost::shared_ptr<AbstractStimulusFunction> p_stimulus;
     boost::shared_ptr<AbstractIvpOdeSolver> p_solver;
     boost::shared_ptr<AbstractCvodeCell> p_cell(dynamic_cast<AbstractCvodeCell*>(p_loader->CreateCell(p_solver, p_stimulus)));
+    // Check we have the right bases
+    assert(dynamic_cast<AbstractDynamicallyLoadableEntity*>(p_cell.get()));
+    assert(dynamic_cast<AbstractUntemplatedSystemWithOutputs*>(p_cell.get()));
 
     // Load the XML protocol
     ProtocolParser parser;

@@ -31,6 +31,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <vector>
+#include <boost/weak_ptr.hpp>
 
 #include "AbstractValue.hpp"
 #include "LocatableConstruct.hpp"
@@ -71,7 +72,7 @@ public:
 
 private:
     /** The environment in which this lambda was defined. */
-    EnvironmentCPtr mpDefiningEnv;
+    boost::weak_ptr<const Environment> mpDefiningEnv;
 
     /** The names of the function's parameters. */
     std::vector<std::string> mFormalParameters;

@@ -67,7 +67,7 @@ AbstractValuePtr LambdaClosure::operator()(const Environment& rCallersEnv,
         }
     }
     // Create local environment and execute function body
-    EnvironmentPtr p_local_env(new Environment(mpDefiningEnv->GetAsDelegatee()));
+    EnvironmentPtr p_local_env(new Environment(mpDefiningEnv.lock()->GetAsDelegatee()));
     p_local_env->DefineNames(mFormalParameters, params, GetLocationInfo());
     AbstractValuePtr p_result;
     PROPAGATE_BACKTRACE(p_result = p_local_env->ExecuteStatements(mBody, true /* says return is allowed */));

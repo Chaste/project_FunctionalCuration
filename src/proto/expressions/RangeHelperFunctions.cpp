@@ -58,7 +58,7 @@ RangeIndex CheckRangeElement(const AbstractValuePtr pValue, bool nullOk, Index s
     if (shouldBeIndex)
     {
         PROTO_ASSERT2(index <= R::END,
-                      "The dimension in range specification " << specNum << " is too large.", rLocationInfo);
+                      "The dimension " << index << " in range specification " << specNum << " is too large.", rLocationInfo);
     }
     return index;
 }

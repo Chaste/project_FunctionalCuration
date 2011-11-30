@@ -100,6 +100,8 @@ void AddOutputDataTemplated(EnvironmentPtr pResults,
             array[our_indices] = GetVectorComponent(vector_outputs[i], j);
             our_indices.back()++;
         }
+        // Free memory
+        DeleteVector(vector_outputs[i]);
     }
 }
 

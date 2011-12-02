@@ -80,20 +80,20 @@ private:
         std::string V_file = output_dir + rFilenamePrefix + "_steady_state_membrane_voltage.csv";
 
         std::string cmd = "paste -d , " + steppers_file + " " + V_file + " | tail -n +2 > " + output_dir + "V.dat";
-        std::cout << cmd << "\n" << std::flush;
+        //std::cout << cmd << "\n" << std::flush;
         EXPECT0(system, cmd);
 
         // Write out a gnuplot script
         *p_gnuplot_script << "# First plot is of the actual action potentials overlaid on one another." << std::endl;
-        *p_gnuplot_script  << "set terminal postscript eps size 3, 2" << std::endl;
-        *p_gnuplot_script  << "set output \"" << output_dir << "V.eps\"" << std::endl;
-        *p_gnuplot_script  << "set title \"" << GetTitleFromDirectory(rDirectory) << "\"" << std::endl;
-        *p_gnuplot_script  << "set xlabel \"Time (ms)\"" << std::endl;
-        *p_gnuplot_script  << "set ylabel \"Voltage (mV)\"" << std::endl;
-        *p_gnuplot_script  << "set grid" << std::endl;
-        *p_gnuplot_script  << "set autoscale" << std::endl;
-        *p_gnuplot_script  << "set style data lines" << std::endl;
-        *p_gnuplot_script  << "set key off\"" << std::endl;
+        *p_gnuplot_script << "set terminal postscript eps size 3, 2" << std::endl;
+        *p_gnuplot_script << "set output \"" << output_dir << "V.eps\"" << std::endl;
+        *p_gnuplot_script << "set title \"" << GetTitleFromDirectory(rDirectory) << "\"" << std::endl;
+        *p_gnuplot_script << "set xlabel \"Time (ms)\"" << std::endl;
+        *p_gnuplot_script << "set ylabel \"Voltage (mV)\"" << std::endl;
+        *p_gnuplot_script << "set grid" << std::endl;
+        *p_gnuplot_script << "set autoscale" << std::endl;
+        *p_gnuplot_script << "set style data lines" << std::endl;
+        *p_gnuplot_script << "set key off" << std::endl;
         *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
 
         *p_gnuplot_script  << "plot ";

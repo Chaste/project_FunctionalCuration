@@ -405,9 +405,10 @@ public:
         ////////////////////////////////////////////////////////////////////////////////////
         // Also make plots of some experimental data we got by digitising some paper graphs.
         ////////////////////////////////////////////////////////////////////////////////////
-        PetscTools::IsolateProcesses(false);
-        if (!PetscTools::AmMaster())
+        if (!PetscTools::AmTopMost())
         {
+            // Note: AmTopMost still identifies a single process even when processes are isolated.
+            // Only one process should plot the experimental data.
             return;
         }
 

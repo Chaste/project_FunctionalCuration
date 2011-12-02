@@ -33,52 +33,50 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <cxxtest/TestSuite.h>
 
 #include "ProtocolRunner.hpp"
+#include "ProtocolLanguage.hpp"
+#include "ProtoHelperMacros.hpp"
+
+#include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
 
 #include "NumericFileComparison.hpp"
-#include "PetscSetupAndFinalize.hpp"
-
 
 class TestIcalProtocol : public CxxTest::TestSuite
 {
 public:
-    void TestOnSingleModel() throw (Exception)
+    void TestShortIcal() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs";
-        std::string model_name = "aslanidi_Purkinje_model_2009";
+        std::string model_name = "fox_mcharg_gilmour_2002";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
         FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+
+        // Don't do too many runs
+        std::vector<AbstractExpressionPtr> test_potentials
+            = EXPR_LIST(CONST(-45.01))(CONST(-25.01))(CONST(0.01))(CONST(15.01))(CONST(40.01))(CONST(79.99));
+        DEFINE(test_potentials_expr, boost::make_shared<ArrayCreate>(test_potentials));
+        runner.GetProtocol()->SetInput("test_potentials", test_potentials_expr);
+        runner.GetProtocol()->SetInput("steady_state_time", CONST(1000));
+
         runner.RunProtocol();
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
-        // Compare the results of the ICaL protocol now with historic ones from when the paper was generated.
-        // Just to make sure nothing changes too much
-        // We compare two files, for the x and y values of the main plots.
-        for (unsigned i=0; i<2; i++)
+        // Check the key outputs haven't changed.
+        const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
+        NdArray<double> min_LCC = GET_ARRAY(r_outputs.Lookup("min_LCC"));
+        TS_ASSERT_EQUALS(min_LCC.GetNumElements(), 18u);
+        TS_ASSERT_EQUALS(min_LCC.GetNumDimensions(), 2u);
+        TS_ASSERT_EQUALS(min_LCC.GetShape()[0], 3u);
+        const double expected[] = {-0.0144, -0.1105, -0.4718, -0.3094, -0.0929, -0.0066,
+                                   -0.0273, -0.2159, -0.9366, -0.6148, -0.1848, -0.0143,
+                                   -0.0398, -0.3192, -1.3979, -0.9178, -0.2758, -0.0219};
+        NdArray<double>::ConstIterator it = min_LCC.Begin();
+        for (unsigned i=0; i<18u; i++)
         {
-        	std::string output_name;
-        	if (0u==i)
-        	{
-        		output_name = "outputs_min_LCC";
-        	}
-        	else
-        	{
-        		output_name = "outputs_final_membrane_voltage";
-        	}
-
-        	std::cout << "Comparing results of ICaL protocol: " << output_name << "...";
-			FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/ICaL/" + output_name + ".dat",
-					              RelativeTo::ChasteSourceRoot);
-			OutputFileHandler handler(dirname, false);
-			FileFinder test_output = handler.FindFile(output_name + ".csv");
-
-			NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-			TS_ASSERT(comp.CompareFiles(5e-4));
-
-			std::cout << "done.\n";
+            TS_ASSERT_DELTA(*it++, expected[i], 1e-3);
         }
     }
 };

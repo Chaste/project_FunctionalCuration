@@ -35,10 +35,9 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "ProtocolRunner.hpp"
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
+
 #include "FileFinder.hpp"
 #include "NumericFileComparison.hpp"
-
-#include "PetscSetupAndFinalize.hpp"
 
 class TestS1S2Protocol : public CxxTest::TestSuite
 {
@@ -68,47 +67,6 @@ public:
         NdArray<double> max_slope = GET_ARRAY(r_outputs.Lookup("max_S1S2_slope"));
         TS_ASSERT_EQUALS(max_slope.GetNumElements(), 1u);
         TS_ASSERT_DELTA(*max_slope.Begin(), 0.212, 1e-3);
-    }
-
-    void TestAgainstHistoricResults() throw(Exception, std::bad_alloc)
-    {
-        std::string dirname = "TestS1S2ProtocolHistoric";
-        std::string model_name = "courtemanche_ramirez_nattel_1998";
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test2_S1S2.xml", RelativeTo::ChasteSourceRoot);
-
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
-        runner.RunProtocol();
-        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
-        TS_ASSERT(success_file.Exists());
-
-        // Compare the results of the S1-S2 protocol now with historic ones from when the paper was generated.
-        // Just to make sure nothing changes too much
-        // We compare two files, for the x and y values of the main plots.
-        for (unsigned i=0; i<2; i++)
-        {
-        	std::string output_name;
-        	if (0u==i)
-        	{
-        		output_name = "outputs_APD90";
-        	}
-        	else
-        	{
-        		output_name = "outputs_DI";
-        	}
-
-        	std::cout << "Comparing results of S1-S2 protocol: " << output_name << "...";
-			FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/S1S2/" + output_name + ".dat",
-					              RelativeTo::ChasteSourceRoot);
-			OutputFileHandler handler(dirname, false);
-			FileFinder test_output = handler.FindFile(output_name + ".csv");
-
-			NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-			TS_ASSERT(comp.CompareFiles(0.1));
-			// Difference in APD/DI of 0.1ms against values ~100ms doesn't seem extravagant, given that CVODE's max step changed.
-
-			std::cout << "done.\n";
-        }
     }
 };
 

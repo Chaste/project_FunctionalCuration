@@ -230,7 +230,7 @@
                 </apply>
             </apply>
             
-            <!-- Calculate the time at which there will be two further action potentials -->
+            <!-- Calculate the time at which there will be one further action potential -->
             <apply><eq/>
                 <ci>min_time</ci>
                 <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>

@@ -124,7 +124,7 @@ private:
     {
         std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "Hypokalaemia");
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/private/Hypokalaemia.xml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/Hypokalaemia.xml", RelativeTo::ChasteSourceRoot);
 
         try
         {

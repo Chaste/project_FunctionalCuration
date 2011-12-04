@@ -12,14 +12,14 @@
                 <cn>1000</cn>
             </apply>
             <apply><eq/>
-                <ci>max_steady_state_beats</ci>
-                <cn>100000</cn>
+                <ci>steady_state_beats</ci>
+                <cn>1</cn>
             </apply>            
         </apply>    
     </inputs>
     
-    <import source="../../src/proto/library/BasicLibrary.xml" mergeDefinitions="true"/>
-    <import source="../../src/proto/library/CardiacLibrary.xml" mergeDefinitions="true"/>
+    <import source="../../../src/proto/library/BasicLibrary.xml" mergeDefinitions="true"/>
+    <import source="../../../src/proto/library/CardiacLibrary.xml" mergeDefinitions="true"/>
      
     <units>
         <cellml:units name="mV">
@@ -37,6 +37,7 @@
         <specifyInputVariable name="oxmeta:membrane_stimulus_current_period" units="ms" initial_value="1000"/>
         <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
         <specifyOutputVariable name="oxmeta:time" units="ms"/>
+        <specifyOutputVariable name="oxmeta:state_variable"/>
         <addOrReplaceEquation>
             <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
                 <ci>oxmeta:membrane_stimulus_current</ci>
@@ -88,7 +89,7 @@
 
     <simulations>
         <!-- Do a pre-run to get the model to steady-state with the desired S1 stimulus -->
-        <timecourseSimulation>
+        <timecourseSimulation prefix="sim">
             <vectorStepper name="time" units="ms">
                 <value>0</value>
                 <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
@@ -112,29 +113,8 @@
                         <cn xmlns="http://www.w3.org/1998/Math/MathML">10</cn>
                     </value>
                 </setVariable>
-                <saveState>
-                    <when>AT_END</when>
-                    <name>initial_state</name>
-                </saveState>
             </modifiers>
-        </timecourseSimulation>
-        
-        <!-- Now we will examine the last action potential for its properties -->
-        <timecourseSimulation prefix="sim">
-            <uniformStepper name="time" units="ms">
-                <start>0</start>
-                <stop>
-                    <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_period</ci>
-                </stop>                
-                <step>0.1</step> <!-- Get a good amount of detail for the APD calculation -->
-            </uniformStepper>
-	        <modifiers>
-	            <resetState> <!-- At the beginning of the final AP simulation load up the state variables from the long run to steady state -->
-	                <when>AT_START_ONLY</when>
-	                <state>initial_state</state>
-	            </resetState>
-			</modifiers>
-        </timecourseSimulation>
+        </timecourseSimulation> 
     </simulations>
     
     <post-processing>
@@ -156,33 +136,139 @@
                     <ci>sim:membrane_voltage</ci>
                 </apply>
             </apply>
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
+                    <ci>sim:state_variable</ci>
+                </apply>
+            </apply>
             
-            <!-- Compute APD90 -->
+            <!-- Work out the size of the state variable array -->
             <apply><eq/>
-                <ci>apd90</ci>
-                <apply><ci>Apd</ci>
-                    <ci>sim:membrane_voltage</ci>
-                    <ci>sim:time</ci>
-                    <cn>90</cn>
+                <ci>number_of_time_points</ci>
+                <apply xmlns="http://www.w3.org/1998/Math/MathML"><minus/>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">SHAPE</csymbol>
+                            <ci>sim:state_variable</ci>
+                        </apply>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                            <cn>0</cn> <!-- Take first dimension -->
+                            <cn>0</cn> <!-- Take first entry -->
+                            <cn>0</cn> <!-- collapse onto 0D integer -->
+                            <cn>0</cn> <!-- Take just first entry -->
+                        </apply>                    
+                    </apply>
+                    <cn xmlns="http://www.w3.org/1998/Math/MathML">1</cn>
                 </apply>
             </apply>
+            
+            <!-- Initial state variables -->
+            <apply><eq/>
+                <ci>initial_state_variables</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                    <ci>sim:state_variable</ci>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <cn>0</cn> <!-- Dimension for this 'range' specification -->
+                        <cn>0</cn> <!-- Start -->
+                        <cn>0</cn> <!-- Step -->
+                        <cn>0</cn> <!-- End -->
+                    </apply>
+                    <apply> <!-- In the dimension we are not interested in we take everything with step 1 -->
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                        <cn>1</cn>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                    </apply>
+                </apply>
+            </apply>     
+            
+            <!-- Final state variables -->
+            <apply><eq/>
+                <ci>final_state_variables</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                    <ci>sim:state_variable</ci>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <cn>0</cn> <!-- Dimension for this 'range' specification -->
+                        <ci>number_of_time_points</ci> <!-- Start -->
+                        <cn>0</cn> <!-- Step -->
+                        <ci>number_of_time_points</ci> <!-- End -->
+                    </apply>
+                    <apply> <!-- In the dimension we are not interested in we take everything with step 1 -->
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                        <cn>1</cn>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                    </apply>
+                </apply>
+            </apply>
+            
+            <!-- AbsMinus x y [dim] = map (|-|) (x dim) (y dim) -->
+            <apply><eq/>
+                <ci>AbsMinus</ci>
+                <lambda>
+                    <bvar><ci>x</ci></bvar>
+                    <bvar><ci>y</ci></bvar>
+                    <semantics>
+                        <bvar><ci>dim</ci></bvar>
+                        <annotation-xml>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
+                        </annotation-xml>
+                    </semantics>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/wrap/1">abs</csymbol>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/wrap/2">minus</csymbol>
+                            <ci>x</ci>
+                            <ci>y</ci>
+                        </apply>
+                    </apply>
+                </lambda>
+            </apply>            
            
-            <!-- Get the peak voltage -->
+            <!-- Work out the difference between the state variables-->
             <apply><eq/>
-                <ci>peak_voltage</ci>
-                <apply><ci>Max</ci>
-                    <ci>sim:membrane_voltage</ci>
+                <ci>difference_in_state_variables</ci>
+                <apply>
+                    <ci>AbsMinus</ci>
+                    <ci>final_state_variables</ci>
+                    <ci>initial_state_variables</ci>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>        
                 </apply>
             </apply>
+            
+            <!-- Work out the norm (p1) of the difference -->
+            <apply><eq/>
+                <ci>norm_of_differences</ci>
+                <apply>
+                    <ci>Sum</ci>
+                    <ci>difference_in_state_variables</ci>
+                </apply>            
+            </apply>
+            
         </apply>
     </post-processing>
     
     <outputVariables>
         <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Transmembrane potential in milliVolts"/>
         <raw ref="sim:time" name="time" description="Time in milliseconds"/>       
+        <raw ref="sim:state_variable" name="state_variables" description="All of the state variables"/>     
         
-        <postprocessed name="peak_voltage" units="mV"/>
-        <postprocessed name="apd90" units="ms"/>
+        <postprocessed name="norm_of_differences" units="mixed"/>
+        <postprocessed name="difference_in_state_variables" units="mixed"/>
+        <postprocessed name="initial_state_variables" units="mixed"/>
+        <postprocessed name="final_state_variables" units="mixed"/>
     </outputVariables>
     
     <plots>

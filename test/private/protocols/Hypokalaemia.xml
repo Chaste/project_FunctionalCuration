@@ -20,6 +20,8 @@
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
                     <!-- <ci>oxmeta:extracellular_potassium_concentration</ci> you should be able to uncomment this Gary -->
+                    <cn>10</cn>
+                    <cn>9</cn>
                     <cn>8</cn>
                     <cn>7</cn>
                     <cn>6</cn>
@@ -27,6 +29,7 @@
                     <cn>4</cn>
                     <cn>3</cn>
                     <cn>2</cn>
+                    <cn>1</cn>
                 </apply>
             </apply>
         </apply>    
@@ -309,9 +312,6 @@
         <raw ref="sim:time" name="time" description="Full time traces"/>       
         <raw ref="sim:extracellular_potassium_concentration" name="extracellular_potassium_concentration"
             description="Extracellular potassium concentration"/>
-        
-        <postprocessed name="min_time" units="ms"/>
-        <postprocessed name="last_pace_time" units="ms"/>
         
         <postprocessed name="steady_state_membrane_voltage" description="action potential membrane voltage" units="mV"/>
         <postprocessed name="steady_state_time" description="action potential time" units="ms"/>

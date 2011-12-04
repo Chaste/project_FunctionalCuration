@@ -173,7 +173,7 @@
 	                    <apply>
                             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
                             <domainofapplication>
-                                <!-- #0#t = bcl*st_st_beats+1:1:bcl*(st_st_beats+1) -->
+                                <!-- #0#t = bcl*st_st_beats+1 : 1 : bcl*(st_st_beats+1) -->
                                 <apply>
                                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
                                     <cn>0</cn>
@@ -235,10 +235,7 @@
                 <ci>min_time</ci>
                 <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
                     <ci>pacing_period</ci>
-                    <apply xmlns="http://www.w3.org/1998/Math/MathML"><minus/>
-                    	<ci>steady_state_beats</ci>
-                    	<cn>1</cn>
-                    </apply>
+                    <ci>steady_state_beats</ci>
 	            </apply>
             </apply>
             
@@ -252,13 +249,30 @@
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
                 </apply>
             </apply>            
+            
             <apply><eq/>
-                <ci>steady_state_time</ci>
+                <ci>last_pace_time</ci>
                 <apply><ci>After</ci>
                     <ci>sim:time</ci>
                     <ci>sim:time</ci>
                     <ci>min_time</ci>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
+                </apply>
+            </apply>
+            
+            <!-- Translate time so that it starts at zero for this last steady pace -->
+            <apply><eq/>
+                <ci>steady_state_time</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                    <lambda>
+                        <bvar><ci>element_value</ci></bvar>
+                        <apply><minus/>
+                            <ci>element_value</ci>
+                            <ci>min_time</ci>
+                        </apply>
+                    </lambda>
+                    <ci>last_pace_time</ci>
                 </apply>
             </apply>
                                     
@@ -295,7 +309,10 @@
         <raw ref="sim:time" name="time" description="Full time traces"/>       
         <raw ref="sim:extracellular_potassium_concentration" name="extracellular_potassium_concentration"
             description="Extracellular potassium concentration"/>
-            
+        
+        <postprocessed name="min_time" units="ms"/>
+        <postprocessed name="last_pace_time" units="ms"/>
+        
         <postprocessed name="steady_state_membrane_voltage" description="action potential membrane voltage" units="mV"/>
         <postprocessed name="steady_state_time" description="action potential time" units="ms"/>
         <postprocessed name="peak_voltage" description="action potential peak voltage" units="mV"/>

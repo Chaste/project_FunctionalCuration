@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
 <protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
@@ -144,27 +144,6 @@
                 </apply>
             </apply>
             
-            <!-- Work out the size of the state variable array -->
-            <apply><eq/>
-                <ci>number_of_time_points</ci>
-                <apply xmlns="http://www.w3.org/1998/Math/MathML"><minus/>
-                    <apply>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
-                        <apply>
-                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">SHAPE</csymbol>
-                            <ci>sim:state_variable</ci>
-                        </apply>
-                        <apply>
-                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                            <cn>0</cn> <!-- Take first dimension -->
-                            <cn>0</cn> <!-- Take first entry -->
-                            <cn>0</cn> <!-- collapse onto 0D integer -->
-                            <cn>0</cn> <!-- Take just first entry -->
-                        </apply>                    
-                    </apply>
-                    <cn xmlns="http://www.w3.org/1998/Math/MathML">1</cn>
-                </apply>
-            </apply>
             
             <!-- Initial state variables -->
             <apply><eq/>
@@ -192,23 +171,9 @@
             <!-- Final state variables -->
             <apply><eq/>
                 <ci>final_state_variables</ci>
-                <apply>
-                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                <apply><ci>Last</ci>
                     <ci>sim:state_variable</ci>
-                    <apply>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                        <cn>0</cn> <!-- Dimension for this 'range' specification -->
-                        <ci>number_of_time_points</ci> <!-- Start -->
-                        <cn>0</cn> <!-- Step -->
-                        <ci>number_of_time_points</ci> <!-- End -->
-                    </apply>
-                    <apply> <!-- In the dimension we are not interested in we take everything with step 1 -->
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
-                        <cn>1</cn>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
-                    </apply>
+                    <cn>0</cn> <!-- along first dimension (last column) -->
                 </apply>
             </apply>
             
@@ -251,9 +216,11 @@
             <!-- Work out the norm (p1) of the difference -->
             <apply><eq/>
                 <ci>norm_of_differences</ci>
-                <apply>
-                    <ci>Sum</ci>
-                    <ci>difference_in_state_variables</ci>
+                <apply><ci>Last</ci> <!-- to reduce dimensionality of a 1,1 array to a single value -->
+                    <apply>
+                        <ci>Sum</ci>
+                        <ci>difference_in_state_variables</ci>
+                    </apply>
                 </apply>            
             </apply>
             

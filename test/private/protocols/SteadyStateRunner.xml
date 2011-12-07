@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    
+    <!-- Declare protocol inputs with default values -->
+    <inputs>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>pacing_period</ci>
+                <cn>1000</cn>
+            </apply>
+            <apply><eq/>
+                <ci>steady_state_beats</ci>
+                <cn>1</cn>
+            </apply>            
+            <apply><eq/>
+                <ci>max_paces</ci>
+                <cn>10000</cn>
+            </apply>
+        </apply>    
+    </inputs>          
+
+    <import source="../../../src/proto/library/BasicLibrary.xml" mergeDefinitions="true"/>
+
+    <simulations>
+        <nestedSimulation prefix="outer">
+            <whileStepper name="paces" units="dimensionless">
+                <condition>
+                    <apply xmlns="http://www.w3.org/1998/Math/MathML"><and/>
+                        <apply><gt/>
+                            <apply><ci>Last</ci>
+                                <ci>outer:norm_of_differences</ci>
+                                <cn>0</cn>
+                            </apply>
+                            <cn>1e-6</cn>
+                        </apply>
+                        <apply><lt/>
+                            <ci>paces</ci>
+                            <ci>max_paces</ci>
+                        </apply>
+                    </apply>
+                </condition>
+            </whileStepper>
+            <modifiers></modifiers>
+            <nestedProtocol source="SinglePace.xml">
+                <setInput name="steady_state_beats">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">steady_state_beats</ci>
+                </setInput>
+                <setInput name="pacing_period">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_period</ci>
+                </setInput>
+                <selectOutput name="norm_of_differences"/>
+                <selectOutput name="final_state_variables"/>
+            </nestedProtocol>
+        </nestedSimulation>
+    </simulations>
+        
+    <post-processing>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>num_paces</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">SHAPE</csymbol>
+                        <ci>outer:norm_of_differences</ci>
+                    </apply>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <cn>0</cn><cn>0</cn><cn>0</cn><cn>0</cn>
+                    </apply>
+                </apply>
+            </apply>
+            
+            <apply><eq/>
+                <ci>found_steady_state</ci>
+                <apply><lt/>
+                    <ci>num_paces</ci>
+                    <ci>max_paces</ci>
+                </apply>
+            </apply>
+            
+            <apply><eq/>
+                <ci>steady_state_variables</ci>
+                <apply><ci>Last</ci>
+                    <ci>outer:final_state_variables</ci>
+                    <cn>0</cn>
+                </apply>
+            </apply>
+            
+            <apply><eq/>
+                <ci>pace_final_state_variables</ci>
+                <apply><ci>Transpose</ci>
+                    <ci>outer:final_state_variables</ci>
+                </apply>
+            </apply>
+        </apply>
+    </post-processing>
+    
+    <outputVariables>
+        <postprocessed name="num_paces" units="dimensionless" description="The number of paces required to get to an approximately steady state"/>
+        <postprocessed name="steady_state_variables" units="mixed" description="The state variables at an approximately steady state"/>
+        <postprocessed name="found_steady_state" units="boolean" description="Whether we found a pseudo-steady-state, or gave up"/>
+        <postprocessed name="pace_final_state_variables" units="mixed" description="State variables at the end of each pace"/>
+        
+        <raw name="norm_of_differences" ref="outer:norm_of_differences" description="Norm of the change in state variables over each pace"/>
+    </outputVariables>
+    
+    <!--
+    <plots>
+    </plots>
+    -->
+    
+</protocol>

@@ -275,7 +275,7 @@
                 </apply>
             </apply>
             
-            <!-- Get the minimum tail current (this has the largest magnitude) as a 2d array -->
+            <!-- Get the minimum tail current (this has the largest magnitude) as a 1d array -->
             <apply><eq/>
                 <ci>min_sodium_current</ci>
                 <apply><ci>std:RemoveDim</ci>
@@ -283,7 +283,7 @@
                         <ci>sodium_tail_current</ci>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
                     </apply>
-                    <cn>2</cn>
+                    <cn>1</cn>
                 </apply>
             </apply>
             
@@ -327,7 +327,7 @@
         <plot>
             <title>Current-voltage relationship</title>
             <x>final_membrane_voltage</x>
-            <y>min_INa</y>
+            <y>min_sodium_current</y>
         </plot>
     </plots>
 </protocol>

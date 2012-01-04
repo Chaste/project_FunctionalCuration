@@ -67,19 +67,22 @@ int main(int argc, char *argv[])
         {
             FileFinder model(argv[1], RelativeTo::AbsoluteOrCwd);
             FileFinder proto_xml(argv[2], RelativeTo::AbsoluteOrCwd);
-            std::string output_folder("FunctionalCuration");
+
+            std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.GetLeafNameNoExtension());
+
             if (argc == 4)
             {
                 output_folder = argv[3];
-            }
-            if (output_folder.find('/') != std::string::npos)
-            {
-                // Change CHASTE_TEST_OUTPUT if output_folder is an absolute path
-                FileFinder folder(output_folder, RelativeTo::AbsoluteOrCwd);
-                size_t full_len = folder.GetAbsolutePath().length();
-                output_folder = folder.GetLeafName();
-                std::string test_output = folder.GetAbsolutePath().substr(0, full_len - output_folder.length());
-                setenv("CHASTE_TEST_OUTPUT", test_output.c_str(), 1/*Overwrite*/);
+
+                if (output_folder.find('/') != std::string::npos)
+                {
+                    // Change CHASTE_TEST_OUTPUT if output_folder is an absolute path
+                    FileFinder folder(output_folder, RelativeTo::AbsoluteOrCwd);
+                    size_t full_len = folder.GetAbsolutePath().length();
+                    output_folder = folder.GetLeafName();
+                    std::string test_output = folder.GetAbsolutePath().substr(0, full_len - output_folder.length());
+                    setenv("CHASTE_TEST_OUTPUT", test_output.c_str(), 1/*Overwrite*/);
+                }
             }
             ProtocolRunner runner(model, proto_xml, output_folder);
             runner.RunProtocol();

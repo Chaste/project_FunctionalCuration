@@ -50,11 +50,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     : mHandler(rOutputFolder)
 {
     // Copy CellML file into output dir and create conf file
-    std::string model_name = rModelFile.GetLeafName();
-    {
-        size_t dot_pos = model_name.rfind('.');
-        model_name = model_name.substr(0, dot_pos);
-    }
+    std::string model_name = rModelFile.GetLeafNameNoExtension();
     std::cout << "Generating modified model " << model_name << std::endl;
     FileFinder copied_model = mHandler.CopyFileTo(rModelFile);
     std::vector<std::string> options = boost::assign::list_of("--cvode")("--expose-annotated-variables");

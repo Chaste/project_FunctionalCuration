@@ -1,4 +1,4 @@
-"""Copyright (C) University of Oxford, 2005-2009
+"""Copyright (C) University of Oxford, 2005-2012
 
 University of Oxford means the Chancellor, Masters and Scholars of the
 University of Oxford, having an administrative office at Wellington
@@ -35,9 +35,8 @@ Import("*")
 # Other things will probably go wrong if this is not the case...
 project_name = os.path.basename(os.path.dirname(os.path.dirname(os.getcwd())))
 
-# Determine Chaste libraries to link against.
-# Note that order does matter!
-chaste_libs_used = ['heart'] + comp_deps['heart']
+# Chaste libraries used by this project.
+chaste_libs_used = ['core', 'heart']
 
 # Do the build magic
 result = SConsTools.DoProjectSConscript(project_name, chaste_libs_used, globals())

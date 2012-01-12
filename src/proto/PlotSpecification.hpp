@@ -67,12 +67,24 @@ public:
     /** Get the names of the variables to plot. */
     const std::vector<std::string>& rGetVariableNames() const;
 
+    /** Store the names of the variable units */
+    void SetVariableUnits(const std::string& rXVariableUnits, const std::string& rYVariableUnits);
+
+    /** Get the names of the variable units to plot. */
+    const std::vector<std::string>& rGetVariableUnits() const;
+
 private:
     /** The graph title. */
     std::string mTitle;
 
     /** The names of the variables to plot. */
     std::vector<std::string> mVariableNames;
+
+    /**
+     * The names of the variables to plot.
+     * \todo #1999 set this in the constructor via ProtocolParser.
+     */
+    std::vector<std::string> mVariableUnits;
 };
 
 #endif // PLOTSPECIFICATION_HPP_

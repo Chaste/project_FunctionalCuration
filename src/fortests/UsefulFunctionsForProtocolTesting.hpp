@@ -308,7 +308,4 @@ std::string GetTitleFromDirectory(const std::string& rDirectory)
   return plot_title;
 }
 
-
-
-
 #endif // USEFULFUNCTIONSFORPROTOCOLTESTING_HPP_

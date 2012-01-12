@@ -255,6 +255,15 @@ public:
      */
     void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
 
+    /**
+     * Generate and execute a gnuplot script for the given specification, whose data should already exist in a file
+     *
+     * @param pPlotSpec  The plot specification to get title, variable names etc.
+     * @param rHandler  The output file handler pointing to the current model/protocol output directory.
+     * @param rFileName  The name of the csv file to which gnuplot data has been written
+     */
+    void Gnuplotter(boost::shared_ptr<PlotSpecification> pPlotSpec, const OutputFileHandler& rHandler, const std::string& rFileName) const;
+
 private:
     /** Where the protocol was loaded from, for resolving relative imports. */
     FileFinder mSourceFilePath;

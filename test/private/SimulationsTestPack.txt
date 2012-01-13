@@ -1,2 +1,3 @@
 TestHypokalaemiaProtocol.hpp
 TestINaProtocol.hpp
+TestRunningAllCellModelTests.hpp

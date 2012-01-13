@@ -92,7 +92,7 @@ public:
             std::cout << "\nRunning protocols for " << cellml_files[i] << std::endl << std::flush;
 
             // RUN ALL PROTOCOLS IN THE LIST
-            FileFinder model("projects/FunctionalCuration/cellml/" + cellml_files[i], RelativeTo::ChasteSourceRoot);
+            FileFinder model("projects/FunctionalCuration/cellml/" + cellml_files[i] + ".cellml", RelativeTo::ChasteSourceRoot);
             for (unsigned protocol_idx = 0; protocol_idx<mProtocolFiles.size(); ++protocol_idx)
             {
                 FileFinder proto_xml("projects/FunctionalCuration/test/" + mProtocolFiles[protocol_idx], RelativeTo::ChasteSourceRoot);

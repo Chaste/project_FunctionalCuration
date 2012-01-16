@@ -32,6 +32,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <set>
 #include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/foreach.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/assign/list_of.hpp>
@@ -216,7 +217,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 {
     ///\todo Improve format?
     const Environment& r_outputs = rGetOutputsCollection();
-    std::vector<std::string> missing_outputs;
+    std::set<std::string> missing_outputs;
     // Variable metadata file
     {
         std::string index_file_name = rFileNameBase + "-contents.csv";
@@ -233,7 +234,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
             catch (const Exception& e)
             {
                 std::cerr << "Missing protocol output '" << r_name << "'; ignoring for now." << std::endl;
-                missing_outputs.push_back(r_name);
+                missing_outputs.insert(r_name);
                 continue;
             }
             if (p_output->IsArray())
@@ -293,13 +294,34 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         (*p_file) << "Plot title,First variable,Optional second variable" << std::endl;
         BOOST_FOREACH(boost::shared_ptr<PlotSpecification> p_spec, mPlotSpecifications)
         {
-            const std::string& r_title = p_spec->rGetTitle();
-            (*p_file) << '"' << r_title << '"';
-            BOOST_FOREACH(std::string varname, p_spec->rGetVariableNames())
+            bool all_variables_exist = true;
+            std::vector<std::string> units;
+            // Check all the variables are also outputs, or we can't plot them
+            BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
             {
-                (*p_file) << ",\"" << varname << "\"";
+                try
+                {
+                    AbstractValuePtr p_output = r_outputs.Lookup(r_name);
+                    units.push_back(p_output->GetUnits());
+                }
+                catch (const Exception& e)
+                {
+                    std::cerr << "Plot requests protocol output '" << r_name << "', which has not been specified as an output." << std::endl;
+                    missing_outputs.insert(r_name);
+                    all_variables_exist = false;
+                }
             }
-            (*p_file) << std::endl;
+            if (all_variables_exist)
+            {
+                p_spec->SetVariableUnits(units); // Store for later use
+                const std::string& r_title = p_spec->rGetTitle();
+                (*p_file) << '"' << r_title << '"';
+                BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
+                {
+                    (*p_file) << ",\"" << r_name << "\"";
+                }
+                (*p_file) << std::endl;
+            }
         }
     }
 
@@ -357,6 +379,21 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         p_file->close();
     }
 
+    GeneratePlots(rHandler, rFileNameBase);
+
+    if (!missing_outputs.empty())
+    {
+        std::vector<std::string> missing_names(missing_outputs.begin(), missing_outputs.end());
+        EXCEPTION("Not all protocol outputs were defined.  Missing names: " << missing_names);
+    }
+}
+
+
+void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
+                             const std::string& rFileNameBase) const
+{
+    const Environment& r_outputs = rGetOutputsCollection();
+
     // \todo #1999 LOADS OF TESTS!!
     BOOST_FOREACH(boost::shared_ptr<PlotSpecification> p_plot_spec, mPlotSpecifications)
     {
@@ -364,102 +401,90 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         const std::vector<std::string>& r_names = p_plot_spec->rGetVariableNames();
 
         // We only deal with 2D data at present...
-        if(r_names.size()==2u)
+        if (r_names.size() != 2u)
         {
-            bool both_vars_present = true;
+            std::cerr << "Automatic plot generation only supported for x-y plots; skipping plot '" << r_title << "' for now." << std::endl;
+            continue;
+        }
 
-            // Ensure that both of the requested outputs are present
-            for (unsigned variable_idx = 0; variable_idx<2; ++variable_idx)
+        // Get the arrays to plot
+        std::vector<AbstractValuePtr> arrays;
+        BOOST_FOREACH(const std::string& r_name, r_names)
+        {
+            try
             {
-                const std::string r_name = r_names[variable_idx];
-                AbstractValuePtr p_output;
-                try
+                AbstractValuePtr p_output = r_outputs.Lookup(r_name);
+                if (p_output->IsArray())
                 {
-                    p_output = r_outputs.Lookup(r_name);
-                }
-                catch (const Exception& e)
-                {
-                    std::cerr << "Plot requests protocol output \"" << r_name << "\", which is missing.\n";
-                    missing_outputs.push_back(r_name);
-                    both_vars_present = false;
-                }
-            }
-
-            if (both_vars_present)
-            {
-                std::cout << "Plotting " << r_title << ":\t";
-                std::cout << r_names[1] << " against " << r_names[0] << "\n" << std::flush;
-
-                // Examine the dimensions and shapes of the two specified objects to check they are 1d vectors
-                // \todo #1999 also make it work with 2D arrays of shape 1 in one direction?
-                AbstractValuePtr p_output_x = r_outputs.Lookup(r_names[0]);
-                AbstractValuePtr p_output_y = r_outputs.Lookup(r_names[1]);
-                // Take a copy of the units information and add to the Plot Spec for gnuplot.
-                p_plot_spec->SetVariableUnits(p_output_x->GetUnits(),p_output_y->GetUnits());
-
-                // Get info on the shapes and dimensions
-                NdArray<double> output_x = GET_ARRAY(p_output_x);
-                NdArray<double> output_y = GET_ARRAY(p_output_y);
-                const unsigned num_dims_x = output_x.GetNumDimensions();
-                NdArray<double>::Extents shape_x = output_x.GetShape();
-                const unsigned num_dims_y = output_y.GetNumDimensions();
-                NdArray<double>::Extents shape_y = output_y.GetShape();
-                std::cout << "X dims = " << num_dims_x << "\t";
-                for (unsigned i=0; i<num_dims_x; i++)
-                {
-                    std::cout << ", X shape [" << i << "] = " << shape_x[i] << "\t";
-                }
-                std::cout << "\nY dims = " << num_dims_y << "\t";
-                for (unsigned i=0; i<num_dims_y; i++)
-                {
-                    std::cout << ", Y shape [" << i << "] = " << shape_y[i] << "\t";
-                }
-                std::cout << std::endl << std::flush;
-
-                // Only plot 1D arrays of equal length (or shape[0])
-                if ((num_dims_x==num_dims_y) && (num_dims_x==1u) && shape_x[0]==shape_y[0])
-                {
-                    std::string file_name = rFileNameBase + "_" + r_title + "_gnuplot_data.csv";
-                    FileFinder::ReplaceSpacesWithUnderscores(file_name);
-                    out_stream p_file = rHandler.OpenOutputFile(file_name);
-                    // Tabular format with no header line for easy processing by gnuplot
-                    NdArray<double>::Indices x_idxs = output_x.GetIndices();
-                    NdArray<double>::Indices y_idxs = output_y.GetIndices();
-                    for (x_idxs[0]=0; x_idxs[0]<shape_x[0]; ++x_idxs[0])
-                    {
-                        (*p_file) << output_x[x_idxs] << "," << output_y[x_idxs]<< std::endl;
-                    }
-                    p_file->close();
-
-                    Gnuplotter(p_plot_spec,rHandler,file_name);
+                    arrays.push_back(p_output);
                 }
                 else
                 {
-                    std::cout << "\\todo #1999: Different numbers of dimensions in specified plots\n";
+                    std::cerr << "Cannot plot non-array output '" << r_name << "'." << std::endl;
                 }
             }
+            catch (const Exception& e)
+            {
+                // Error for missing output was already printed by caller
+            }
         }
-        else
+        // Don't plot if any required output is missing
+        if (arrays.size() != r_names.size())
         {
-            std::cout << "\\todo #1999: In plot \"" << r_title << "\" no <x> and <y> in plot specification - skipping for now\n";
+            continue;
         }
-    }
 
-    if (!missing_outputs.empty())
-    {
-        EXCEPTION("Not all protocol outputs were defined.  Missing names: " << missing_outputs);
+        std::cout << "Plotting " << r_title << ":\t" << r_names[1] << " against " << r_names[0] << std::endl;
+
+        // Check the shapes of the arrays to plot match
+        NdArray<double> output_x = GET_ARRAY(arrays[0]);
+        NdArray<double> output_y = GET_ARRAY(arrays[1]);
+        if (output_x.GetNumDimensions() != output_y.GetNumDimensions())
+        {
+            std::cerr << "Dimensions of variables to plot do not match: " << r_names[0] << " has "
+                      << output_x.GetNumDimensions() << "; " << r_names[1] << " has "
+                      << output_y.GetNumDimensions() << std::endl;
+        }
+        if (output_x.GetShape() != output_y.GetShape())
+        {
+            std::cerr << "Shapes of variables to plot do not match: " << r_names[0] << " has "
+                      << output_x.GetShape() << "; " << r_names[1] << " has "
+                      << output_y.GetShape() << std::endl;
+        }
+
+        // Only plot 1D arrays of equal length (or shape[0])
+        // \todo #1999 also make it work with 2D arrays of shape 1 in one direction?
+        if (output_y.GetNumDimensions() == 1)
+        {
+            std::string file_name = rFileNameBase + "_" + r_title + "_gnuplot_data.csv";
+            FileFinder::ReplaceSpacesWithUnderscores(file_name);
+            out_stream p_file = rHandler.OpenOutputFile(file_name);
+            // Tabular format with no header line for easy processing by gnuplot
+            for (NdArray<double>::ConstIterator it_x=output_x.Begin(), it_y=output_y.Begin();
+                 it_x != output_x.End();
+                 ++it_x, ++it_y)
+            {
+                (*p_file) << *it_x << "," << *it_y << std::endl;
+            }
+            p_file->close();
+
+            PlotWithGnuplot(p_plot_spec, rHandler, file_name);
+        }
     }
 }
 
-void Protocol::Gnuplotter(boost::shared_ptr<PlotSpecification> pPlotSpec, const OutputFileHandler& rHandler, const std::string& rFileName) const
+
+void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
+                               const OutputFileHandler& rHandler,
+                               const std::string& rDataFileName) const
 {
     // At present this is hardcoded to 2 columns of data x,y points.
     // \todo #1999 generalise to other situations
     // \todo #1999 make the plot title include the model as well as protocol name
 
     // Find the csv file name, and remove .csv to make the .gp file name
-    size_t dot = rFileName.rfind('.');
-    std::string filename = rFileName.substr(0,dot) + ".gp";
+    size_t dot = rDataFileName.rfind('.');
+    std::string script_name = rDataFileName.substr(0, dot) + ".gp";
 
     // Generate axes labels
     std::string xlabel = pPlotSpec->rGetVariableNames()[0];     // get variable name
@@ -470,13 +495,16 @@ void Protocol::Gnuplotter(boost::shared_ptr<PlotSpecification> pPlotSpec, const 
     FileFinder::ReplaceUnderscoresWithSpaces(ylabel);           // remove underscores (interpreted as subscripts)
     ylabel += " (" + pPlotSpec->rGetVariableUnits()[1] + ")";   // add units
 
-    // Write out a gnuplot script
-    out_stream p_gnuplot_script = rHandler.OpenOutputFile(filename);
+    std::string eps_file_name = pPlotSpec->rGetTitle() + ".eps";
+    FileFinder::ReplaceSpacesWithUnderscores(eps_file_name);
+
+    // Write out a Gnuplot script
+    out_stream p_gnuplot_script = rHandler.OpenOutputFile(script_name);
     std::string output_dir = rHandler.GetOutputDirectoryFullPath();
     *p_gnuplot_script << "# Gnuplot script file generated by Chaste Functional Curation system." << std::endl;
     *p_gnuplot_script << "# Plot of " << pPlotSpec->rGetTitle() << "." << std::endl;
     *p_gnuplot_script << "set terminal postscript eps enhanced size 3, 2 font 16" << std::endl;
-    *p_gnuplot_script << "set output \"" << output_dir << pPlotSpec->rGetTitle() << ".eps\"" << std::endl;
+    *p_gnuplot_script << "set output \"" << output_dir << eps_file_name << "\"" << std::endl;
     *p_gnuplot_script << "set title \"" << pPlotSpec->rGetTitle() << "\"" << std::endl;
     *p_gnuplot_script << "set xlabel \"" << xlabel << "\"" << std::endl;
     *p_gnuplot_script << "set ylabel \"" << ylabel << "\"" << std::endl;
@@ -485,12 +513,12 @@ void Protocol::Gnuplotter(boost::shared_ptr<PlotSpecification> pPlotSpec, const 
     *p_gnuplot_script << "set autoscale" << std::endl;
     *p_gnuplot_script << "set key off" << std::endl;
     *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
-    *p_gnuplot_script << "plot \"" + output_dir + rFileName + "\" using 1:2 with linespoints pointtype 7";
+    *p_gnuplot_script << "plot \"" + output_dir + rDataFileName + "\" using 1:2 with linespoints pointtype 7";
     *p_gnuplot_script << std::endl << std::flush;
     p_gnuplot_script->close();
 
     // Run Gnuplot on the script written above to generate image files.
-    EXPECT0(system, "gnuplot " + output_dir + filename);
+    EXPECT0(system, "gnuplot " + output_dir + script_name);
 }
 
 

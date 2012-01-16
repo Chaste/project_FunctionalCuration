@@ -67,8 +67,11 @@ public:
     /** Get the names of the variables to plot. */
     const std::vector<std::string>& rGetVariableNames() const;
 
-    /** Store the names of the variable units */
-    void SetVariableUnits(const std::string& rXVariableUnits, const std::string& rYVariableUnits);
+    /**
+     * Store the names of the variable units.
+     * @param rVariableUnits  the unit names
+     */
+    void SetVariableUnits(const std::vector<std::string>& rVariableUnits);
 
     /** Get the names of the variable units to plot. */
     const std::vector<std::string>& rGetVariableUnits() const;
@@ -80,10 +83,7 @@ private:
     /** The names of the variables to plot. */
     std::vector<std::string> mVariableNames;
 
-    /**
-     * The names of the variables to plot.
-     * \todo #1999 set this in the constructor via ProtocolParser.
-     */
+    /** The units of the variables to plot. */
     std::vector<std::string> mVariableUnits;
 };
 

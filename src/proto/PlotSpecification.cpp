@@ -36,7 +36,6 @@ PlotSpecification::PlotSpecification(const std::string& rTitle,
     : mTitle(rTitle)
 {
     mVariableNames = boost::assign::list_of(rXVariable)(rYVariable);
-    mVariableUnits.clear();
 }
 
 PlotSpecification::PlotSpecification(const std::string& rTitle,
@@ -55,9 +54,9 @@ const std::vector<std::string>& PlotSpecification::rGetVariableNames() const
     return mVariableNames;
 }
 
-void PlotSpecification::SetVariableUnits(const std::string& rXVariableUnits, const std::string& rYVariableUnits)
+void PlotSpecification::SetVariableUnits(const std::vector<std::string>& rVariableUnits)
 {
-    mVariableUnits = boost::assign::list_of(rXVariableUnits)(rYVariableUnits);
+    mVariableUnits = rVariableUnits;
 }
 
 const std::vector<std::string>& PlotSpecification::rGetVariableUnits() const

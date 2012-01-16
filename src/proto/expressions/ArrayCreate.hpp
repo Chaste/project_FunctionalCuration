@@ -53,7 +53,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
  *  blocks = { {{-10+j,j},{10+j,20+j}} for #1#j=0:2 }  --> {{{-10,0}, {-9,1}},  {{10,20}, {11,21}}}
  * \endcode
  *
- * \todo  Make views alias the parent array entries.
  * \todo  Improve efficiency of array comprehensions.
  */
 class ArrayCreate : public FunctionCall

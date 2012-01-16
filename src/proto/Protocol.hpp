@@ -249,20 +249,36 @@ public:
     /**
      * Set the model being simulated by this protocol.
      *
-     * \todo #1872 set model for imported protos too
+     * \todo #1872 set model for imported protocols too
      *
      * @param pModel  the model being simulated
      */
     void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
 
     /**
-     * Generate and execute a gnuplot script for the given specification, whose data should already exist in a file
+     * Generate and execute a Gnuplot script for the given specification, whose data should already exist in a file.
+     *
+     * \todo #1999 currently only works for two 1d arrays plotted against each other
+     * \todo #1999 make the plot title include the model as well as protocol name
      *
      * @param pPlotSpec  The plot specification to get title, variable names etc.
      * @param rHandler  The output file handler pointing to the current model/protocol output directory.
-     * @param rFileName  The name of the csv file to which gnuplot data has been written
+     * @param rDataFileName  The name of the csv file to which Gnuplot data has been written
      */
-    void Gnuplotter(boost::shared_ptr<PlotSpecification> pPlotSpec, const OutputFileHandler& rHandler, const std::string& rFileName) const;
+    void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
+                         const OutputFileHandler& rHandler,
+                         const std::string& rDataFileName) const;
+
+    /**
+     * Generate figures for requested plots, using Gnuplot.
+     * Called from WriteToFile.
+     * See also PlotWithGnuplot, which this method uses.
+     *
+     * @param rHandler  The output file handler pointing to the current model/protocol output directory
+     * @param rFileNameBase  The base name for output files (ignored for the final .eps files, which just use the plot title)
+     */
+    void GeneratePlots(const OutputFileHandler& rHandler,
+                       const std::string& rFileNameBase) const;
 
 private:
     /** Where the protocol was loaded from, for resolving relative imports. */

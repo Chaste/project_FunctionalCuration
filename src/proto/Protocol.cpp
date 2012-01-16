@@ -436,47 +436,72 @@ void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
 
         std::cout << "Plotting " << r_title << ":\t" << r_names[1] << " against " << r_names[0] << std::endl;
 
-        // Check the shapes of the arrays to plot match
+        // Check the shapes of the arrays to plot
+        // X must be 1d
         NdArray<double> output_x = GET_ARRAY(arrays[0]);
+        if (output_x.GetNumDimensions() != 1)
+        {
+            std::cerr << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
+            continue;
+        }
+        const unsigned x_length = output_x.GetShape()[0];
+        // Y can be 2d, but the second dimension must match the length of X
         NdArray<double> output_y = GET_ARRAY(arrays[1]);
-        if (output_x.GetNumDimensions() != output_y.GetNumDimensions())
+        if (output_y.GetNumDimensions() < 1 || output_y.GetNumDimensions() > 2)
         {
-            std::cerr << "Dimensions of variables to plot do not match: " << r_names[0] << " has "
-                      << output_x.GetNumDimensions() << "; " << r_names[1] << " has "
-                      << output_y.GetNumDimensions() << std::endl;
+            std::cerr << "The Y data for a plot must be a 1d or 2d array, not " << output_y.GetNumDimensions() << "d." << std::endl;
+            continue;
         }
-        if (output_x.GetShape() != output_y.GetShape())
+        if (output_y.GetShape().back() != x_length)
         {
-            std::cerr << "Shapes of variables to plot do not match: " << r_names[0] << " has "
-                      << output_x.GetShape() << "; " << r_names[1] << " has "
-                      << output_y.GetShape() << std::endl;
+            std::cerr << "The last dimension of the Y data for a plot must be the same size as the X data. "
+                      << "Y shape " << output_y.GetShape() << " is not compatible with X length " << x_length << std::endl;
+            continue;
         }
 
-        // Only plot 1D arrays of equal length (or shape[0])
-        // \todo #1999 also make it work with 2D arrays of shape 1 in one direction?
-        if (output_y.GetNumDimensions() == 1)
+        // Write data for plotting
+        std::string file_name = rFileNameBase + "_" + r_title + "_gnuplot_data.csv";
+        FileFinder::ReplaceSpacesWithUnderscores(file_name);
+        out_stream p_file = rHandler.OpenOutputFile(file_name);
+        // Tabular format with no header line for easy processing by gnuplot
+        unsigned num_traces;
+        if (output_y.GetNumDimensions() == 2)
         {
-            std::string file_name = rFileNameBase + "_" + r_title + "_gnuplot_data.csv";
-            FileFinder::ReplaceSpacesWithUnderscores(file_name);
-            out_stream p_file = rHandler.OpenOutputFile(file_name);
-            // Tabular format with no header line for easy processing by gnuplot
-            for (NdArray<double>::ConstIterator it_x=output_x.Begin(), it_y=output_y.Begin();
-                 it_x != output_x.End();
-                 ++it_x, ++it_y)
+            num_traces = output_y.GetShape()[0];
+        }
+        else
+        {
+            num_traces = 1;
+        }
+        NdArray<double>::Indices y_idxs = output_y.GetIndices();
+        for (NdArray<double>::ConstIterator it_x=output_x.Begin();
+             it_x != output_x.End();
+             ++it_x)
+        {
+            y_idxs.back() = it_x.rGetIndices().back(); // Both point at same X index
+            (*p_file) << *it_x;
+            for (unsigned i=0; i<num_traces; ++i)
             {
-                (*p_file) << *it_x << "," << *it_y << std::endl;
+                if (num_traces > 1)
+                {
+                    y_idxs.front() = i; // Point at correct Y index
+                }
+                (*p_file) << "," << output_y[y_idxs];
             }
-            p_file->close();
-
-            PlotWithGnuplot(p_plot_spec, rHandler, file_name);
+            (*p_file) << std::endl;
         }
+        p_file->close();
+
+        // Plot!
+        PlotWithGnuplot(p_plot_spec, rHandler, file_name, num_traces);
     }
 }
 
 
 void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                                const OutputFileHandler& rHandler,
-                               const std::string& rDataFileName) const
+                               const std::string& rDataFileName,
+                               unsigned numTraces) const
 {
     // At present this is hardcoded to 2 columns of data x,y points.
     // \todo #1999 generalise to other situations
@@ -513,8 +538,21 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     *p_gnuplot_script << "set autoscale" << std::endl;
     *p_gnuplot_script << "set key off" << std::endl;
     *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
-    *p_gnuplot_script << "plot \"" + output_dir + rDataFileName + "\" using 1:2 with linespoints pointtype 7";
+
+    // The actual plot command...
+    *p_gnuplot_script  << "plot ";
+    for (unsigned i=0; i<numTraces; ++i)
+    {
+        *p_gnuplot_script << "\"" << output_dir << rDataFileName << "\" using 1:" << i+2
+                          << " with linespoints pointtype 7";
+        if (i < numTraces-1)
+        {
+            *p_gnuplot_script << ",\\"; // Escape the newline that is written below
+        }
+        *p_gnuplot_script << std::endl;
+    }
     *p_gnuplot_script << std::endl << std::flush;
+
     p_gnuplot_script->close();
 
     // Run Gnuplot on the script written above to generate image files.

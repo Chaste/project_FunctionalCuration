@@ -285,9 +285,7 @@ private:
 
         // Generate a single file with the plot data
         std::string data_prefix = output_dir + rFilenamePrefix + "_";
-        std::string cmd = "paste -d, " + data_prefix + "final_membrane_voltage.csv "
-                + data_prefix + "min_LCC.csv > " + output_dir + "ICaL_IV.dat";
-        EXPECT0(system, cmd);
+        std::string data_file_name = data_prefix + "Current-voltage_relationship_gnuplot_data.csv";
 
         *p_gnuplot_script  << "# Second plot is of the resulting restitution curve." << std::endl;
         *p_gnuplot_script  << "set terminal postscript eps enhanced size 3, 2 font 16" << std::endl;
@@ -305,7 +303,7 @@ private:
         unsigned num_cols = mStepCalcium.size();
         for (unsigned i=1; i<=num_cols; ++i)
         {
-            *p_gnuplot_script << "\"" + output_dir + "ICaL_IV.dat\" using " << i << ":" << i+num_cols
+            *p_gnuplot_script << "\"" + data_file_name + "\" using 1:" << i+1
                               << " with linespoints pointtype 7 title \"[Cao] = " << mStepCalcium[i-1] << "\"";
             if (i != num_cols)
             {

@@ -264,10 +264,12 @@ public:
      * @param pPlotSpec  The plot specification to get title, variable names etc.
      * @param rHandler  The output file handler pointing to the current model/protocol output directory.
      * @param rDataFileName  The name of the csv file to which Gnuplot data has been written
+     * @param numTraces  How many traces are included in the data
      */
     void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                          const OutputFileHandler& rHandler,
-                         const std::string& rDataFileName) const;
+                         const std::string& rDataFileName,
+                         unsigned numTraces) const;
 
     /**
      * Generate figures for requested plots, using Gnuplot.

@@ -265,11 +265,13 @@ public:
      * @param rHandler  The output file handler pointing to the current model/protocol output directory.
      * @param rDataFileName  The name of the csv file to which Gnuplot data has been written
      * @param numTraces  How many traces are included in the data
+     * @param numPointsInTrace  How many points are in the trace (only needed to work out whether to display as lines or points)
      */
     void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                          const OutputFileHandler& rHandler,
                          const std::string& rDataFileName,
-                         unsigned numTraces) const;
+                         const unsigned numTraces,
+                         const unsigned numPointsInTrace) const;
 
     /**
      * Generate figures for requested plots, using Gnuplot.

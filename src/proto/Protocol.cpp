@@ -493,7 +493,7 @@ void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
         p_file->close();
 
         // Plot!
-        PlotWithGnuplot(p_plot_spec, rHandler, file_name, num_traces);
+        PlotWithGnuplot(p_plot_spec, rHandler, file_name, num_traces, x_length);
     }
 }
 
@@ -501,7 +501,8 @@ void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
 void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                                const OutputFileHandler& rHandler,
                                const std::string& rDataFileName,
-                               unsigned numTraces) const
+                               const unsigned numTraces,
+                               const unsigned numPointsInTrace) const
 {
     // At present this is hardcoded to 2 columns of data x,y points.
     // \todo #1999 generalise to other situations
@@ -522,6 +523,17 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
 
     std::string eps_file_name = pPlotSpec->rGetTitle() + ".eps";
     FileFinder::ReplaceSpacesWithUnderscores(eps_file_name);
+
+    // Decide whether to plot with points or lines
+    std::string points_or_lines;
+    if (numPointsInTrace > 100)
+    {   // Magic number choice here - if there are over 100 data points we visualize as a continuous line.
+        points_or_lines = "lines";
+    }
+    else
+    {   // otherwise we visualize as points joined by straight lines.
+        points_or_lines = "linespoints pointtype 7";
+    }
 
     // Write out a Gnuplot script
     out_stream p_gnuplot_script = rHandler.OpenOutputFile(script_name);
@@ -544,7 +556,7 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     for (unsigned i=0; i<numTraces; ++i)
     {
         *p_gnuplot_script << "\"" << output_dir << rDataFileName << "\" using 1:" << i+2
-                          << " with linespoints pointtype 7";
+                          << " with " << points_or_lines;
         if (i < numTraces-1)
         {
             *p_gnuplot_script << ",\\"; // Escape the newline that is written below

@@ -29,7 +29,6 @@
                     <cn>4</cn>
                     <cn>3</cn>
                     <cn>2</cn>
-                    <cn>1</cn>
                 </apply>
             </apply>
         </apply>    
@@ -265,7 +264,7 @@
             
             <!-- Translate time so that it starts at zero for this last steady pace -->
             <apply><eq/>
-                <ci>steady_state_time</ci>
+                <ci>steady_state_time_2d</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
                     <lambda>
@@ -278,17 +277,40 @@
                     <ci>last_pace_time</ci>
                 </apply>
             </apply>
-                                    
-            <!-- Compute APD90 -->
+            
+            <!-- Prepare a 1d time vector for plotting as independent variable -->
             <apply><eq/>
-                <ci>raw_APD90</ci>
-                <apply><ci>Apd</ci>
-                    <ci>steady_state_membrane_voltage</ci>
-                    <ci>steady_state_time</ci>
-                    <cn>90</cn>
+                <ci>steady_state_time</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                    <ci>steady_state_time_2d</ci>
+                    <apply>
+                        <!-- Take the first time column loop - they all use the same times -->
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <cn>0</cn><cn>0</cn><cn>0</cn><cn>0</cn>
+                    </apply>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                        <cn>1</cn>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
+                    </apply>                    
+                </apply>
+            </apply>
+                                    
+            <!-- Compute APD90, the transpose is just for plotting purposes -->
+            <apply><eq/>
+                <ci>APD90</ci>
+                <apply><ci>Transpose</ci>
+                    <apply><ci>Apd</ci>
+                        <ci>steady_state_membrane_voltage</ci>
+                        <ci>steady_state_time_2d</ci>
+                        <cn>90</cn>
+                    </apply>
                 </apply>
             </apply>                     
-           
+
             <!-- Get the peak voltage -->
             <apply><eq/>
                 <ci>peak_voltage</ci>
@@ -297,13 +319,15 @@
                 </apply>
             </apply>
             
-            <!-- Get the resting potential -->
+            <!-- Get the resting potential, the transpose is just for plotting purposes -->
             <apply><eq/>
                 <ci>resting_potential</ci>
-                <apply><ci>Min</ci>
-                    <ci>steady_state_membrane_voltage</ci>
+                <apply><ci>Transpose</ci>
+                    <apply><ci>Min</ci>
+                        <ci>steady_state_membrane_voltage</ci>
+                    </apply>
                 </apply>
-            </apply>            
+            </apply>
         </apply>
     </post-processing>
     
@@ -317,25 +341,26 @@
         <postprocessed name="steady_state_time" description="action potential time" units="ms"/>
         <postprocessed name="peak_voltage" description="action potential peak voltage" units="mV"/>
         <postprocessed name="resting_potential" description="action potential resting potential" units="mV"/>
-        <postprocessed name="raw_APD90" description="action potential duration 90%" units="ms"/>
+        <postprocessed name="APD90" description="action potential duration 90%" units="ms"/>
         <postprocessed name="potassium_test_concentrations" description="Extracellular potassium test concentrations" units="mM"/>
     </outputVariables>
     
     <plots>
         <plot>
-            <title>Action Potential</title>
+            <title>Action Potentials</title>
             <x>steady_state_time</x>
             <y>steady_state_membrane_voltage</y>
         </plot>
         <plot>
-        	<title>APD90</title>
+        	<title>APD_{90} as a function of [K_o]</title>
         	<x>potassium_test_concentrations</x>
-        	<y>raw_APD90</y>
+        	<y>APD90</y>
         </plot>
         <plot>
-        	<title>Resting potential</title>
+        	<title>Resting potential as a function of [K_o]</title>
         	<x>potassium_test_concentrations</x>
         	<y>resting_potential</y> 
         </plot>
     </plots>
+    
 </protocol>

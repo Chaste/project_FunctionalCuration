@@ -38,13 +38,14 @@
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
                     <cn>-80.01</cn> <cn>-75.01</cn> <cn>-70.01</cn>
-                    <cn>-65.01</cn> <cn>-60.01</cn> <cn>-55.01</cn> <cn>-50.01</cn>
-                    <cn>-45.01</cn> <cn>-40.01</cn> <cn>-35.01</cn> <cn>-30.01</cn>
-                    <cn>-25.01</cn> <cn>-20.01</cn> <cn>-15.01</cn> <cn>-10.01</cn>
+                    <cn>-65.01</cn> <cn>-60.01</cn> <cn>-55.01</cn> <cn>-52.51</cn><cn>-50.01</cn>
+                    <cn>-47.51</cn> <cn>-45.01</cn> <cn>-42.51</cn> <cn>-40.01</cn>
+                    <cn>-37.51</cn> <cn>-35.01</cn> <cn>-32.51</cn> <cn>-30.01</cn>
+                    <cn>-27.51</cn> <cn>-25.01</cn> <cn>-22.51</cn> <cn>-20.01</cn> 
+                    <cn>-17.51</cn> <cn>-15.01</cn> <cn>-12.51</cn> <cn>-10.01</cn>
                     <cn>-5.01</cn>
-                    <cn> 0.01</cn> <cn> 5.01</cn> <cn>10.01</cn> <cn>15.01</cn>
-                    <cn>20.01</cn> <cn>25.01</cn> <cn>30.01</cn> <cn>35.01</cn>
-                    <cn>40.01</cn>
+                    <cn> 0.01</cn> <cn> 5.01</cn> <cn>10.01</cn> <cn>20.01</cn> <cn>30.01</cn> 
+                    <cn>40.01</cn>  <cn>50.01</cn>  <cn>60.01</cn>
                 </apply>
             </apply>
         </apply>

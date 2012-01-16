@@ -323,17 +323,17 @@
     
     <plots>
         <plot>
-            <title>Steady State Action Potential</title>
+            <title>Action Potential</title>
             <x>steady_state_time</x>
             <y>steady_state_membrane_voltage</y>
         </plot>
         <plot>
-        	<title>APD90 as a function of [Ko]</title>
+        	<title>APD90</title>
         	<x>potassium_test_concentrations</x>
         	<y>raw_APD90</y>
         </plot>
         <plot>
-        	<title>Resting potential as a function of [Ko]</title>
+        	<title>Resting potential</title>
         	<x>potassium_test_concentrations</x>
         	<y>resting_potential</y> 
         </plot>

@@ -44,35 +44,17 @@ using boost::assign::list_of;
 class TestINaProtocol : public CxxTest::TestSuite
 {
 private:
-    /** Keep track of the current directory */
-    boost::shared_ptr<OutputFileHandler> mpHandler;
-
     /**
-     * Sets up #mpHandler to point to correct model and protocol subfolder.
-     *
-     * @param rCellMLFileBaseName  The name of the cellML file (without .cellml on the end).
-     * @param rProtocolName  The protocol name.
-     * @param reset  Whether to wipe the directory (defaults to false).
-     *
-     * @return  The directory path relative to $CHASTE_TEST_OUTPUT
-     */
-    std::string SetupOutputFileHandler(const std::string& rCellMLFileBaseName, const std::string& rProtocolName, bool reset=false)
-    {
-        std::string dirname = "FunctionalCuration/" + rCellMLFileBaseName + "/" + rProtocolName;
-        mpHandler.reset(new OutputFileHandler(dirname, reset)); // Create a new directory for this model
-        return dirname;
-    }
-
-    /**
-     * Run the Hypokalaemia protocol on the given model.
+     * Run the protocol on the given model.
      *
      * @param rCellMLFileBaseName  the cellml file to dynamically load and use.
      * @return  whether the protocol was completed successfully
      */
-    bool RunProtocol(std::string& rCellMLFileBaseName)
+    void RunProtocol(std::string& rCellMLFileBaseName)
     {
         std::string protocol_name = "INa_IV_curve";
-        std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, protocol_name);
+        std::string dirname = "FunctionalCuration/" + rCellMLFileBaseName + "/" + protocol_name;
+
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
         FileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/" + protocol_name + ".xml", RelativeTo::ChasteSourceRoot);
 
@@ -84,11 +66,7 @@ private:
         catch (Exception& e)
         {
             OUR_WARN(e.GetMessage(), rCellMLFileBaseName, protocol_name);
-            return false;
         }
-
-        // Successful run
-        return true;
     }
 
 public:

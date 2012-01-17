@@ -33,6 +33,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <xercesc/sax/Locator.hpp>
 using namespace xercesc;
 
+#include <xsd/cxx/xml/sax/bits/error-handler-proxy.hxx>
+
 #include "XmlTools.hpp"
 #include "Exception.hpp"
 
@@ -131,4 +133,40 @@ void TaggingDomParser::startElement(const xercesc::XMLElementDecl& rElemDecl,
 const TaggingDomParser::Tag* TaggingDomParser::GetTag(const xercesc::DOMNode* pNode)
 {
     return static_cast<TaggingDomParser::Tag*>(pNode->getUserData(TAG_KEY));
+}
+
+
+xsd::cxx::xml::dom::auto_ptr<DOMDocument> TaggingDomParser::ParseFileToDom(const FileFinder& rXmlFile)
+{
+    TaggingDomParser parser;
+
+    parser.setCreateCommentNodes(false);
+    parser.setCreateEntityReferenceNodes(false);
+    parser.setDoNamespaces(true);
+    parser.setIncludeIgnorableWhitespace(false);
+
+    // Enable/disable validation
+    bool validate = false;
+    parser.setDoSchema(validate);
+    parser.setValidationScheme(validate ? TaggingDomParser::Val_Always : TaggingDomParser::Val_Never);
+    parser.setValidationSchemaFullChecking(false);
+
+    // Set error handler
+    xsd::cxx::tree::error_handler<char> eh;
+    xsd::cxx::xml::sax::bits::error_handler_proxy<char> ehp(eh);
+    parser.setErrorHandler(&ehp);
+
+    // Parse the file
+    try
+    {
+        parser.parse(rXmlFile.GetAbsolutePath().c_str());
+        eh.throw_if_failed<xsd::cxx::tree::parsing<char> >();
+    }
+    catch (const ::xsd::cxx::tree::parsing<char>& e)
+    {
+        EXCEPTION("XML parsing error reading file " << rXmlFile.GetAbsolutePath() << ": " << e);
+    }
+    xsd::cxx::xml::dom::auto_ptr<DOMDocument> p_doc(parser.adoptDocument());
+    p_doc->normalize();
+    return p_doc;
 }

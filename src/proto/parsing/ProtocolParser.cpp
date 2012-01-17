@@ -54,7 +54,6 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "WhileStepper.hpp"
 
 #include <xercesc/dom/DOM.hpp>
-#include <xsd/cxx/xml/sax/bits/error-handler-proxy.hxx>
 using namespace xercesc;
 
 /**
@@ -1349,49 +1348,6 @@ private:
 
 
 /**
- * Parse XML into a DOM tree.
- * Requires Xerces to be initialised by the caller.
- *
- * @param rProtocolFile  the file to parse
- */
-xsd::cxx::xml::dom::auto_ptr<DOMDocument> ParseFileToDom(const FileFinder& rProtocolFile)
-{
-    TaggingDomParser parser;
-
-    parser.setCreateCommentNodes (false);
-    parser.setCreateEntityReferenceNodes (false);
-    parser.setDoNamespaces (true);
-    parser.setIncludeIgnorableWhitespace (false);
-
-    // Enable/disable validation
-    bool validate = false;
-    parser.setDoSchema (validate);
-    parser.setValidationScheme(validate ? TaggingDomParser::Val_Always : TaggingDomParser::Val_Never);
-    parser.setValidationSchemaFullChecking(false);
-
-    // Set error handler
-    xsd::cxx::tree::error_handler<char> eh;
-    xsd::cxx::xml::sax::bits::error_handler_proxy<char> ehp(eh);
-    parser.setErrorHandler(&ehp);
-
-    // Parse the file
-    try
-    {
-        parser.parse(rProtocolFile.GetAbsolutePath().c_str());
-        eh.throw_if_failed<xsd::cxx::tree::parsing<char> >();
-    }
-    catch (const ::xsd::cxx::tree::parsing<char>& e)
-    {
-        PROTO_EXCEPTION2("XML parsing error reading protocol file " << rProtocolFile.GetAbsolutePath()
-                         << ": " << e, "");
-    }
-    xsd::cxx::xml::dom::auto_ptr<DOMDocument> p_proto_doc(parser.adoptDocument());
-    p_proto_doc->normalize();
-    return p_proto_doc;
-}
-
-
-/**
  * Add constructs parsed from the given XML document into a protocol object.
  * @param pProto  the protocol object to fill
  * @param rParser  the protocol parser to use
@@ -1476,7 +1432,7 @@ ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)
 {
     // Read the file to a DOM tree
     xsd::cxx::xml::auto_initializer init_fini(true, true);
-    xsd::cxx::xml::dom::auto_ptr<DOMDocument> p_proto_doc(ParseFileToDom(rProtocolFile));
+    xsd::cxx::xml::dom::auto_ptr<DOMDocument> p_proto_doc(TaggingDomParser::ParseFileToDom(rProtocolFile));
 
     // Parse the DOM into language constructs
     ProtocolParserImpl proto_parser(*this);

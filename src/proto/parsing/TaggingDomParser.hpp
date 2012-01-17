@@ -34,6 +34,9 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/util/XercesVersion.hpp>
+#include <xsd/cxx/xml/dom/auto-ptr.hxx>
+
+#include "FileFinder.hpp"
 
 /**
  * A specialised version of Xerces' DOM parser that annotates elements with their file/line/column position
@@ -42,6 +45,17 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 class TaggingDomParser : public xercesc::XercesDOMParser
 {
 public:
+    /**
+     * A helper method which constructs a TaggingDomParser, parses the given file (without schema
+     * validation at present), and returns the parsed document if successful.  Any parse error
+     * will result in an Exception being thrown.
+     *
+     * Requires the Xerces runtime to have been initialised by the caller.
+     *
+     * @param rXmlFile  the XML file to parse
+     */
+    static xsd::cxx::xml::dom::auto_ptr<xercesc::DOMDocument> ParseFileToDom(const FileFinder& rXmlFile);
+
     /**
      * The location tag added to nodes.
      */

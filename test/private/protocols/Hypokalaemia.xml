@@ -16,10 +16,9 @@
                 <cn>1000</cn>
             </apply>
             <apply><eq/>
-                <ci>potassium_test_concentrations</ci>
+                <ci>extra_potassium_test_concentrations</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-                    <!-- <ci>oxmeta:extracellular_potassium_concentration</ci> you should be able to uncomment this Gary -->
                     <cn>10</cn>
                     <cn>9</cn>
                     <cn>8</cn>
@@ -44,7 +43,17 @@
                 <ci>default_Ko</ci>
                 <ci>oxmeta:extracellular_potassium_concentration</ci>
             </apply>
-        </apply>    
+            <apply><eq/>
+                <ci>potassium_test_concentrations</ci>
+                <apply><ci>Join</ci>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                        <ci>default_Ko</ci>
+                    </apply>
+                    <ci>extra_potassium_test_concentrations</ci>
+                </apply>
+            </apply>
+        </apply>
     </library>
      
     <units>

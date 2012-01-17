@@ -798,7 +798,7 @@ void Protocol::SetModelEnvironments(const std::map<std::string, EnvironmentPtr>&
 {
     BOOST_FOREACH(StringEnvPair binding, rModelEnvs)
     {
-        mpInputs->SetDelegateeEnvironment(binding.second, binding.first);
+        mpLibrary->SetDelegateeEnvironment(binding.second, binding.first);
     }
     BOOST_FOREACH(StringProtoPair import, mImports)
     {

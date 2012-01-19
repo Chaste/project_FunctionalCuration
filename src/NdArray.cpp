@@ -168,7 +168,7 @@ DATA& NdArray<DATA>::operator[](const Indices& rIndices)
 {
     const Index num_dims = rIndices.size();
     assert(num_dims == mpInternalData->mExtents.size());
-    Index actual_index = 0;
+    RangeIndex actual_index = 0;
     for (Index i=0; i<num_dims; ++i)
     {
         actual_index += mpInternalData->mIndicesMultipliers[i] * rIndices[i];
@@ -182,7 +182,7 @@ const DATA& NdArray<DATA>::operator[](const Indices& rIndices) const
 {
     const Index num_dims = rIndices.size();
     assert(num_dims == mpInternalData->mExtents.size());
-    Index actual_index = 0;
+    RangeIndex actual_index = 0;
     for (Index i=0; i<num_dims; ++i)
     {
         actual_index += mpInternalData->mIndicesMultipliers[i] * rIndices[i];

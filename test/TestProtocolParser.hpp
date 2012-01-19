@@ -75,6 +75,7 @@ public:
         ProtocolParser parser;
         FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
+        p_proto->InitialiseLibrary();
 
         // Test inputs
         const double input_value = 1.0;
@@ -94,6 +95,7 @@ public:
         Environment& env = *p_env; // Save typing!
         TS_ASSERT_THROWS_CONTAINS(env.OverwriteDefinition("blah", CV(0), ""),
                                   "This environment does not support overwriting mappings.");
+        env.SetDelegateeEnvironment(p_proto->rGetLibrary().GetAsDelegatee());
         env.ExecuteStatements(r_program);
 
         /* Extract and test results */

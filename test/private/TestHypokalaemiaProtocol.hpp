@@ -86,24 +86,24 @@ public:
         // Check the results of post-processing are correct.
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
         NdArray<double> peak_voltage = GET_ARRAY(r_outputs.Lookup("peak_voltage"));
-        TS_ASSERT_EQUALS(peak_voltage.GetNumElements(), 9u);
-        TS_ASSERT_DELTA(*peak_voltage.Begin(), 42.7223, 5e-2);
+        TS_ASSERT_EQUALS(peak_voltage.GetNumElements(), 10u);
+        TS_ASSERT_DELTA(*peak_voltage.Begin(), 40.3585, 5e-2);
         NdArray<double> resting_potential = GET_ARRAY(r_outputs.Lookup("resting_potential"));
-        TS_ASSERT_EQUALS(resting_potential.GetNumElements(), 9u);
+        TS_ASSERT_EQUALS(resting_potential.GetNumElements(), 10u);
 
         // These are the results that came out first attempt (they look sensible)
-        std::vector<double> reference_apd90 = list_of(264.9502)(280.4469)(298.139)(318.821)(343.841)(375.742)(418.564)(476.702)(570.496);
-        std::vector<double> reference_resting = list_of(-70.0511)(-72.6291)(-75.4569)(-78.5914)(-82.1074)(-86.0988)(-90.6683)(-95.7858)(-98.9795);
+        std::vector<double> reference_apd90 = list_of(570.496)(476.702)(418.564)(375.742)(361.8457)(343.841)(318.821)(298.139)(280.4469)(264.9502);
+        std::vector<double> reference_resting = list_of(-98.9795)(-95.7858)(-90.6683)(-86.0988)(-84.4384)(-82.1074)(-78.5914)(-75.4569)(-72.6291)(-70.0511);
 
         NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("APD90"));
         NdArray<double>::Indices apd90_indices = apd90.GetIndices();
         TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 2u);
-        TS_ASSERT_EQUALS(apd90.GetNumElements(), 9u);
+        TS_ASSERT_EQUALS(apd90.GetNumElements(), 10u);
 
         NdArray<double> resting = GET_ARRAY(r_outputs.Lookup("resting_potential"));
         NdArray<double>::Indices resting_indices = resting.GetIndices();
         TS_ASSERT_EQUALS(resting.GetNumDimensions(), 2u);
-        TS_ASSERT_EQUALS(resting.GetNumElements(), 9u);
+        TS_ASSERT_EQUALS(resting.GetNumElements(), 10u);
 
         for (unsigned i=0; i<reference_apd90.size(); i++)
         {

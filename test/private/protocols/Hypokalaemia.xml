@@ -45,12 +45,14 @@
             </apply>
             <apply><eq/>
                 <ci>potassium_test_concentrations</ci>
-                <apply><ci>Join</ci>
-                    <apply>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-                        <ci>default_Ko</ci>
+                <apply><ci>Sort</ci>
+                    <apply><ci>Join</ci>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                            <ci>default_Ko</ci>
+                        </apply>
+                        <ci>extra_potassium_test_concentrations</ci>
                     </apply>
-                    <ci>extra_potassium_test_concentrations</ci>
                 </apply>
             </apply>
         </apply>

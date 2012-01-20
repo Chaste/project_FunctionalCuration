@@ -83,5 +83,5 @@ AbstractValuePtr Map::operator()(const Environment& rEnv) const
         result[indices] = GET_SIMPLE_VALUE(p_result_value);
         result.IncrementIndices(indices);
     }
-    return boost::make_shared<ArrayValue>(result);
+    return TraceResult(boost::make_shared<ArrayValue>(result));
 }

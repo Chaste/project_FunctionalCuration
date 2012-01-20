@@ -45,7 +45,7 @@ AbstractValuePtr MathmlEq::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Equality operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Equality operator requires its operands to be simple values.");
     bool result = GET_SIMPLE_VALUE(operands[0]) == GET_SIMPLE_VALUE(operands[1]);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -61,7 +61,7 @@ AbstractValuePtr MathmlNeq::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Not-equal operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Not-equal operator requires its operands to be simple values.");
     bool result = GET_SIMPLE_VALUE(operands[0]) != GET_SIMPLE_VALUE(operands[1]);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -77,7 +77,7 @@ AbstractValuePtr MathmlLt::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Less-than operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Less-than operator requires its operands to be simple values.");
     bool result = GET_SIMPLE_VALUE(operands[0]) < GET_SIMPLE_VALUE(operands[1]);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -93,7 +93,7 @@ AbstractValuePtr MathmlGt::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Greater-than operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Greater-than operator requires its operands to be simple values.");
     bool result = GET_SIMPLE_VALUE(operands[0]) > GET_SIMPLE_VALUE(operands[1]);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -109,7 +109,7 @@ AbstractValuePtr MathmlLeq::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Less-than-or-equals operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Less-than-or-equals operator requires its operands to be simple values.");
     bool result = GET_SIMPLE_VALUE(operands[0]) <= GET_SIMPLE_VALUE(operands[1]);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -125,5 +125,5 @@ AbstractValuePtr MathmlGeq::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Greater-than-or-equals operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Greater-than-or-equals operator requires its operands to be simple values.");
     bool result = GET_SIMPLE_VALUE(operands[0]) >= GET_SIMPLE_VALUE(operands[1]);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }

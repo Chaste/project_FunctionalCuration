@@ -50,5 +50,5 @@ AbstractValuePtr MathmlPlus::operator()(const Environment& rEnv) const
         PROTO_ASSERT((*it)->IsDouble(), "Plus operator requires its operands to be simple values.");
         result += GET_SIMPLE_VALUE(*it);
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }

@@ -41,5 +41,5 @@ TupleExpression::TupleExpression(const std::vector<AbstractExpressionPtr>& rItem
 AbstractValuePtr TupleExpression::operator()(const Environment& rEnv) const
 {
     std::vector<AbstractValuePtr> item_values = EvaluateChildren(rEnv);
-    return boost::make_shared<TupleValue>(item_values);
+    return TraceResult(boost::make_shared<TupleValue>(item_values));
 }

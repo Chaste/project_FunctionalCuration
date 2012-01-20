@@ -26,34 +26,22 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "FunctionCall.hpp"
+#ifndef DEBUGPROTO_HPP_
+#define DEBUGPROTO_HPP_
 
-#include <boost/make_shared.hpp>
-#include "BacktraceException.hpp"
-#include "LambdaClosure.hpp"
-#include "NameLookup.hpp"
+/**
+ * @file Useful functions for debugging protocols.
+ */
 
-FunctionCall::FunctionCall(const std::string& rName,
-                           const std::vector<AbstractExpressionPtr>& rParameters)
-    : AbstractExpression(rParameters),
-      mpFunction(boost::make_shared<NameLookup>(rName))
-{}
+#include <iostream>
 
-FunctionCall::FunctionCall(const AbstractExpressionPtr pFunction,
-                           const std::vector<AbstractExpressionPtr>& rParameters)
-    : AbstractExpression(rParameters),
-      mpFunction(pFunction)
-{}
+#include "AbstractValue.hpp"
 
-AbstractValuePtr FunctionCall::operator()(const Environment& rEnv) const
-{
-    AbstractValuePtr p_lambda = (*mpFunction)(rEnv);
-    if (!p_lambda->IsLambda())
-    {
-        PROTO_EXCEPTION("Tried to call a non-function.");
-    }
-    std::vector<AbstractValuePtr> actual_params = EvaluateChildren(rEnv);
-    AbstractValuePtr p_result;
-    PROPAGATE_BACKTRACE(p_result = (*static_cast<LambdaClosure*>(p_lambda.get()))(rEnv, actual_params));
-    return TraceResult(p_result);
-}
+/**
+ * Print out (a synopsis of, if large) the given value.
+ * @param pValue
+ */
+void PrintValue(AbstractValuePtr pValue);
+
+
+#endif // DEBUGPROTO_HPP_

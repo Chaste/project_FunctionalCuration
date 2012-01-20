@@ -51,7 +51,7 @@ AbstractValuePtr MathmlAnd::operator()(const Environment& rEnv) const
         PROTO_ASSERT(p_value->IsDouble(), "Boolean 'and' operator requires its operands to be simple values.");
         result = result && GET_SIMPLE_VALUE(p_value);
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -73,7 +73,7 @@ AbstractValuePtr MathmlOr::operator()(const Environment& rEnv) const
         PROTO_ASSERT(p_value->IsDouble(), "Boolean 'or' operator requires its operands to be simple values.");
         result = result || GET_SIMPLE_VALUE(p_value);
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -93,7 +93,7 @@ AbstractValuePtr MathmlXor::operator()(const Environment& rEnv) const
         PROTO_ASSERT(p_operand->IsDouble(), "Boolean 'xor' operator requires its operands to be simple values.");
         result ^= bool(GET_SIMPLE_VALUE(p_operand));
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -109,5 +109,5 @@ AbstractValuePtr MathmlNot::operator()(const Environment& rEnv) const
     AbstractValuePtr p_operand = (*mChildren.front())(rEnv);
     PROTO_ASSERT(p_operand->IsDouble(), "Boolean 'not' operator requires its operand to be a simple value.");
     bool result = !(GET_SIMPLE_VALUE(p_operand));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }

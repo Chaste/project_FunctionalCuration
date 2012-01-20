@@ -58,5 +58,5 @@ AbstractValuePtr MathmlMinus::operator()(const Environment& rEnv) const
     {
         result = GET_SIMPLE_VALUE(operands[0]) - GET_SIMPLE_VALUE(operands[1]);
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }

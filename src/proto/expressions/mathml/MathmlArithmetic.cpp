@@ -53,7 +53,7 @@ AbstractValuePtr MathmlMax::operator()(const Environment& rEnv) const
         PROTO_ASSERT((*it)->IsDouble(), "Max operator requires its operands to be simple values.");
         result = std::max(result, GET_SIMPLE_VALUE(*it));
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -75,7 +75,7 @@ AbstractValuePtr MathmlMin::operator()(const Environment& rEnv) const
         PROTO_ASSERT((*it)->IsDouble(), "Min operator requires its operands to be simple values.");
         result = std::min(result, GET_SIMPLE_VALUE(*it));
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -92,7 +92,7 @@ AbstractValuePtr MathmlRem::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Remainder operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Remainder operator requires its operands to be simple values.");
     double result = fmod(GET_SIMPLE_VALUE(operands[0]), GET_SIMPLE_VALUE(operands[1]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -110,7 +110,7 @@ AbstractValuePtr MathmlQuotient::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[1]->IsDouble(), "Quotient operator requires its operands to be simple values.");
     double result;
     modf(GET_SIMPLE_VALUE(operands[0]) / GET_SIMPLE_VALUE(operands[1]), &result);
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -127,7 +127,7 @@ AbstractValuePtr MathmlPower::operator()(const Environment& rEnv) const
     PROTO_ASSERT(operands[0]->IsDouble(), "Power operator requires its operands to be simple values.");
     PROTO_ASSERT(operands[1]->IsDouble(), "Power operator requires its operands to be simple values.");
     double result = pow(GET_SIMPLE_VALUE(operands[0]), GET_SIMPLE_VALUE(operands[1]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -159,7 +159,7 @@ AbstractValuePtr MathmlRoot::operator()(const Environment& rEnv) const
     {
         result = pow(operand, 1/degree);
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -175,7 +175,7 @@ AbstractValuePtr MathmlAbs::operator()(const Environment& rEnv) const
     std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);
     PROTO_ASSERT(operands[0]->IsDouble(), "Absolute value operator requires its operand to be a simple value.");
     double result = fabs(GET_SIMPLE_VALUE(operands[0]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -191,7 +191,7 @@ AbstractValuePtr MathmlFloor::operator()(const Environment& rEnv) const
     std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);
     PROTO_ASSERT(operands[0]->IsDouble(), "Floor operator requires its operand to be a simple value.");
     double result = floor(GET_SIMPLE_VALUE(operands[0]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -207,5 +207,5 @@ AbstractValuePtr MathmlCeiling::operator()(const Environment& rEnv) const
     std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);
     PROTO_ASSERT(operands[0]->IsDouble(), "Ceiling operator requires its operand to be a simple value.");
     double result = ceil(GET_SIMPLE_VALUE(operands[0]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }

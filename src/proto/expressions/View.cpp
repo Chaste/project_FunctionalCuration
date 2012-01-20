@@ -97,7 +97,5 @@ AbstractValuePtr View::operator()(const Environment& rEnv) const
     {
         PROTO_EXCEPTION("Error constructing array view: " + e.GetMessage());
     }
-//    std::cout << "View: Result shape: " << view.GetShape() << std::endl;
-//    if (view.GetNumDimensions() == 0) std::cout << "View: Result=" << *view.Begin() << std::endl;
-    return boost::make_shared<ArrayValue>(view);
+    return TraceResult(boost::make_shared<ArrayValue>(view));
 }

@@ -35,5 +35,5 @@ NameLookup::NameLookup(const std::string& rName)
 
 AbstractValuePtr NameLookup::operator()(const Environment& rEnv) const
 {
-    return rEnv.Lookup(mName, GetLocationInfo());
+    return TraceResult(rEnv.Lookup(mName, GetLocationInfo()));
 }

@@ -52,14 +52,16 @@ Index::Index(const AbstractExpressionPtr pOperand,
 AbstractValuePtr Index::operator()(const Environment& rEnv) const
 {
     // Get & check arguments
-    PROTO_ASSERT(mChildren.size() == 6, "Index requires 6 operands; " << mChildren.size() << " received.");
+    const unsigned num_args = mChildren.size();
+    PROTO_ASSERT(num_args <= 6 && num_args >= 2,
+                 "Index requires 2-6 operands; " << mChildren.size() << " received.");
     std::vector<AbstractValuePtr> actual_params = EvaluateChildren(rEnv);
     const AbstractValuePtr p_operand = actual_params[0];
     const AbstractValuePtr p_indices = actual_params[1];
-    AbstractValuePtr p_dim = actual_params[2];
-    AbstractValuePtr p_shrink = actual_params[3];
-    AbstractValuePtr p_pad = actual_params[4];
-    AbstractValuePtr p_pad_value = actual_params[5];
+    AbstractValuePtr p_dim = num_args > 2 ? actual_params[2] : boost::make_shared<DefaultParameter>();
+    AbstractValuePtr p_shrink = num_args > 3 ? actual_params[3] : boost::make_shared<DefaultParameter>();
+    AbstractValuePtr p_pad = num_args > 4 ? actual_params[4] : boost::make_shared<DefaultParameter>();
+    AbstractValuePtr p_pad_value = num_args > 5 ? actual_params[5] : boost::make_shared<DefaultParameter>();
     PROTO_ASSERT(p_operand->IsArray(), "First argument to index should be an array.");
     PROTO_ASSERT(p_indices->IsArray(), "Second argument to index should be an array.");
     PROTO_ASSERT(p_dim->IsDouble() || p_dim->IsDefault(),

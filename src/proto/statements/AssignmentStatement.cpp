@@ -31,8 +31,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include <boost/make_shared.hpp>
 #include "ValueTypes.hpp"
 #include "BacktraceException.hpp"
-//#include "VectorStreaming.hpp"
-//#include "ProtoHelperMacros.hpp"
+
+#include "DebugProto.hpp"
 
 AssignmentStatement::AssignmentStatement(const std::string& rNameToAssign,
                                          const AbstractExpressionPtr pRhs)
@@ -65,14 +65,12 @@ AbstractValuePtr AssignmentStatement::operator()(Environment& rEnv) const
     else
     {
         rEnv.DefineName(mNamesToAssign.front(), p_rhs_value, GetLocationInfo());
-//        if (p_rhs_value->IsArray())
-//        {
-//            NdArray<double> value = GET_ARRAY(p_rhs_value);
-//            std::cout << "Assign " << mNamesToAssign.front() << " = {" << value.GetShape() << "}";
-//            std::vector<double> values(value.Begin(), value.End());
-//            if (values.size() < 100) std::cout << ": " << values;
-//            std::cout << std::endl;
-//        }
+        if (GetTrace())
+        {
+            std::cout << "Assign " << mNamesToAssign.front() << " <- ";
+            PrintValue(p_rhs_value);
+            std::cout << " at " << GetLocationInfo() << std::endl;
+        }
     }
     return boost::make_shared<NullValue>();
 }

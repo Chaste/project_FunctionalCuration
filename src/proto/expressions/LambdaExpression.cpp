@@ -58,7 +58,7 @@ AbstractValuePtr LambdaExpression::operator()(const Environment& rEnv) const
     boost::shared_ptr<LambdaClosure> p_closure(new LambdaClosure(rEnv.GetAsDelegatee(),
                                                                  mFormalParameters, mBody, mDefaultParameters));
     p_closure->SetLocationInfo(GetLocationInfo());
-    return p_closure;
+    return TraceResult(p_closure);
 }
 
 void LambdaExpression::CheckLengths() const

@@ -105,7 +105,7 @@ AbstractValuePtr Accessor::operator()(const Environment& rEnv) const
         default:
             NEVER_REACHED;
     }
-    return p_result;
+    return TraceResult(p_result);
 }
 
 

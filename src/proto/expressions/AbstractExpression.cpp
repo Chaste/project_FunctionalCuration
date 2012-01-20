@@ -50,3 +50,16 @@ std::vector<AbstractValuePtr> AbstractExpression::EvaluateChildren(const Environ
     }
     return values;
 }
+
+#include "DebugProto.hpp"
+
+AbstractValuePtr AbstractExpression::TraceResult(AbstractValuePtr pResult) const
+{
+    if (GetTrace())
+    {
+        std::cout << "Result: ";
+        PrintValue(pResult);
+        std::cout << " at " << GetLocationInfo() << std::endl;
+    }
+    return pResult;
+}

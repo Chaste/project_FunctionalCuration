@@ -227,5 +227,5 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
         }
         p_result = boost::make_shared<ArrayValue>(result);
     }
-    return p_result;
+    return TraceResult(p_result);
 }

@@ -76,6 +76,14 @@ protected:
      */
     std::vector<AbstractValuePtr> EvaluateChildren(const Environment& rEnv) const;
 
+    /**
+     * If tracing has been requested, this will print the passed in result of this expression,
+     * and return the passed-in value.
+     *
+     * @param pResult  the result value for this expression
+     */
+    AbstractValuePtr TraceResult(AbstractValuePtr pResult) const;
+
     /** Our children in the expression tree */
     std::vector<AbstractExpressionPtr> mChildren;
 };

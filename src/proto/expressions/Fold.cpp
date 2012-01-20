@@ -51,12 +51,13 @@ Fold::Fold(const AbstractExpressionPtr pFunc,
 AbstractValuePtr Fold::operator()(const Environment& rEnv) const
 {
     // Get & check arguments
-    PROTO_ASSERT(mChildren.size() == 4, "A fold requires 4 arguments.");
+    const unsigned num_args = mChildren.size();
+    PROTO_ASSERT(num_args <= 4 && num_args >= 2, "A fold requires 2-4 arguments.");
     std::vector<AbstractValuePtr> actual_params = EvaluateChildren(rEnv);
     const AbstractValuePtr p_func = actual_params[0];
     const AbstractValuePtr p_array = actual_params[1];
-    AbstractValuePtr p_init = actual_params[2];
-    AbstractValuePtr p_dim = actual_params[3];
+    AbstractValuePtr p_init = num_args > 2 ? actual_params[2] : boost::make_shared<DefaultParameter>();
+    AbstractValuePtr p_dim = num_args > 3 ? actual_params[3] : boost::make_shared<DefaultParameter>();
     PROTO_ASSERT(p_func->IsLambda(), "First argument to fold should be a function.");
     PROTO_ASSERT(p_array->IsArray(), "Second argument to fold should be an array.");
     PROTO_ASSERT(p_init->IsNull() || p_init->IsDouble() || p_init->IsDefault(),
@@ -99,7 +100,7 @@ AbstractValuePtr Fold::operator()(const Environment& rEnv) const
         result[indices] = result_item;
         result.IncrementIndices(indices);
     }
-    return boost::make_shared<ArrayValue>(result);
+    return TraceResult(boost::make_shared<ArrayValue>(result));
 }
 
 double Fold::Foldl(const Environment& rEnv,

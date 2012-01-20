@@ -54,15 +54,30 @@ public:
     const std::string& GetLocationInfo() const;
 
     /**
+     * Get whether to trace this object.  If tracing has been requested, some sub-classes will output
+     * a status message or similar when the object is used/evaluated.
+     */
+    bool GetTrace() const;
+
+    /**
      * Specify the location of this construct within the source code.
      *
      * @param rLocationInfo  our location, formatted like "<file>:<line>:<col>  <source code line>"
      */
     void SetLocationInfo(const std::string& rLocationInfo);
 
+    /**
+     * Set whether to trace this object.
+     * @param trace
+     */
+    void SetTrace(bool trace=true);
+
 private:
     /** The location of this construct. */
     std::string mLocationInfo;
+
+    /** Whether to trace this object. */
+    bool mTrace;
 };
 
 

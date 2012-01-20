@@ -54,5 +54,5 @@ AbstractValuePtr If::operator()(const Environment& rEnv) const
     {
         p_result = (*mChildren[2])(rEnv);
     }
-    return p_result;
+    return TraceResult(p_result);
 }

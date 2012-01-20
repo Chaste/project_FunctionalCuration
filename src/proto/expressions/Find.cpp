@@ -78,5 +78,5 @@ AbstractValuePtr Find::operator()(const Environment& rEnv) const
         shape[0] = num_non_zeros;
         result.Resize(shape);
     }
-    return boost::make_shared<ArrayValue>(result);
+    return TraceResult(boost::make_shared<ArrayValue>(result));
 }

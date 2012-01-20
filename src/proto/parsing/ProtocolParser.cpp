@@ -512,16 +512,7 @@ public:
         AbstractExpressionPtr p_expr;
         DOMElement* p_operator = GetOperator(pElement);
         std::string op_name = X2C(p_operator->getLocalName());
-        if (op_name == "ci")
-        {
-            // Function call, by name
-            ///\todo we could actually merge this with the anonymous call block below, since
-            /// parsing a ci gives a lookup expression which is what this shortcut expands to.
-            std::string fn_name = X2C(p_operator->getTextContent());
-            std::vector<AbstractExpressionPtr> fn_args = ParseOperands(pElement);
-            p_expr.reset(new FunctionCall(fn_name, fn_args));
-        }
-        else if (op_name == "csymbol")
+        if (op_name == "csymbol")
         {
             // Built-in operation: fold, map, newArray, view, find, index, tuple, or accessor
             std::string symbol = GetCsymbolName(p_operator);
@@ -591,9 +582,9 @@ public:
                 PROTO_EXCEPTION("Application of csymbol " << symbol << " is not recognised.");
             }
         }
-        else if (op_name == "lambda" || op_name == "piecewise" || op_name == "apply")
+        else if (op_name == "ci" || op_name == "lambda" || op_name == "piecewise" || op_name == "apply")
         {
-            // Anonymous function call
+            // Function call
             AbstractExpressionPtr fn_expr = ParseExpression(p_operator);
             std::vector<AbstractExpressionPtr> fn_args = ParseOperands(pElement);
             p_expr.reset(new FunctionCall(fn_expr, fn_args));
@@ -1186,7 +1177,7 @@ private:
 
     /**
      * Set the location information on a language element based on the XML that was parsed to
-     * create it.
+     * create it.  Also sets whether to trace this object.
      *
      * @param pNode  the XML representation of the construct
      * @param pConstruct  the language construct
@@ -1195,6 +1186,14 @@ private:
     {
         SetContext(pNode);
         pConstruct->SetLocationInfo(GetLocationInfo());
+        if (pNode->getNodeType() == DOMNode::ELEMENT_NODE)
+        {
+            const DOMElement* p_elt = static_cast<const DOMElement*>(pNode);
+            if (p_elt->hasAttributeNS(X("https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"), X("trace")))
+            {
+                pConstruct->SetTrace();
+            }
+        }
     }
 
     /**

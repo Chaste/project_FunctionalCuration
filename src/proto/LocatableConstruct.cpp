@@ -29,7 +29,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "LocatableConstruct.hpp"
 
 LocatableConstruct::LocatableConstruct(const std::string& rLocationInfo)
-    : mLocationInfo(rLocationInfo)
+    : mLocationInfo(rLocationInfo),
+      mTrace(false)
 {}
 
 const std::string& LocatableConstruct::GetLocationInfo() const
@@ -40,4 +41,14 @@ const std::string& LocatableConstruct::GetLocationInfo() const
 void LocatableConstruct::SetLocationInfo(const std::string& rLocationInfo)
 {
     mLocationInfo = rLocationInfo;
+}
+
+bool LocatableConstruct::GetTrace() const
+{
+    return mTrace;
+}
+
+void LocatableConstruct::SetTrace(bool trace)
+{
+    mTrace = trace;
 }

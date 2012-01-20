@@ -26,28 +26,43 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "MathmlDivide.hpp"
+#include "DebugProto.hpp"
 
-#include <boost/make_shared.hpp>
-#include "BacktraceException.hpp"
-#include "ValueTypes.hpp"
+#include "VectorStreaming.hpp"
 #include "ProtoHelperMacros.hpp"
 
-MathmlDivide::MathmlDivide(const std::vector<AbstractExpressionPtr>& rOperands)
-    : MathmlOperator("divide", rOperands)
+void PrintValue(AbstractValuePtr pValue)
 {
-    PROTO_ASSERT(mChildren.size() == 2u, "Divide operator requires two operands.");
-}
-
-AbstractValuePtr MathmlDivide::operator()(const Environment& rEnv) const
-{
-    std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);
-    for (std::vector<AbstractValuePtr>::const_iterator it = operands.begin();
-         it != operands.end();
-         ++it)
+    if (pValue->IsArray())
     {
-        PROTO_ASSERT((*it)->IsDouble(), "Divide operator requires its operands to be simple values.");
+        NdArray<double> value = GET_ARRAY(pValue);
+        std::cout << "shape " << value.GetShape();
+        std::vector<double> values(value.Begin(), value.End());
+        if (values.size() < 100) std::cout << ": " << values;
     }
-    double result = GET_SIMPLE_VALUE(operands[0]) / GET_SIMPLE_VALUE(operands[1]);
-    return TraceResult(boost::make_shared<SimpleValue>(result));
+    else if (pValue->IsDefault())
+    {
+        std::cout << "default-param";
+    }
+    else if (pValue->IsNull())
+    {
+        std::cout << "null";
+    }
+    else if (pValue->IsLambda())
+    {
+        std::cout << "function";
+    }
+    else if (pValue->IsString())
+    {
+        std::cout << "string(" << boost::dynamic_pointer_cast<StringValue>(pValue)->GetString() << ")";
+    }
+    else if (pValue->IsTuple())
+    {
+        boost::shared_ptr<TupleValue> p_value = boost::dynamic_pointer_cast<TupleValue>(pValue);
+        std::cout << "tuple{" << p_value->GetNumItems() << "}:";
+        for (unsigned i=0; i<p_value->GetNumItems(); ++i)
+        {
+            std::cout << " " << p_value->GetItem(i);
+        }
+    }
 }

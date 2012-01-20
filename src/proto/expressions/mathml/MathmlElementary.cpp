@@ -47,7 +47,7 @@ AbstractValuePtr MathmlExp::operator()(const Environment& rEnv) const
     std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);
     PROTO_ASSERT(operands[0]->IsDouble(), "Exponential operator requires its operand to be a simple value.");
     double result = exp(GET_SIMPLE_VALUE(operands[0]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -62,7 +62,7 @@ AbstractValuePtr MathmlLn::operator()(const Environment& rEnv) const
     std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);
     PROTO_ASSERT(operands[0]->IsDouble(), "Natural logarithm operator requires its operand to be a simple value.");
     double result = log(GET_SIMPLE_VALUE(operands[0]));
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 
@@ -92,7 +92,7 @@ AbstractValuePtr MathmlLog::operator()(const Environment& rEnv) const
     {
         result = log(operand) / log(logbase);
     }
-    return boost::make_shared<SimpleValue>(result);
+    return TraceResult(boost::make_shared<SimpleValue>(result));
 }
 
 /**
@@ -122,7 +122,7 @@ AbstractValuePtr MathmlLog::operator()(const Environment& rEnv) const
         std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);                                    \
         PROTO_ASSERT(operands[0]->IsDouble(), #cns " operator requires its operand to be a simple value."); \
         double result = fn(GET_SIMPLE_VALUE(operands[0]));                                                  \
-        return boost::make_shared<SimpleValue>(result);                                                     \
+        return TraceResult(boost::make_shared<SimpleValue>(result));                                                     \
     }
 
 /**
@@ -139,7 +139,7 @@ AbstractValuePtr MathmlLog::operator()(const Environment& rEnv) const
         std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);                                    \
         PROTO_ASSERT(operands[0]->IsDouble(), #cns " operator requires its operand to be a simple value."); \
         double result = 1.0 / fn(GET_SIMPLE_VALUE(operands[0]));                                                  \
-        return boost::make_shared<SimpleValue>(result);                                                     \
+        return TraceResult(boost::make_shared<SimpleValue>(result));                                                     \
     }
 
 /**
@@ -156,7 +156,7 @@ AbstractValuePtr MathmlLog::operator()(const Environment& rEnv) const
         std::vector<AbstractValuePtr> operands = EvaluateChildren(rEnv);                                    \
         PROTO_ASSERT(operands[0]->IsDouble(), #cns " operator requires its operand to be a simple value."); \
         double result = fn(1.0/GET_SIMPLE_VALUE(operands[0]));                                                  \
-        return boost::make_shared<SimpleValue>(result);                                                     \
+        return TraceResult(boost::make_shared<SimpleValue>(result));                                                     \
     }
 
 TRIG_SIMPLE("sin", Sin, sin)

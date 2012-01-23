@@ -1,55 +1,64 @@
 <?xml version="1.0"?>
-<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
-<?oxygen RNGSchema="../../src/proto/parsing/protocol.rnc" type="compact"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<?oxygen RNGSchema="../../../src/proto/parsing/protocol.rnc" type="compact"?>
 <protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    
     <!-- Declare protocol inputs with default values -->
     <inputs>
         <apply xmlns="http://www.w3.org/1998/Math/MathML">
             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
             <apply><eq/>
                 <ci>holding_potential</ci>
-                <cn>-50.0</cn>
+                <cn>-80.01</cn>
+            </apply>
+            <apply><eq/>
+                <ci>final_potential</ci>
+                <cn>-60.01</cn>
             </apply>
             <!-- How long to simulate for to get to steady state at the holding potential -->
             <apply><eq/>
                 <ci>steady_state_time</ci>
                 <cn>10000</cn>
             </apply>
+            <!-- Fix some concentrations -->
+            <apply><eq/>
+                <ci>extracellular_potassium_concentration</ci>
+                <cn>4</cn>
+            </apply>
+            <apply><eq/>
+                <ci>cytosolic_potassium_concentration</ci>
+                <cn>140</cn>
+            </apply>
+            <apply><eq/>
+                <ci>cytosolic_sodium_concentration</ci>
+                <cn>10</cn>
+            </apply>
+            
             <!-- The values to step the transmembrane potential to -->
             <apply><eq/>
                 <ci>test_potentials</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-                    <cn>-45.01</cn> <cn>-40.01</cn> <cn>-35.01</cn> <cn>-30.01</cn>
-                    <cn>-25.01</cn> <cn>-20.01</cn> <cn>-15.01</cn> <cn>-10.01</cn>
-                    <cn>-5.01</cn>
-                    <cn> 0.01</cn> <cn> 5.01</cn> <cn>10.01</cn> <cn>15.01</cn>
-                    <cn>20.01</cn> <cn>25.01</cn> <cn>30.01</cn> <cn>35.01</cn>
-                    <cn>40.01</cn> <cn>45.01</cn> <cn>50.01</cn> <cn>55.01</cn>
-                    <cn>60.01</cn> <cn>65.01</cn> <cn>70.01</cn> <cn>75.01</cn>
-                    <cn>79.99</cn>
+                    <cn>-20.01</cn> <cn>-17.51</cn> <cn>-15.01</cn> <cn>-12.51</cn> 
+                    <cn>-10.01</cn> <cn>-7.51</cn>  <cn>-5.01</cn>  <cn>-2.51</cn>
+                    <cn> 0.01</cn> <cn>2.51</cn> <cn> 5.01</cn> <cn>7.51</cn> <cn>10.01</cn> 
+                    <cn>20.01</cn> <cn>30.01</cn> <cn>40.01</cn>
                 </apply>
             </apply>
         </apply>
     </inputs>
     
-    <import source="../../src/proto/library/BasicLibrary.xml" prefix="std"/>
-    
-    <library>
-        <apply xmlns="http://www.w3.org/1998/Math/MathML">
-            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
-            <apply><eq/>
-                <ci>default_Cao</ci>
-                <ci>oxmeta:extracellular_calcium_concentration</ci>
-            </apply>
-        </apply>    
-    </library>
+    <import source="../../../src/proto/library/BasicLibrary.xml" prefix="std"/>
     
     <units>
         <cellml:units name="mV">
             <cellml:unit units="volt" prefix="milli"/>
+        </cellml:units>
+        <cellml:units name="mM">               
+            <cellml:unit units="mole" prefix="milli"/>
+            <cellml:unit units="litre" exponent="-1"/>
         </cellml:units>
         <cellml:units name="ms">
             <cellml:unit units="second" prefix="milli"/>
@@ -72,13 +81,19 @@
     </units>
     
     <modelInterface>
+        <!-- Inputs into simulations -->
         <specifyInputVariable name="oxmeta:membrane_voltage" units="mV"/>
-        <specifyInputVariable name="oxmeta:extracellular_calcium_concentration"/>
-        <specifyOutputVariable name="oxmeta:membrane_L_type_calcium_current" units="uA_per_cm2"/>
+        <specifyInputVariable name="oxmeta:cytosolic_sodium_concentration" units="mM"/>
+        <specifyInputVariable name="oxmeta:cytosolic_potassium_concentration" units="mM"/>
+        <specifyInputVariable name="oxmeta:extracellular_potassium_concentration" units="mM"/>
+        
+        <!-- Model outputs we are interested in -->
+        <specifyOutputVariable name="oxmeta:membrane_rapid_delayed_rectifier_potassium_current" units="uA_per_cm2"/>
         <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
-        <specifyOutputVariable name="oxmeta:extracellular_calcium_concentration"/>
         <specifyOutputVariable name="oxmeta:time" units="ms"/>
-        <declareNewVariable name="chaste_membrane_capacitance" units="uF_per_cm2" initial_value="1"/>
+        
+        <!-- Specify units conversions to get current in consistent units between models -->
+        <declareNewVariable name="chaste_membrane_capacitance" units="uF_per_cm2" initial_value="1"/>               
         <unitsConversionRule desiredDimensions="uA_per_cm2" actualDimensions="A_per_F">
             <lambda xmlns="http://www.w3.org/1998/Math/MathML">
                 <bvar><ci>rhs</ci></bvar>
@@ -131,11 +146,34 @@
                 <ci xmlns="http://www.w3.org/1998/Math/MathML">steady_state_time</ci>
             </vectorStepper>
             <modifiers>
+                <!-- Clamp the voltage to a holding potential -->
                 <setVariable>
                     <when>AT_START_ONLY</when>
                     <name>oxmeta:membrane_voltage</name>
                     <value>
                         <ci xmlns="http://www.w3.org/1998/Math/MathML">holding_potential</ci>
+                    </value>
+                </setVariable>
+                <!-- Clamp concentrations of certain ionic species in certain compartments -->
+                <setVariable>
+                    <when>AT_START_ONLY</when>
+                    <name>oxmeta:extracellular_potassium_concentration</name>
+                    <value>
+                        <ci xmlns="http://www.w3.org/1998/Math/MathML">extracellular_potassium_concentration</ci>
+                    </value>
+                </setVariable>
+                <setVariable>
+                    <when>AT_START_ONLY</when>
+                    <name>oxmeta:cytosolic_potassium_concentration</name>
+                    <value>
+                        <ci xmlns="http://www.w3.org/1998/Math/MathML">cytosolic_potassium_concentration</ci>
+                    </value>
+                </setVariable>
+                <setVariable>
+                    <when>AT_START_ONLY</when>
+                    <name>oxmeta:cytosolic_sodium_concentration</name>
+                    <value>
+                        <ci xmlns="http://www.w3.org/1998/Math/MathML">cytosolic_sodium_concentration</ci>
                     </value>
                 </setVariable>
                 <saveState>
@@ -145,77 +183,59 @@
             </modifiers>
         </timecourseSimulation>
         
-        <!-- Now do the IV curve generation for each Cao -->
+        <!-- Now do the IV curve generation -->
         <nestedSimulation prefix="sim">
-            <vectorStepper name="step_calcium_ratio" units="dimensionless">
-                <value>0.5</value>
-                <value>1.0</value>
-                <value>1.5</value>
+            <vectorStepper name="step_voltage" units="mV">
+                <ci xmlns="http://www.w3.org/1998/Math/MathML">test_potentials</ci>
             </vectorStepper>
             <modifiers>
-                <!-- Set the external calcium concentration -->
+                <!-- Reset the model's state variables to holding potential -->
+                <resetState>
+                    <when>EVERY_LOOP</when>
+                    <state>holding_state</state>
+                </resetState>                    
                 <setVariable>
                     <when>EVERY_LOOP</when>
-                    <name>oxmeta:extracellular_calcium_concentration</name>
+                    <name>oxmeta:membrane_voltage</name>
                     <value>
-                        <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
-                            <ci>step_calcium_ratio</ci>
-                            <ci>default_Cao</ci>
-                        </apply>
+                        <ci xmlns="http://www.w3.org/1998/Math/MathML">holding_potential</ci>
                     </value>
                 </setVariable>
             </modifiers>
-            <nestedSimulation>
-                <vectorStepper name="step_voltage" units="mV">
-                    <ci xmlns="http://www.w3.org/1998/Math/MathML">test_potentials</ci>
-                </vectorStepper>
+            <timecourseSimulation>
+                <uniformStepper name="time" units="ms">
+                    <start>-1.0</start>
+                    <stop>1050.0</stop>
+                    <step>0.01</step>
+                </uniformStepper>
                 <modifiers>
-                    <!-- Reset the model to holding potential -->
-                    <resetState>
-                        <when>EVERY_LOOP</when>
-                        <state>holding_state</state>
-                    </resetState>                    
                     <setVariable>
                         <when>EVERY_LOOP</when>
                         <name>oxmeta:membrane_voltage</name>
                         <value>
-                            <ci xmlns="http://www.w3.org/1998/Math/MathML">holding_potential</ci>
+                            <piecewise xmlns="http://www.w3.org/1998/Math/MathML">
+                                <piece>
+                                    <ci>step_voltage</ci>
+                                    <apply><geq/>
+                                        <ci>time</ci>
+                                        <cn>0</cn>
+                                    </apply>
+                                </piece>       
+                                <piece>
+                                    <ci>final_potential</ci>
+                                    <apply><geq/>
+                                        <ci>time</ci>
+                                        <cn>50</cn>
+                                    </apply>
+                                </piece>
+                                <otherwise>
+                                    <ci>oxmeta:membrane_voltage</ci>
+                                </otherwise>
+                            </piecewise>
                         </value>
                     </setVariable>
                 </modifiers>
-                <timecourseSimulation>
-                    <uniformStepper name="time" units="ms">
-                        <start>-10.0</start>
-                        <stop>500.0</stop>
-                        <step>0.01</step>
-                    </uniformStepper>
-                    <modifiers>
-                        <setVariable>
-                            <when>EVERY_LOOP</when>
-                            <name>oxmeta:membrane_voltage</name>
-                            <value>
-                                <piecewise xmlns="http://www.w3.org/1998/Math/MathML">
-                                    <piece>
-                                        <ci>step_voltage</ci>
-                                        <apply><lt/>
-                                            <apply><abs/>
-                                                <apply><minus/>
-                                                    <ci>time</ci>
-                                                    <cn>0</cn>
-                                                </apply>
-                                            </apply>
-                                            <cn>1e-6</cn>
-                                        </apply>
-                                    </piece>
-                                    <otherwise>
-                                        <ci>oxmeta:membrane_voltage</ci>
-                                    </otherwise>
-                                </piecewise>
-                            </value>
-                        </setVariable>
-                    </modifiers>
-                </timecourseSimulation>
-            </nestedSimulation>
+            </timecourseSimulation>
         </nestedSimulation>
     </simulations>
     
@@ -242,32 +262,33 @@
                 <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
-                    <ci>sim:membrane_L_type_calcium_current</ci>
+                    <ci>sim:membrane_rapid_delayed_rectifier_potassium_current</ci>
                 </apply>
             </apply>
             
             <!-- Only examine the "tail currents" after t=0 -->
             <apply><eq/>
-                <ci>membrane_L_type_calcium_tail_current</ci>
+                <ci>IKr_tail_current</ci>
                 <apply><ci>std:After</ci>
-                    <ci>sim:membrane_L_type_calcium_current</ci>
+                    <ci>sim:membrane_rapid_delayed_rectifier_potassium_current</ci>
                     <ci>sim:time</ci>
                     <cn>0</cn>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
                 </apply>
             </apply>
             
-            <!-- Get the minimum tail current (this has the largest magnitude) as a 2d array -->
+            <!-- Get the maximum tail current (this has the largest magnitude) as a 1d array -->
             <apply><eq/>
-                <ci>min_LCC</ci>
+                <ci>max_IKr_current</ci>
                 <apply><ci>std:RemoveDim</ci>
-                    <apply><ci>std:Min</ci>
-                        <ci>membrane_L_type_calcium_tail_current</ci>
+                    <apply><ci>std:Max</ci>
+                        <ci>IKr_tail_current</ci>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
                     </apply>
-                    <cn>2</cn>
+                    <cn>1</cn>
                 </apply>
             </apply>
+            
             <!-- We'll plot against the final V, which is equal to the step voltage -->
             <apply><eq/>
                 <ci>final_membrane_voltage</ci>
@@ -276,12 +297,10 @@
                     <ci>sim:membrane_voltage</ci>
                     <apply>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                        <cn>2</cn><cn>-1</cn><cn>0</cn><cn>-1</cn>
-                    </apply>
-                    <apply>
-                        <!-- Take the first concentration loop - they all use the same test potentials -->
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                        <cn>0</cn><cn>0</cn><cn>0</cn><cn>0</cn>
+                        <cn>1</cn>
+                        <cn>-1</cn>
+                        <cn>0</cn>
+                        <cn>-1</cn>
                     </apply>
                     <apply>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
@@ -296,16 +315,13 @@
     </post-processing>
     
     <outputVariables>
-        <raw ref="sim:extracellular_calcium_concentration" name="extracellular_calcium_concentration"
-            description="Extracellular calcium concentration"/>
-        <raw ref="sim:membrane_L_type_calcium_current" name="membrane_L_type_calcium_current"
-            description="L-type calcium current"/>
+        <raw ref="sim:membrane_rapid_delayed_rectifier_potassium_current" name="membrane_rapid_delayed_rectifier_potassium_current"
+            description="I_{Kr} current"/>
         <raw ref="sim:membrane_voltage" name="membrane_voltage"
             description="Transmembrane potential"/>
-        
-        <postprocessed name="membrane_L_type_calcium_tail_current" units="uA/cm^2"
-            description="I_{CaL} after test potential applied"/>
-        <postprocessed name="min_LCC" description="Minimum current" units="uA/cm^2"/>
+        <postprocessed name="IKr_tail_current" units="uA/cm^2"
+            description="I_{Kr} after test potential applied"/>
+        <postprocessed name="max_IKr_current" description="Max I_{Kr} current" units="uA/cm^2"/>
         <postprocessed name="final_membrane_voltage" units="mV" description="Test potential"/>
     </outputVariables>
     
@@ -313,7 +329,7 @@
         <plot>
             <title>Current-voltage relationship</title>
             <x>final_membrane_voltage</x>
-            <y>min_LCC</y>
+            <y>max_IKr_current</y>
         </plot>
     </plots>
 </protocol>

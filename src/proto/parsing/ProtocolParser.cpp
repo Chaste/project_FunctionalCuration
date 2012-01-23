@@ -463,6 +463,7 @@ public:
         SetContext(pElement);
         return is_stmt_list;
     }
+
     /**
      * Parse a MathML piecewise element to obtain an "if" expression.
      *

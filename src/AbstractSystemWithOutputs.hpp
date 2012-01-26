@@ -93,6 +93,13 @@ public:
     const std::map<std::string, EnvironmentPtr>& rGetEnvironmentMap() const;
 
     /**
+     * Get the short name used in the model code for the given variable reference.
+     * @param rVariableReference  the value of the 'target' attribute on a SED-ML variable reference.
+     * @return a name that can be looked up in the model environment
+     */
+    const std::string& rGetShortName(const std::string& rVariableReference) const;
+
+    /**
      * What types of variable can be system outputs.
      */
     enum OutputTypes
@@ -126,6 +133,13 @@ protected:
 
     /** Environments wrapping model variables, with their prefixes. */
     std::map<std::string, EnvironmentPtr> mEnvironmentMap;
+
+    /**
+     * For SED-ML support, a map from the variable reference target used in the SED-ML document
+     * to the variable name in the model, which can be used to look up the variable in the (only,
+     * in this case) wrapper Environment.
+     */
+    std::map<std::string, std::string> mNameMap;
 };
 
 /**

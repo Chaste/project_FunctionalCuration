@@ -119,6 +119,12 @@ void Protocol::FinaliseSetup()
 
 void Protocol::InitialiseLibrary()
 {
+    // First initialise the libraries of imported protocols
+    BOOST_FOREACH(StringProtoPair import, mImports)
+    {
+        import.second->InitialiseLibrary();
+    }
+    // Now do our library
     const unsigned library_size = mpLibrary->GetNumberOfDefinitions();
     assert(library_size == 0 || library_size == mLibraryStatements.size());
     if (library_size == 0)
@@ -804,8 +810,6 @@ void Protocol::SetModelEnvironments(const std::map<std::string, EnvironmentPtr>&
     {
         import.second->SetModelEnvironments(rModelEnvs);
     }
-    // Now run the library program, if present
-    InitialiseLibrary();
 }
 
 
@@ -822,6 +826,8 @@ void Protocol::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)
     {
         mSimulations[simulation]->SetCell(pModel);
     }
+    // Now run all the library programs, if present
+    InitialiseLibrary();
 }
 
 

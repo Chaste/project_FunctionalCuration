@@ -185,6 +185,17 @@ const std::map<std::string, EnvironmentPtr>& AbstractUntemplatedSystemWithOutput
 }
 
 
+const std::string& AbstractUntemplatedSystemWithOutputs::rGetShortName(const std::string& rVariableReference) const
+{
+    std::map<std::string, std::string>::const_iterator it = mNameMap.find(rVariableReference);
+    if (it == mNameMap.end())
+    {
+        EXCEPTION("Variable reference '" << rVariableReference << "' not found in this model.");
+    }
+    return it->second;
+}
+
+
 AbstractUntemplatedSystemWithOutputs::~AbstractUntemplatedSystemWithOutputs()
 {
 }

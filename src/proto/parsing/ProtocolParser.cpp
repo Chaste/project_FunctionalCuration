@@ -35,6 +35,7 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include "XmlTools.hpp"
 
+#include "MathmlParser.hpp"
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
 #include "BacktraceException.hpp"
@@ -53,15 +54,12 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "VectorStepper.hpp"
 #include "WhileStepper.hpp"
 
-#include <xercesc/dom/DOM.hpp>
-using namespace xercesc;
-
 /**
  * Implementation of the protocol file parser, containing methods to parse all the different
  * constructs.  We use a separate class for this, rather than putting all the methods in the
  * ProtocolParser class, to reduce re-compiling for users of the parser.
  */
-class ProtocolParserImpl : boost::noncopyable
+class ProtocolParserImpl : public MathmlParser
 {
 public:
     /**
@@ -226,21 +224,6 @@ public:
     }
 
     /**
-     * Parse a cn element to obtain a constant number.
-     *
-     * \todo Cope with base, sep, etc.
-     * \todo Make all these methods take const DOMElement* ?
-     *
-     * @param pElement  the cn element
-     */
-    double ParseNumber(DOMElement* pElement)
-    {
-        SetContext(pElement);
-        std::string text_value = X2C(pElement->getTextContent());
-        return String2Double(text_value);
-    }
-
-    /**
      * Parse an element that may contain either a constant number or an expression child element.
      *
      * @param pElement  the element
@@ -286,7 +269,7 @@ public:
      *
      * @param pElement  the csymbol element
      */
-    AbstractExpressionPtr ParseCsymbolExpression(DOMElement* pElement)
+    AbstractExpressionPtr ParseCsymbolExpression(const DOMElement* pElement)
     {
         SetContext(pElement);
         AbstractExpressionPtr p_expr;
@@ -315,19 +298,6 @@ public:
     }
 
     /**
-     * Parse a MathML bvar element to obtain the name referenced in the enclosed ci element.
-     *
-     * @param pElement  the bvar element
-     */
-    std::string ParseBvar(DOMElement* pElement)
-    {
-        SetContext(pElement);
-        DOMNodeList* p_ci_elts = pElement->getElementsByTagNameNS(X(mMathmlNs), X("ci"));
-        PROTO_ASSERT(p_ci_elts->getLength() == 1, "A bvar element should have only one child.");
-        return X2C(p_ci_elts->item(0)->getTextContent());
-    }
-
-    /**
      * Parse a MathML lambda element into a LambdaExpression.
      *
      * Its content should consist of a sequence of bvar or semantics elements defining the parameters,
@@ -336,7 +306,7 @@ public:
      *
      * @param pElement  the lambda element
      */
-    AbstractExpressionPtr ParseFunctionDefinition(DOMElement* pElement)
+    AbstractExpressionPtr ParseFunctionDefinition(const DOMElement* pElement)
     {
         SetContext(pElement);
         AbstractExpressionPtr p_expr;
@@ -400,7 +370,7 @@ public:
      *
      * @param pElement  the element to parse
      */
-    AbstractValuePtr ParseValue(DOMElement* pElement)
+    AbstractValuePtr ParseValue(const DOMElement* pElement)
     {
         SetContext(pElement);
         AbstractValuePtr p_value;
@@ -462,229 +432,6 @@ public:
         }
         SetContext(pElement);
         return is_stmt_list;
-    }
-
-    /**
-     * Parse a MathML piecewise element to obtain an "if" expression.
-     *
-     * Only one piece child is allowed (at present).
-     *
-     * @param pElement  the piecewise element
-     */
-    AbstractExpressionPtr ParsePiecewise(DOMElement* pElement)
-    {
-        SetContext(pElement);
-        std::vector<DOMElement*> children = XmlTools::GetChildElements(pElement);
-        PROTO_ASSERT(children.size() == 2, "A piecewise element must have exactly 2 children, not "
-                     << children.size() << ".");
-        PROTO_ASSERT(X2C(children.front()->getLocalName()) == "piece",
-                     "A piecewise element must have a piece element as its first child.");
-        PROTO_ASSERT(X2C(children.back()->getLocalName()) == "otherwise",
-                     "A piecewise element must have an otherwise element as its second child.");
-        // Get the test & then part from the piece element
-        SetContext(children.front());
-        std::vector<DOMElement*> piece_children = XmlTools::GetChildElements(children.front());
-        PROTO_ASSERT(piece_children.size() == 2, "A piece element must have exactly 2 children, not "
-                     << piece_children.size() << ".");
-        AbstractExpressionPtr p_test = ParseExpression(piece_children.back());
-        AbstractExpressionPtr p_then = ParseExpression(piece_children.front());
-        // Get the else part from the otherwise element
-        SetContext(children.back());
-        std::vector<DOMElement*> otherwise_children = XmlTools::GetChildElements(children.back());
-        PROTO_ASSERT(otherwise_children.size() == 1, "An otherwise element must have exactly 1 child, not "
-                     << otherwise_children.size() << ".");
-        AbstractExpressionPtr p_else = ParseExpression(otherwise_children.front());
-        // Create the result
-        AbstractExpressionPtr p_expr = IF(p_test, p_then, p_else);
-        TransferContext(pElement, p_expr);
-        return p_expr;
-    }
-
-    /**
-     * Parse a MathML apply element to obtain an expression.
-     *
-     * The operator should be a ci, csymbol, or MathML operator.
-     *
-     * @param pElement  the apply element
-     */
-    AbstractExpressionPtr ParseApply(DOMElement* pElement)
-    {
-        SetContext(pElement);
-        AbstractExpressionPtr p_expr;
-        DOMElement* p_operator = GetOperator(pElement);
-        std::string op_name = X2C(p_operator->getLocalName());
-        if (op_name == "csymbol")
-        {
-            // Built-in operation: fold, map, newArray, view, find, index, tuple, or accessor
-            std::string symbol = GetCsymbolName(p_operator);
-            std::vector<AbstractExpressionPtr> operands = ParseOperands(pElement);
-            if (symbol == "fold")
-            {
-                p_expr.reset(new Fold(operands));
-            }
-            else if (symbol == "map")
-            {
-                p_expr.reset(new Map(operands));
-            }
-            else if (symbol == "newArray")
-            {
-                std::vector<DOMElement*> children = XmlTools::GetChildElements(pElement);
-                if (children.size() == operands.size() + 2)
-                {
-                    // Array comprehension
-                    DOMElement* p_doa = children[1];
-                    PROTO_ASSERT(X2C(p_doa->getLocalName()) == "domainofapplication",
-                                 "An array comprehension must have a domainofapplication.");
-                    PROTO_ASSERT(operands.size() == 1, "An array comprehension must have only one operand.");
-                    std::vector<DOMElement*> range_spec_elts = XmlTools::GetChildElements(p_doa);
-                    std::vector<AbstractExpressionPtr> range_specs;
-                    range_specs.reserve(range_spec_elts.size());
-                    for (std::vector<DOMElement*>::iterator it = range_spec_elts.begin(); it != range_spec_elts.end(); ++it)
-                    {
-                        range_specs.push_back(ParseExpression(*it));
-                    }
-                    p_expr.reset(new ArrayCreate(operands.front(), range_specs));
-                }
-                else
-                {
-                    p_expr.reset(new ArrayCreate(operands));
-                }
-            }
-            else if (symbol == "view")
-            {
-                PROTO_ASSERT(operands.size() > 1,
-                             "A view operation must include the array and at least one range specification.");
-                AbstractExpressionPtr p_array = operands[0];
-                std::vector<AbstractExpressionPtr> ranges(++operands.begin(), operands.end());
-                p_expr.reset(new View(p_array, ranges));
-            }
-            else if (symbol == "find")
-            {
-                PROTO_ASSERT(operands.size() == 1, "Find takes only one operand.");
-                p_expr.reset(new Find(operands.front()));
-            }
-            else if (symbol == "index")
-            {
-                p_expr.reset(new Index(operands));
-            }
-            else if (symbol == "accessor")
-            {
-                PROTO_ASSERT(operands.size() == 1, "The accessor csymbol takes 1 operand.");
-                Accessor::Attribute attr = Accessor::DecodeAttributeString(X2C(p_operator->getTextContent()),
-                                                                           GetLocationInfo());
-                p_expr.reset(new Accessor(operands[0], attr));
-            }
-            else if (symbol == "tuple")
-            {
-                p_expr.reset(new TupleExpression(operands));
-            }
-            else
-            {
-                PROTO_EXCEPTION("Application of csymbol " << symbol << " is not recognised.");
-            }
-        }
-        else if (op_name == "ci" || op_name == "lambda" || op_name == "piecewise" || op_name == "apply")
-        {
-            // Function call
-            AbstractExpressionPtr fn_expr = ParseExpression(p_operator);
-            std::vector<AbstractExpressionPtr> fn_args = ParseOperands(pElement);
-            p_expr.reset(new FunctionCall(fn_expr, fn_args));
-        }
-        else
-        {
-            // Better be a MathML operator that we understand
-            std::vector<AbstractExpressionPtr> operands = ParseOperands(pElement);
-#define ITEM(cls)  p_expr.reset(new cls(operands));
-            MATHML_OPERATOR_TABLE(ITEM, op_name)
-#undef ITEM
-        }
-        TransferContext(pElement, p_expr);
-        return p_expr;
-    }
-
-    /**
-     * Parse the operands of an apply element.
-     *
-     * Note: we pretend that 'degree' and 'logbase' elements are operands rather than qualifiers.
-     *
-     * @param pElement  the apply element
-     */
-    std::vector<AbstractExpressionPtr> ParseOperands(DOMElement* pElement)
-    {
-        std::vector<DOMElement*> children = XmlTools::GetChildElements(pElement);
-        std::vector<AbstractExpressionPtr> operands;
-        operands.reserve(children.size()-1);
-        for (std::vector<DOMElement*>::iterator it = ++children.begin(); it != children.end(); ++it)
-        {
-            if (!IsQualifier(*it))
-            {
-                operands.push_back(ParseExpression(*it));
-            }
-        }
-        SetContext(pElement);
-        return operands;
-    }
-
-    /**
-     * Determine whether a given element is a qualifier.
-     * Just tests if the element name is bvar or domainofapplication, since they
-     * are the only qualifiers we support.
-     *
-     * @param pElement  the element to test
-     */
-    bool IsQualifier(const DOMElement* pElement)
-    {
-        std::string elt_name = X2C(pElement->getLocalName());
-        return (elt_name == "bvar" || elt_name == "domainofapplication");
-    }
-
-    /**
-     * Parse a MathML element encoding an expression.
-     *
-     * @param pElement  the element
-     */
-    AbstractExpressionPtr ParseExpression(DOMElement* pElement)
-    {
-        SetContext(pElement);
-        AbstractExpressionPtr p_expr;
-        PROTO_ASSERT(X2C(pElement->getNamespaceURI()) == mMathmlNs, "Expressions must be MathML elements.");
-        std::string name = X2C(pElement->getLocalName());
-        if (name == "cn")
-        {
-            p_expr = VALUE(SimpleValue, ParseNumber(pElement));
-        }
-        else if (name == "ci")
-        {
-            std::string text_value = X2C(pElement->getTextContent());
-            p_expr = LOOKUP(text_value);
-        }
-        else if (name == "csymbol")
-        {
-            p_expr = ParseCsymbolExpression(pElement);
-        }
-        else if (name == "lambda")
-        {
-            p_expr = ParseFunctionDefinition(pElement);
-        }
-        else if (name == "apply")
-        {
-            p_expr = ParseApply(pElement);
-        }
-        else if (name == "piecewise")
-        {
-            p_expr = ParsePiecewise(pElement);
-        }
-        else if (name == "degree" || name == "logbase")
-        {
-            // It's just a wrapper element
-            p_expr = ParseExpression(GetFirstChild(pElement));
-        }
-        else
-        {
-            PROTO_EXCEPTION("Element name " << name << " is not a valid expression.");
-        }
-        TransferContext(pElement, p_expr);
-        return p_expr;
     }
 
     /**
@@ -1141,14 +888,18 @@ public:
     }
 
     /**
-     * Main constructor sets up constant member variables.
+     * Main constructor.
      *
      * @param rParser  the root parser creating this implementation
      */
     ProtocolParserImpl(ProtocolParser& rParser)
-        : mrParser(rParser),
-          mMathmlNs("http://www.w3.org/1998/Math/MathML"),
-          mCsymbolBaseUrl("https://chaste.cs.ox.ac.uk/nss/protocol/")
+        : mrParser(rParser)
+    {}
+
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ProtocolParserImpl()
     {}
 
 private:
@@ -1157,106 +908,6 @@ private:
 
     /** The protocol object that parsed language constructs will be added to. */
     ProtocolPtr mpCurrentProtocolObject;
-
-    /** Holds a description of where in the file we're parsing. */
-    std::string mLocationInfo;
-
-    /**
-     * Set #mLocationInfo based on the given node.
-     *
-     * @param pNode  the node being parsed
-     */
-    void SetContext(const DOMNode* pNode)
-    {
-        const TaggingDomParser::Tag* p_tag = TaggingDomParser::GetTag(pNode);
-        assert(p_tag != NULL);
-        std::stringstream loc;
-        loc << p_tag->mSystemId << ":" << p_tag->mLineNumber << ":" << p_tag->mColumnNumber
-                << "\t" << X2C(pNode->getLocalName());
-        mLocationInfo = loc.str();
-    }
-
-    /**
-     * Set the location information on a language element based on the XML that was parsed to
-     * create it.  Also sets whether to trace this object.
-     *
-     * @param pNode  the XML representation of the construct
-     * @param pConstruct  the language construct
-     */
-    void TransferContext(const DOMNode* pNode, boost::shared_ptr<LocatableConstruct> pConstruct)
-    {
-        SetContext(pNode);
-        pConstruct->SetLocationInfo(GetLocationInfo());
-        if (pNode->getNodeType() == DOMNode::ELEMENT_NODE)
-        {
-            const DOMElement* p_elt = static_cast<const DOMElement*>(pNode);
-            if (p_elt->hasAttributeNS(X("https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"), X("trace")))
-            {
-                pConstruct->SetTrace();
-            }
-        }
-    }
-
-    /**
-     * Get a description of the location being parsed for use in error messages.
-     */
-    std::string GetLocationInfo()
-    {
-        return mLocationInfo;
-    }
-
-    /** The MathML namespace. */
-    const std::string mMathmlNs;
-
-    /** The prefix for our csymbol definitionURLs. */
-    const std::string mCsymbolBaseUrl;
-
-    /**
-     * Given a csymbol, check that it has a definitionURL with the correct base, and extract the
-     * non-base portion.
-     *
-     * @param pElement  the csymbol element
-     */
-    std::string GetCsymbolName(DOMElement* pElement)
-    {
-        std::string definition_url = X2C(pElement->getAttribute(X("definitionURL")));
-        PROTO_ASSERT(!definition_url.empty(), "All csymbol elements must have a definitionURL.");
-        const size_t base_len = mCsymbolBaseUrl.length();
-        PROTO_ASSERT(definition_url.substr(0, base_len) == mCsymbolBaseUrl,
-                     "All csymbol elements must have a definitionURL commencing with " << mCsymbolBaseUrl
-                     << "; " << definition_url << " does not match.");
-        return definition_url.substr(base_len);
-    }
-
-    /**
-     * Get the operator element (the first child) from an apply element.
-     *
-     * @param pElement  the apply element
-     */
-    DOMElement* GetOperator(DOMElement* pElement)
-    {
-        assert(X2C(pElement->getLocalName()) == "apply");
-        return GetFirstChild(pElement);
-    }
-
-    /**
-     * Get the first child element of the given element, throwing an error if none exists.
-     *
-     * @param pElement  the parent element
-     */
-    DOMElement* GetFirstChild(DOMNode* pElement)
-    {
-        DOMNode* p_child = pElement->getFirstChild();
-        while (p_child != NULL && p_child->getNodeType() != DOMNode::ELEMENT_NODE)
-        {
-            p_child = p_child->getNextSibling();
-        }
-        if (p_child == NULL)
-        {
-            PROTO_EXCEPTION("No child element found.");
-        }
-        return static_cast<DOMElement*>(p_child);
-    }
 
     /**
      * Stores the namespace, import & simulation prefix declarations.  This allows us to
@@ -1311,38 +962,6 @@ private:
                 }
             }
         }
-    }
-
-    /**
-     * Convert a string to a double.
-     * @param rStr  the string
-     */
-    double String2Double(const std::string& rStr)
-    {
-        std::istringstream stream(rStr);
-        double number;
-        stream >> number;
-        if (stream.fail())
-        {
-            PROTO_EXCEPTION("String '" << rStr << "' could not be interpreted as a floating point number.");
-        }
-        return number;
-    }
-
-    /**
-     * Convert a string to an unsigned.
-     * @param rStr  the string
-     */
-    unsigned String2Unsigned(const std::string& rStr)
-    {
-        std::istringstream stream(rStr);
-        unsigned number;
-        stream >> number;
-        if (stream.fail())
-        {
-            PROTO_EXCEPTION("String '" << rStr << "' could not be interpreted as a non-negative integer.");
-        }
-        return number;
     }
 };
 

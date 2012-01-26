@@ -148,6 +148,8 @@ void AddOutputData(EnvironmentPtr pResults,
 
 void TimecourseSimulation::Run(EnvironmentPtr pResults)
 {
+    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> p_model
+        = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(mpCell);
     // Loop over time
     for (mpStepper->Reset(); !mpStepper->AtEnd(); /* step done in loop body */)
     {
@@ -158,7 +160,7 @@ void TimecourseSimulation::Run(EnvironmentPtr pResults)
         // Simulate until the next output point, if there is one
         const double curr_time = mpStepper->GetCurrentOutputPoint();
         const double next_time = mpStepper->Step();
-        if (!mpStepper->AtEnd())
+        if (!mpStepper->AtEnd() && p_model->GetNumberOfStateVariables() > 0u)
         {
             mpCell->SolveAndUpdateState(curr_time, next_time);
         }

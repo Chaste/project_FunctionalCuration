@@ -37,7 +37,11 @@
                 <ci>test_potentials</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-                    <cn>-80.01</cn> 
+                    <cn>-125.01</cn> <cn>-122.51</cn><cn>-120.01</cn>
+                    <cn>-117.51</cn> <cn>-115.01</cn> <cn>-112.51</cn><cn>-110.01</cn>
+                    <cn>-107.51</cn> <cn>-105.01</cn> <cn>-102.51</cn><cn>-100.01</cn>
+                    <cn>-97.51</cn> <cn>-95.01</cn> <cn>-92.51</cn><cn>-90.01</cn>
+                    <cn>-87.51</cn> <cn>-85.01</cn> <cn>-82.51</cn><cn>-80.01</cn>
                     <cn>-77.51</cn> <cn>-75.01</cn> <cn>-72.51</cn><cn>-70.01</cn>
                     <cn>-67.51</cn> <cn>-65.01</cn> <cn>-62.51</cn><cn>-60.01</cn>
                     <cn>-57.51</cn> <cn>-55.01</cn> <cn>-52.51</cn><cn>-50.01</cn>
@@ -327,7 +331,7 @@
     
     <plots>
         <plot>
-            <title>Current-voltage relationship</title>
+            <title>I_{K1} IV curve</title>
             <x>final_membrane_voltage</x>
             <y>min_IK1_current</y>
         </plot>

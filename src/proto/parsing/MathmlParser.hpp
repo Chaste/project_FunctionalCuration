@@ -61,6 +61,15 @@ public:
      * @param pElement  the element
      */
     AbstractExpressionPtr ParseExpression(const DOMElement* pElement);
+    
+    /**
+     * Set whether to make all MathML operators that take arguments into implicit
+     * maps if at least one of the arguments is an array.  This is needed for SED-ML,
+     * but is not enabled by default.
+     *
+     * @param useImplicitMap
+     */
+    void SetUseImplicitMap(bool useImplicitMap=true);
 
 protected:
     /**
@@ -81,6 +90,15 @@ protected:
      * @param pElement  the csymbol element
      */
     virtual AbstractExpressionPtr ParseCsymbolExpression(const DOMElement* pElement)=0;
+
+    /**
+     * Parse an application of a csymbol operator.
+     *
+     * @param pApplyElement  the apply element
+     * @param pOperator  the csymbol operator element
+     */
+    virtual AbstractExpressionPtr ParseCsymbolApply(const DOMElement* pApplyElement,
+                                                    const DOMElement* pOperator)=0;
 
     // Subsidiary parsing methods
 
@@ -137,6 +155,15 @@ protected:
      */
     virtual AbstractExpressionPtr ParseFunctionDefinition(const DOMElement* pElement);
 
+    /**
+     * Do "LambdaExpression::WrapMathml<OperatorClass>(numArgs)" dealing with converting a run-time
+     * string into a compile-time type.
+     *
+     * @param rOperator  the MathML operator name
+     * @param numArgs  the number of arguments it should take
+     */
+    AbstractExpressionPtr WrapMathml(const std::string& rOperator, unsigned numArgs);
+
     // Utility methods
 
     /**
@@ -160,14 +187,6 @@ protected:
      * This provides enough of the LocatableConstruct interface for the PROTO_EXCEPTION macro to work.
      */
     std::string GetLocationInfo();
-
-    /**
-     * Given a csymbol, check that it has a definitionURL with the correct base, and extract the
-     * non-base portion.
-     *
-     * @param pElement  the csymbol element
-     */
-    std::string GetCsymbolName(const DOMElement* pElement);
 
     /**
      * Get the operator element (the first child) from an apply element.
@@ -205,11 +224,11 @@ protected:
     const std::string mMathmlNs;
 
 private:
-    /** The prefix for csymbol definitionURLs in our protocol language. */
-    const std::string mCsymbolBaseUrl;
-
     /** Holds a description of where in the file we're parsing. */
     std::string mLocationInfo;
+    
+    /** Whether to use implicit maps. */
+    bool mUseImplicitMap;
 };
 
 #endif // MATHMLPARSER_HPP_

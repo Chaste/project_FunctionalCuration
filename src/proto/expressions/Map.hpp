@@ -43,8 +43,11 @@ public:
      *
      * @param rParameters  the parameters for map, the first of which must be evaluate to
      *     a function, and the remainder to arrays of the same shape
+     * @param allowImplicitArrays  whether to allow some parameters to be simple values, and
+     *     treat them implicitly as arrays containing that value everywhere
      */
-    Map(const std::vector<AbstractExpressionPtr>& rParameters);
+    Map(const std::vector<AbstractExpressionPtr>& rParameters,
+        bool allowImplicitArrays=false);
 
     /**
      * Evaluate the expression in an environment.
@@ -52,6 +55,10 @@ public:
      * @param rEnv  the environment
      */
     AbstractValuePtr operator()(const Environment& rEnv) const;
+
+private:
+    /** Whether to treat 0d parameters as implicit arrays. */
+    bool mAllowImplicitArrays;
 };
 
 

@@ -28,6 +28,8 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 
 #include "MathmlParser.hpp"
 
+#include <boost/foreach.hpp>
+
 #include "XmlTools.hpp"
 
 #include "ProtocolLanguage.hpp"
@@ -35,6 +37,11 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "BacktraceException.hpp"
 #include "TaggingDomParser.hpp"
 
+
+void MathmlParser::SetUseImplicitMap(bool useImplicitMap)
+{
+    mUseImplicitMap = useImplicitMap;
+}
 
 
 double MathmlParser::ParseNumber(const DOMElement* pElement)
@@ -98,73 +105,7 @@ AbstractExpressionPtr MathmlParser::ParseApply(const DOMElement* pElement)
     std::string op_name = X2C(p_operator->getLocalName());
     if (op_name == "csymbol")
     {
-        // Built-in operation: fold, map, newArray, view, find, index, tuple, or accessor
-        std::string symbol = GetCsymbolName(p_operator);
-        std::vector<AbstractExpressionPtr> operands = ParseOperands(pElement);
-        if (symbol == "fold")
-        {
-            p_expr.reset(new Fold(operands));
-        }
-        else if (symbol == "map")
-        {
-            p_expr.reset(new Map(operands));
-        }
-        else if (symbol == "newArray")
-        {
-            std::vector<DOMElement*> children = XmlTools::GetChildElements(pElement);
-            if (children.size() == operands.size() + 2)
-            {
-                // Array comprehension
-                DOMElement* p_doa = children[1];
-                PROTO_ASSERT(X2C(p_doa->getLocalName()) == "domainofapplication",
-                             "An array comprehension must have a domainofapplication.");
-                PROTO_ASSERT(operands.size() == 1, "An array comprehension must have only one operand.");
-                std::vector<DOMElement*> range_spec_elts = XmlTools::GetChildElements(p_doa);
-                std::vector<AbstractExpressionPtr> range_specs;
-                range_specs.reserve(range_spec_elts.size());
-                for (std::vector<DOMElement*>::iterator it = range_spec_elts.begin(); it != range_spec_elts.end(); ++it)
-                {
-                    range_specs.push_back(ParseExpression(*it));
-                }
-                p_expr.reset(new ArrayCreate(operands.front(), range_specs));
-            }
-            else
-            {
-                p_expr.reset(new ArrayCreate(operands));
-            }
-        }
-        else if (symbol == "view")
-        {
-            PROTO_ASSERT(operands.size() > 1,
-                         "A view operation must include the array and at least one range specification.");
-            AbstractExpressionPtr p_array = operands[0];
-            std::vector<AbstractExpressionPtr> ranges(++operands.begin(), operands.end());
-            p_expr.reset(new View(p_array, ranges));
-        }
-        else if (symbol == "find")
-        {
-            PROTO_ASSERT(operands.size() == 1, "Find takes only one operand.");
-            p_expr.reset(new Find(operands.front()));
-        }
-        else if (symbol == "index")
-        {
-            p_expr.reset(new Index(operands));
-        }
-        else if (symbol == "accessor")
-        {
-            PROTO_ASSERT(operands.size() == 1, "The accessor csymbol takes 1 operand.");
-            Accessor::Attribute attr = Accessor::DecodeAttributeString(X2C(p_operator->getTextContent()),
-                                                                       GetLocationInfo());
-            p_expr.reset(new Accessor(operands[0], attr));
-        }
-        else if (symbol == "tuple")
-        {
-            p_expr.reset(new TupleExpression(operands));
-        }
-        else
-        {
-            PROTO_EXCEPTION("Application of csymbol " << symbol << " is not recognised.");
-        }
+        p_expr = ParseCsymbolApply(pElement, p_operator);
     }
     else if (op_name == "ci" || op_name == "lambda" || op_name == "piecewise" || op_name == "apply")
     {
@@ -177,9 +118,20 @@ AbstractExpressionPtr MathmlParser::ParseApply(const DOMElement* pElement)
     {
         // Better be a MathML operator that we understand
         std::vector<AbstractExpressionPtr> operands = ParseOperands(pElement);
+        if (!mUseImplicitMap || operands.empty())
+        {
 #define ITEM(cls)  p_expr.reset(new cls(operands));
-        MATHML_OPERATOR_TABLE(ITEM, op_name)
+            MATHML_OPERATOR_TABLE(ITEM, op_name)
 #undef ITEM
+        }
+        else
+        {
+            // Wrap the MathML in an implicit map
+            AbstractExpressionPtr p_func = WrapMathml(op_name, operands.size());
+            std::vector<AbstractExpressionPtr> new_operands(1, p_func);
+            BOOST_FOREACH(AbstractExpressionPtr p_op, operands) new_operands.push_back(p_op);
+            p_expr.reset(new Map(new_operands, true));
+        }
     }
     TransferContext(pElement, p_expr);
     return p_expr;
@@ -280,9 +232,19 @@ std::string MathmlParser::ParseBvar(const DOMElement* pElement)
 }
 
 
+AbstractExpressionPtr MathmlParser::WrapMathml(const std::string& rOperator, unsigned numArgs)
+{
+    AbstractExpressionPtr p_expr;
+#define ITEM(cls)  p_expr = LambdaExpression::WrapMathml<cls>(numArgs);
+    MATHML_OPERATOR_TABLE(ITEM, rOperator)
+#undef ITEM
+    return p_expr;
+}
+
+
 MathmlParser::MathmlParser()
     : mMathmlNs("http://www.w3.org/1998/Math/MathML"),
-      mCsymbolBaseUrl("https://chaste.cs.ox.ac.uk/nss/protocol/")
+      mUseImplicitMap(false)
 {}
 
 MathmlParser::~MathmlParser()
@@ -318,18 +280,6 @@ void MathmlParser::TransferContext(const DOMNode* pNode, boost::shared_ptr<Locat
 std::string MathmlParser::GetLocationInfo()
 {
     return mLocationInfo;
-}
-
-
-std::string MathmlParser::GetCsymbolName(const DOMElement* pElement)
-{
-    std::string definition_url = X2C(pElement->getAttribute(X("definitionURL")));
-    PROTO_ASSERT(!definition_url.empty(), "All csymbol elements must have a definitionURL.");
-    const size_t base_len = mCsymbolBaseUrl.length();
-    PROTO_ASSERT(definition_url.substr(0, base_len) == mCsymbolBaseUrl,
-                 "All csymbol elements must have a definitionURL commencing with " << mCsymbolBaseUrl
-                 << "; " << definition_url << " does not match.");
-    return definition_url.substr(base_len);
 }
 
 

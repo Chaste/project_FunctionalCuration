@@ -36,8 +36,9 @@ along with Chaste. If not, see <http://www.gnu.org/licenses/>.
 #include "NdArray.hpp"
 #include "ProtoHelperMacros.hpp"
 
-Map::Map(const std::vector<AbstractExpressionPtr>& rParameters)
-    : FunctionCall("~map", rParameters)
+Map::Map(const std::vector<AbstractExpressionPtr>& rParameters, bool allowImplicitArrays)
+    : FunctionCall("~map", rParameters),
+      mAllowImplicitArrays(allowImplicitArrays)
 {
     PROTO_ASSERT(rParameters.size() > 1, "Map requires more than 1 parameter.");
 }
@@ -60,11 +61,20 @@ AbstractValuePtr Map::operator()(const Environment& rEnv) const
         arg_arrays.push_back(GET_ARRAY(*it));
     }
     NdArray<double>::Extents shape = arg_arrays[0].GetShape();
+    unsigned ref_i = 0u;
     for (unsigned i=1; i<arg_arrays.size(); ++i)
     {
-        PROTO_ASSERT(arg_arrays[i].GetShape() == shape,
+        if (mAllowImplicitArrays)
+        {
+            if (shape.empty() && arg_arrays[i].GetShape() != shape)
+            {
+                shape = arg_arrays[i].GetShape();
+                ref_i = i;
+            }
+        }
+        PROTO_ASSERT(arg_arrays[i].GetShape() == shape || (mAllowImplicitArrays && arg_arrays[i].GetShape().empty()),
                      "The shapes of the arrays passed to map must match; argument " << i << " of shape "
-                     << arg_arrays[i].GetShape() << " does not match argument 0 of shape " << shape << ".");
+                     << arg_arrays[i].GetShape() << " does not match argument " << ref_i << " of shape " << shape << ".");
     }
     // Create result array
     NdArray<double> result = NdArray<double>(shape);
@@ -76,7 +86,14 @@ AbstractValuePtr Map::operator()(const Environment& rEnv) const
         std::vector<AbstractValuePtr> fn_args;
         for (unsigned j=0; j<arg_arrays.size(); ++j)
         {
-            fn_args.push_back(boost::make_shared<SimpleValue>(arg_arrays[j][indices]));
+            if (mAllowImplicitArrays && arg_arrays[j].GetShape().empty())
+            {
+                fn_args.push_back(boost::make_shared<SimpleValue>(*arg_arrays[j].Begin()));
+            }
+            else
+            {
+                fn_args.push_back(boost::make_shared<SimpleValue>(arg_arrays[j][indices]));
+            }
         }
         AbstractValuePtr p_result_value = func(rEnv, fn_args);
         PROTO_ASSERT(p_result_value->IsDouble(), "The function passed to map must only return simple values.");

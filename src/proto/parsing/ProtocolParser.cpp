@@ -249,22 +249,6 @@ public:
     }
 
     /**
-     * Do "LambdaExpression::WrapMathml<OperatorClass>(numArgs)" dealing with converting a run-time
-     * string into a compile-time type.
-     *
-     * @param rOperator  the MathML operator name
-     * @param numArgs  the number of arguments it should take
-     */
-    AbstractExpressionPtr WrapMathml(const std::string& rOperator, unsigned numArgs)
-    {
-        AbstractExpressionPtr p_expr;
-#define ITEM(cls)  p_expr = LambdaExpression::WrapMathml<cls>(numArgs);
-        MATHML_OPERATOR_TABLE(ITEM, rOperator)
-#undef ITEM
-        return p_expr;
-    }
-
-    /**
      * Parse a csymbol element representing a whole expression (as opposed to an operator).
      *
      * @param pElement  the csymbol element
@@ -295,6 +279,87 @@ public:
         }
         TransferContext(pElement, p_expr);
         return p_expr;
+    }
+
+    /**
+     * Parse an application of a csymbol operator.  These provide the primitive operations
+     * of the post-processing language: fold, map, newArray, view, find, index, tuple, or accessor.
+     *
+     * @param pApplyElement  the apply element
+     * @param pOperator  the csymbol operator element
+     */
+    AbstractExpressionPtr ParseCsymbolApply(const DOMElement* pApplyElement,
+                                            const DOMElement* pOperator)
+    {
+        SetContext(pApplyElement);
+        AbstractExpressionPtr p_expr;
+        std::string symbol = GetCsymbolName(pOperator);
+        std::vector<AbstractExpressionPtr> operands = ParseOperands(pApplyElement);
+        if (symbol == "fold")
+        {
+            p_expr.reset(new Fold(operands));
+        }
+        else if (symbol == "map")
+        {
+            p_expr.reset(new Map(operands));
+        }
+        else if (symbol == "newArray")
+        {
+            std::vector<DOMElement*> children = XmlTools::GetChildElements(pApplyElement);
+            if (children.size() == operands.size() + 2)
+            {
+                // Array comprehension
+                DOMElement* p_doa = children[1];
+                PROTO_ASSERT(X2C(p_doa->getLocalName()) == "domainofapplication",
+                             "An array comprehension must have a domainofapplication.");
+                PROTO_ASSERT(operands.size() == 1, "An array comprehension must have only one operand.");
+                std::vector<DOMElement*> range_spec_elts = XmlTools::GetChildElements(p_doa);
+                std::vector<AbstractExpressionPtr> range_specs;
+                range_specs.reserve(range_spec_elts.size());
+                for (std::vector<DOMElement*>::iterator it = range_spec_elts.begin(); it != range_spec_elts.end(); ++it)
+                {
+                    range_specs.push_back(ParseExpression(*it));
+                }
+                p_expr.reset(new ArrayCreate(operands.front(), range_specs));
+            }
+            else
+            {
+                p_expr.reset(new ArrayCreate(operands));
+            }
+        }
+        else if (symbol == "view")
+        {
+            PROTO_ASSERT(operands.size() > 1,
+                         "A view operation must include the array and at least one range specification.");
+            AbstractExpressionPtr p_array = operands[0];
+            std::vector<AbstractExpressionPtr> ranges(++operands.begin(), operands.end());
+            p_expr.reset(new View(p_array, ranges));
+        }
+        else if (symbol == "find")
+        {
+            PROTO_ASSERT(operands.size() == 1, "Find takes only one operand.");
+            p_expr.reset(new Find(operands.front()));
+        }
+        else if (symbol == "index")
+        {
+            p_expr.reset(new Index(operands));
+        }
+        else if (symbol == "accessor")
+        {
+            PROTO_ASSERT(operands.size() == 1, "The accessor csymbol takes 1 operand.");
+            Accessor::Attribute attr = Accessor::DecodeAttributeString(X2C(pOperator->getTextContent()),
+                                                                       GetLocationInfo());
+            p_expr.reset(new Accessor(operands[0], attr));
+        }
+        else if (symbol == "tuple")
+        {
+            p_expr.reset(new TupleExpression(operands));
+        }
+        else
+        {
+            PROTO_EXCEPTION("Application of csymbol " << symbol << " is not recognised.");
+        }
+        return p_expr; // Note: caller will transfer context for us
     }
 
     /**
@@ -893,7 +958,8 @@ public:
      * @param rParser  the root parser creating this implementation
      */
     ProtocolParserImpl(ProtocolParser& rParser)
-        : mrParser(rParser)
+        : mCsymbolBaseUrl("https://chaste.cs.ox.ac.uk/nss/protocol/"),
+          mrParser(rParser)
     {}
 
     /**
@@ -903,6 +969,9 @@ public:
     {}
 
 private:
+    /** The prefix for csymbol definitionURLs in our protocol language. */
+    const std::string mCsymbolBaseUrl;
+
     /** The root parser that created this parser implementation. */
     ProtocolParser& mrParser;
 
@@ -962,6 +1031,23 @@ private:
                 }
             }
         }
+    }
+
+    /**
+     * Given a csymbol, check that it has a definitionURL with the correct base, and extract the
+     * non-base portion.
+     *
+     * @param pElement  the csymbol element
+     */
+    std::string GetCsymbolName(const DOMElement* pElement)
+    {
+        std::string definition_url = X2C(pElement->getAttribute(X("definitionURL")));
+        PROTO_ASSERT(!definition_url.empty(), "All csymbol elements must have a definitionURL.");
+        const size_t base_len = mCsymbolBaseUrl.length();
+        PROTO_ASSERT(definition_url.substr(0, base_len) == mCsymbolBaseUrl,
+                     "All csymbol elements must have a definitionURL commencing with " << mCsymbolBaseUrl
+                     << "; " << definition_url << " does not match.");
+        return definition_url.substr(base_len);
     }
 };
 

@@ -70,9 +70,10 @@ public:
         mProtocolFiles.push_back("private/protocols/Hypokalaemia.xml");
         mProtocolFiles.push_back("private/protocols/SteadyStateRunner.xml");
         mProtocolFiles.push_back("private/protocols/IK1_IV_curve.xml");
+        mProtocolFiles.push_back("private/protocols/IKr_IV_curve.xml");
         if (CommandLineArguments::Instance()->OptionExists("--protos"))
         {
-            mProtocolFiles = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protos");
+            mProtocolFiles = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protocols");
         }
 
         std::vector<std::string> cellml_files = GetAListOfCellMLFiles();

@@ -320,7 +320,7 @@
             description="Transmembrane potential"/>
         <postprocessed name="sodium_tail_current" units="{/Symbol m}A/cm^2"
             description="I_Na after test potential applied"/>
-        <postprocessed name="min_sodium_current" description="Minimum sodium current" units="{/Symbol m}A/cm^2"/>
+        <postprocessed name="min_sodium_current" description="Minimum I_{Na} current" units="{/Symbol m}A/cm^2"/>
         <postprocessed name="final_membrane_voltage" units="mV" description="Test potential"/>
     </outputVariables>
     

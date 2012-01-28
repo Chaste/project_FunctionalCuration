@@ -10,11 +10,11 @@
         <apply xmlns="http://www.w3.org/1998/Math/MathML">
             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
             <apply><eq/>
-                <ci>holding_potential</ci>
+                <ci>holding_potential</ci> <!--Applied before t=0-->
                 <cn>-80.01</cn>
             </apply>
             <apply><eq/>
-                <ci>final_potential</ci>
+                <ci>final_potential</ci> <!--Applied after t=50-->
                 <cn>-60.01</cn>
             </apply>
             <!-- How long to simulate for to get to steady state at the holding potential -->
@@ -36,15 +36,21 @@
                 <cn>10</cn>
             </apply>
             
-            <!-- The values to step the transmembrane potential to -->
+            <!-- The values to step the transmembrane potential to for the priming pulse (0->50 ms)-->
             <apply><eq/>
                 <ci>test_potentials</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-                    <cn>-20.01</cn> <cn>-17.51</cn> <cn>-15.01</cn> <cn>-12.51</cn> 
+                    <cn>-40.01</cn>
+                    <cn>-30.01</cn> 
+                    <cn>-20.01</cn> <cn>-15.01</cn> 
                     <cn>-10.01</cn> <cn>-7.51</cn>  <cn>-5.01</cn>  <cn>-2.51</cn>
-                    <cn> 0.01</cn> <cn>2.51</cn> <cn> 5.01</cn> <cn>7.51</cn> <cn>10.01</cn> 
-                    <cn>20.01</cn> <cn>30.01</cn> <cn>40.01</cn>
+                    <cn> 0.01</cn> <cn>2.51</cn>  <cn> 5.01</cn> <cn>7.51</cn> <cn>10.01</cn>
+                    <cn>12.51</cn>  <cn> 15.01</cn> <cn>17.51</cn> <cn>20.01</cn>
+                    <cn>22.51</cn>  <cn> 25.01</cn> <cn>27.51</cn> <cn>30.01</cn>
+                    <cn>32.51</cn>  <cn> 35.01</cn> <cn>37.51</cn> <cn>40.01</cn>
+                    <cn>42.51</cn>  <cn> 45.01</cn> <cn>47.51</cn> <cn>50.01</cn>
+                    <cn>55.01</cn> <cn>60.01</cn>
                 </apply>
             </apply>
         </apply>
@@ -215,21 +221,25 @@
                         <value>
                             <piecewise xmlns="http://www.w3.org/1998/Math/MathML">
                                 <piece>
-                                    <ci>step_voltage</ci>
-                                    <apply><geq/>
-                                        <ci>time</ci>
-                                        <cn>0</cn>
-                                    </apply>
-                                </piece>       
-                                <piece>
                                     <ci>final_potential</ci>
                                     <apply><geq/>
                                         <ci>time</ci>
                                         <cn>50</cn>
                                     </apply>
-                                </piece>
+                                </piece>    
                                 <otherwise>
-                                    <ci>oxmeta:membrane_voltage</ci>
+                                    <piecewise xmlns="http://www.w3.org/1998/Math/MathML"> 
+                                        <piece>
+                                            <ci>step_voltage</ci>
+                                            <apply><geq/>
+                                                <ci>time</ci>
+                                                <cn>0</cn>
+                                            </apply>
+                                        </piece>   
+                                        <otherwise>                                            
+                                            <ci>oxmeta:membrane_voltage</ci>
+                                        </otherwise>
+                                    </piecewise>                                    
                                 </otherwise>
                             </piecewise>
                         </value>
@@ -266,13 +276,22 @@
                 </apply>
             </apply>
             
-            <!-- Only examine the "tail currents" after t=0 -->
+            <!-- Get out a single 1D array for time (for plotting) -->
+            <apply><eq/>
+                <ci>time_1d</ci>
+                <apply><ci>std:RemoveDim</ci>
+                     <ci>sim:time</ci>     
+                     <cn>0</cn>
+                </apply>
+            </apply>
+            
+            <!-- Only examine the "tail currents" after t=50 -->
             <apply><eq/>
                 <ci>IKr_tail_current</ci>
                 <apply><ci>std:After</ci>
                     <ci>sim:membrane_rapid_delayed_rectifier_potassium_current</ci>
                     <ci>sim:time</ci>
-                    <cn>0</cn>
+                    <cn>50</cn>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
                 </apply>
             </apply>
@@ -289,18 +308,23 @@
                 </apply>
             </apply>
             
-            <!-- We'll plot against the final V, which is equal to the step voltage -->
+            <!-- We'll plot against V at t=1, which is equal to the step voltage -->
             <apply><eq/>
-                <ci>final_membrane_voltage</ci>
+                <ci>test_membrane_voltage</ci>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
-                    <ci>sim:membrane_voltage</ci>
+                    <apply><ci>std:After</ci>
+                        <ci>sim:membrane_voltage</ci>
+                        <ci>sim:time</ci>
+                        <cn>1</cn>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
+                    </apply>
                     <apply>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
                         <cn>1</cn>
-                        <cn>-1</cn>
                         <cn>0</cn>
-                        <cn>-1</cn>
+                        <cn>0</cn>
+                        <cn>0</cn>
                     </apply>
                     <apply>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
@@ -308,7 +332,7 @@
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
                         <cn>1</cn>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
-                    </apply>                    
+                    </apply>             
                 </apply>
             </apply>
         </apply>
@@ -317,19 +341,28 @@
     <outputVariables>
         <raw ref="sim:membrane_rapid_delayed_rectifier_potassium_current" name="membrane_rapid_delayed_rectifier_potassium_current"
             description="I_{Kr} current"/>
-        <raw ref="sim:membrane_voltage" name="membrane_voltage"
-            description="Transmembrane potential"/>
-        <postprocessed name="IKr_tail_current" units="{/Symbol m}A/cm^2"
-            description="I_{Kr} after test potential applied"/>
+        <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Transmembrane potential"/>
+        <postprocessed name="time_1d" description="Time" units="ms"/>
+        <postprocessed name="IKr_tail_current" units="{/Symbol m}A/cm^2" description="I_{Kr} after test potential applied"/>
         <postprocessed name="max_IKr_current" description="Max I_{Kr} current" units="{/Symbol m}A/cm^2"/>
-        <postprocessed name="final_membrane_voltage" units="mV" description="Test potential"/>
+        <postprocessed name="test_membrane_voltage" units="mV" description="Test potential"/>
     </outputVariables>
     
     <plots>
         <plot>
-            <title>Current-voltage relationship</title>
-            <x>final_membrane_voltage</x>
+            <title>IV curve</title>
+            <x>test_membrane_voltage</x>
             <y>max_IKr_current</y>
+        </plot>
+        <plot>
+            <title>voltage clamp</title>
+            <x>time_1d</x>
+            <y>membrane_voltage</y>
+        </plot>
+        <plot>
+            <title>individual current traces</title>
+            <x>time_1d</x>
+            <y>membrane_rapid_delayed_rectifier_potassium_current</y>
         </plot>
     </plots>
 </protocol>

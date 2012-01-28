@@ -54,6 +54,16 @@ const std::vector<std::string>& PlotSpecification::rGetVariableNames() const
     return mVariableNames;
 }
 
+void PlotSpecification::SetVariableDescriptions(const std::vector<std::string>& rVariableDescriptions)
+{
+    mVariableDescriptions = rVariableDescriptions;
+}
+
+const std::vector<std::string>& PlotSpecification::rGetVariableDescriptions() const
+{
+    return mVariableDescriptions;
+}
+
 void PlotSpecification::SetVariableUnits(const std::vector<std::string>& rVariableUnits)
 {
     mVariableUnits = rVariableUnits;

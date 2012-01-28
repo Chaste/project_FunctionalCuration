@@ -68,10 +68,21 @@ public:
     const std::vector<std::string>& rGetVariableNames() const;
 
     /**
+     * Store the variable descriptions.
+     * @param rVariableDescriptions  the descriptions of the variables for axes labels
+     */
+    void SetVariableDescriptions(const std::vector<std::string>& rVariableDescriptions);
+
+
+    /** Get the descriptions of the variable units to plot - used for axes labels. */
+    const std::vector<std::string>& rGetVariableDescriptions() const;
+
+    /**
      * Store the names of the variable units.
      * @param rVariableUnits  the unit names
      */
     void SetVariableUnits(const std::vector<std::string>& rVariableUnits);
+
 
     /** Get the names of the variable units to plot. */
     const std::vector<std::string>& rGetVariableUnits() const;
@@ -82,6 +93,9 @@ private:
 
     /** The names of the variables to plot. */
     std::vector<std::string> mVariableNames;
+
+    /** The descriptions of the variables to plot. */
+    std::vector<std::string> mVariableDescriptions;
 
     /** The units of the variables to plot. */
     std::vector<std::string> mVariableUnits;

@@ -318,9 +318,9 @@
             description="Fast sodium current"/>
         <raw ref="sim:membrane_voltage" name="membrane_voltage"
             description="Transmembrane potential"/>
-        <postprocessed name="sodium_tail_current" units="uA/cm^2"
+        <postprocessed name="sodium_tail_current" units="{/Symbol m}A/cm^2"
             description="I_Na after test potential applied"/>
-        <postprocessed name="min_sodium_current" description="Minimum sodium current" units="uA/cm^2"/>
+        <postprocessed name="min_sodium_current" description="Minimum sodium current" units="{/Symbol m}A/cm^2"/>
         <postprocessed name="final_membrane_voltage" units="mV" description="Test potential"/>
     </outputVariables>
     

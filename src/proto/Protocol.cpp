@@ -302,6 +302,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         {
             bool all_variables_exist = true;
             std::vector<std::string> units;
+            std::vector<std::string> descriptions;
             // Check all the variables are also outputs, or we can't plot them
             BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
             {
@@ -309,6 +310,15 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
                 {
                     AbstractValuePtr p_output = r_outputs.Lookup(r_name);
                     units.push_back(p_output->GetUnits());
+                    // Look up the output description for this plot
+                    BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
+                    {
+                        if (p_output == r_outputs.Lookup(p_spec->rGetOutputName()))
+                        {
+                            descriptions.push_back(p_spec->rGetOutputDescription());
+                            break;
+                        }
+                    }
                 }
                 catch (const Exception& e)
                 {
@@ -319,7 +329,8 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
             }
             if (all_variables_exist)
             {
-                p_spec->SetVariableUnits(units); // Store for later use
+                p_spec->SetVariableUnits(units); // Store for later plotting use
+                p_spec->SetVariableDescriptions(descriptions); // Store for later plotting use
                 const std::string& r_title = p_spec->rGetTitle();
                 (*p_file) << '"' << r_title << '"';
                 BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
@@ -519,12 +530,10 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     std::string script_name = rDataFileName.substr(0, dot) + ".gp";
 
     // Generate axes labels
-    std::string xlabel = pPlotSpec->rGetVariableNames()[0];     // get variable name
-    FileFinder::ReplaceUnderscoresWithSpaces(xlabel);           // remove underscores (interpreted as subscripts)
+    std::string xlabel = pPlotSpec->rGetVariableDescriptions()[0];     // get variable name
     xlabel += " (" + pPlotSpec->rGetVariableUnits()[0] + ")";   // add units
 
-    std::string ylabel = pPlotSpec->rGetVariableNames()[1];     // get variable name
-    FileFinder::ReplaceUnderscoresWithSpaces(ylabel);           // remove underscores (interpreted as subscripts)
+    std::string ylabel = pPlotSpec->rGetVariableDescriptions()[1];     // get variable name
     ylabel += " (" + pPlotSpec->rGetVariableUnits()[1] + ")";   // add units
 
     std::string eps_file_name = pPlotSpec->rGetTitle() + ".eps";

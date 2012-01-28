@@ -348,12 +348,12 @@
         <raw ref="sim:extracellular_potassium_concentration" name="extracellular_potassium_concentration"
             description="Extracellular potassium concentration"/>
         
-        <postprocessed name="steady_state_membrane_voltage" description="action potential membrane voltage" units="mV"/>
-        <postprocessed name="steady_state_time" description="action potential time" units="ms"/>
+        <postprocessed name="steady_state_membrane_voltage" description="Membrane voltage" units="mV"/>
+        <postprocessed name="steady_state_time" description="Time" units="ms"/>
         <postprocessed name="peak_voltage" description="action potential peak voltage" units="mV"/>
-        <postprocessed name="resting_potential" description="action potential resting potential" units="mV"/>
+        <postprocessed name="resting_potential" description="resting potential" units="mV"/>
         <postprocessed name="APD90" description="action potential duration 90%" units="ms"/>
-        <postprocessed name="potassium_test_concentrations" description="Extracellular potassium test concentrations" units="mM"/>
+        <postprocessed name="potassium_test_concentrations" description="[K]_o concentrations" units="mM"/>
     </outputVariables>
     
     <plots>
@@ -368,7 +368,7 @@
         	<y>APD90</y>
         </plot>
         <plot>
-        	<title>Resting potential as a function of [K_o]</title>
+        	<title>Resting potential as a function of [K]_o</title>
         	<x>potassium_test_concentrations</x>
         	<y>resting_potential</y> 
         </plot>

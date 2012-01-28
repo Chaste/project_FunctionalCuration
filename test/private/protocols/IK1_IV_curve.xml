@@ -281,11 +281,11 @@
                 </apply>
             </apply>
             
-            <!-- Get the minimum tail current (this has the largest magnitude) as a 1d array -->
+            <!-- Get the steady-state tail current as a 1d array -->
             <apply><eq/>
-                <ci>min_IK1_current</ci>
+                <ci>steady_state_IK1_current</ci>
                 <apply><ci>std:RemoveDim</ci>
-                    <apply><ci>std:Min</ci>
+                    <apply><ci>std:Last</ci>
                         <ci>IK1_tail_current</ci>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
                     </apply>
@@ -323,9 +323,9 @@
             description="I_{K1} current"/>
         <raw ref="sim:membrane_voltage" name="membrane_voltage"
             description="Transmembrane potential"/>
-        <postprocessed name="IK1_tail_current" units="uA/cm^2"
+        <postprocessed name="IK1_tail_current" units="{/Symbol m}A/cm^2"
             description="I_{K1} after test potential applied"/>
-        <postprocessed name="min_IK1_current" description="Minimum I_{K1} current" units="uA/cm^2"/>
+        <postprocessed name="steady_state_IK1_current" description="Steady-state I_{K1} current" units="{/Symbol m}A/cm^2"/>
         <postprocessed name="final_membrane_voltage" units="mV" description="Test potential"/>
     </outputVariables>
     
@@ -333,7 +333,7 @@
         <plot>
             <title>I_{K1} IV curve</title>
             <x>final_membrane_voltage</x>
-            <y>min_IK1_current</y>
+            <y>steady_state_IK1_current</y>
         </plot>
     </plots>
 </protocol>

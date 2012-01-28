@@ -228,8 +228,8 @@
     </post-processing>
     
     <outputVariables>
-        <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Transmembrane potential in milliVolts"/>
-        <raw ref="sim:time" name="time" description="Time in milliseconds"/>       
+        <raw ref="sim:membrane_voltage" name="membrane_voltage" description="Transmembrane potential"/>
+        <raw ref="sim:time" name="time" description="Time"/>       
         <raw ref="sim:state_variable" name="state_variables" description="All of the state variables"/>     
         
         <postprocessed name="norm_of_differences" units="mixed"/>

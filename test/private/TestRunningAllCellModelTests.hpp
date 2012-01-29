@@ -72,7 +72,7 @@ public:
         mProtocolFiles.push_back("private/protocols/IK1_IV_curve.xml");
         mProtocolFiles.push_back("private/protocols/IKr_IV_curve.xml");
         mProtocolFiles.push_back("private/protocols/IKs_IV_curve.xml");
-        if (CommandLineArguments::Instance()->OptionExists("--protos"))
+        if (CommandLineArguments::Instance()->OptionExists("--protocols"))
         {
             mProtocolFiles = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protocols");
         }

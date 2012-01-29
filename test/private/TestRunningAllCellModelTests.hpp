@@ -71,6 +71,7 @@ public:
         mProtocolFiles.push_back("private/protocols/SteadyStateRunner.xml");
         mProtocolFiles.push_back("private/protocols/IK1_IV_curve.xml");
         mProtocolFiles.push_back("private/protocols/IKr_IV_curve.xml");
+        mProtocolFiles.push_back("private/protocols/IKs_IV_curve.xml");
         if (CommandLineArguments::Instance()->OptionExists("--protos"))
         {
             mProtocolFiles = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protocols");

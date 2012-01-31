@@ -68,6 +68,9 @@ public:
     /** Get the type of this output: "Raw" or "Post-processed". */
     const std::string& rGetOutputType() const;
 
+    /** Set the presentation name for this output. */
+    void SetOutputDescription(const std::string& rDescription);
+
 private:
     /** The output variable reference. */
     std::string mRef;

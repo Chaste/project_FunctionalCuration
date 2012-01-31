@@ -69,3 +69,8 @@ const std::string& OutputSpecification::rGetOutputType() const
 {
     return mType;
 }
+
+void OutputSpecification::SetOutputDescription(const std::string& rDescription)
+{
+    mDescription = rDescription;
+}

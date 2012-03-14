@@ -173,12 +173,10 @@ private:
 
         // Put the plot data in a single file
         std::string data_prefix = output_dir + rFilenamePrefix + "_";
-        std::string cmd = "paste -d, " + data_prefix + "DI.csv "
-                + data_prefix + "APD90.csv | tail -n +3 > " + output_dir + "S1S2.dat";
-        EXPECT0(system, cmd);
+        std::string data_file_name = data_prefix + "S1-S2_curve_gnuplot_data.csv";
 
         *p_gnuplot_script  << "# Second plot is of the resulting restitution curve." << std::endl;
-        *p_gnuplot_script  << "set terminal postscript eps size 3, 2 font 16" << std::endl;
+        *p_gnuplot_script  << "set terminal postscript eps size 12.75cm, 8cm font 18" << std::endl;
         *p_gnuplot_script  << "set output \"" << output_dir << "S1S2.eps\"" << std::endl;
         *p_gnuplot_script  << "set title \"" << GetTitleFromDirectory(rDirectory) << "\"" << std::endl;
         *p_gnuplot_script  << "set xlabel \"Diastolic Interval (ms)\"" << std::endl;
@@ -188,7 +186,7 @@ private:
         *p_gnuplot_script  << "set autoscale" << std::endl;
         *p_gnuplot_script  << "set key off" << std::endl;
         *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
-        *p_gnuplot_script  << "plot \"" + output_dir + "S1S2.dat\" using 1:2 with linespoints pointtype 7";
+        *p_gnuplot_script  << "plot \"" + data_file_name + "\" using 1:2 with linespoints pointtype 7";
         *p_gnuplot_script << std::endl << std::flush;
 
         p_gnuplot_script->close();
@@ -242,10 +240,10 @@ private:
 
         // Generate a single file with the plot data
         std::string data_prefix = output_dir + rFilenamePrefix + "_";
-        std::string data_file_name = data_prefix + "Current-voltage_relationship_gnuplot_data.csv";
+        std::string data_file_name = data_prefix + "IV_curve_gnuplot_data.csv";
 
         *p_gnuplot_script  << "# Second plot is of the resulting restitution curve." << std::endl;
-        *p_gnuplot_script  << "set terminal postscript eps enhanced size 3, 2 font 16" << std::endl;
+        *p_gnuplot_script  << "set terminal postscript eps enhanced size 12.75cm, 8cm font 18" << std::endl;
         *p_gnuplot_script  << "set output \"" << output_dir << "ICaL_IV.eps\"" << std::endl;
         *p_gnuplot_script  << "set title \"" << GetTitleFromDirectory(rDirectory) << "\"" << std::endl;
         *p_gnuplot_script  << "set xlabel \"Test Voltage (mV)\"" << std::endl;
@@ -334,6 +332,7 @@ public:
             try
             {
                 RunS1S2Protocol(cellml_files[i], s1_freq);
+                GenerateGnuplotsS1S2Curve(cellml_files[i], "outputs");
             }
             catch (Exception& e)
             {
@@ -387,7 +386,14 @@ public:
 
             if (i<3)
             {   // This is S1-S2 data
-                GenerateGnuplotsS1S2Curve(exp_data[i], exp_data[i]);
+                try
+                {
+                    GenerateGnuplotsS1S2Curve(exp_data[i], exp_data[i]);
+                }
+                catch (Exception& e)
+                {
+                    OUR_WARN(e.GetMessage(), exp_data[i], "S1S2");
+                }
             }
             else
             {   // This is ICaL data

@@ -81,13 +81,13 @@ int main(int argc, char *argv[])
             {
                 output_folder = argv[3];
 
-                if (output_folder.find('/') != std::string::npos)
+                if (FileFinder::IsAbsolutePath(output_folder))
                 {
-                    // Change CHASTE_TEST_OUTPUT if output_folder is an absolute path
-                    FileFinder folder(output_folder, RelativeTo::AbsoluteOrCwd);
-                    size_t full_len = folder.GetAbsolutePath().length();
+                    // Change CHASTE_TEST_OUTPUT if output_folder is an absolute path, since we can only
+                    // create output under CHASTE_TEST_OUTPUT.
+                    FileFinder folder(output_folder);
                     output_folder = folder.GetLeafName();
-                    std::string test_output = folder.GetAbsolutePath().substr(0, full_len - output_folder.length());
+                    std::string test_output = folder.GetParent().GetAbsolutePath();
                     setenv("CHASTE_TEST_OUTPUT", test_output.c_str(), 1/*Overwrite*/);
                 }
             }

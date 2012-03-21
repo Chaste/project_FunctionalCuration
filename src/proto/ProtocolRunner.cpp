@@ -56,6 +56,9 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
                                bool optimiseModel)
     : mHandler(rOutputFolder)
 {
+    std::cout << "Running protocol '" << rProtoXmlFile.GetAbsolutePath() << "' on model '"
+              << rModelFile.GetAbsolutePath() << "' and writing output to "
+              << mHandler.GetOutputDirectoryFullPath() << std::endl;
     // Copy CellML file into output dir and create conf file
     std::string model_name = rModelFile.GetLeafNameNoExtension();
     std::cout << "Generating modified model " << model_name << std::endl;

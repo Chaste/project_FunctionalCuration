@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    
+    <!-- Declare protocol inputs with default values -->
+    <inputs>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>pacing_cycle_lengths</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                    <!-- The Steady Pacing Protocol insists on step sizes of 0.1 ms
+                         so we have to define these as multiples of that -->
+                    <cn>1000</cn>  <!--  1 Hz -->
+                    <cn>500</cn>   <!--  2 Hz -->
+                    <cn>333.3</cn> <!-- ~3 Hz -->
+                    <cn>250</cn>   <!--  4 Hz -->
+                    <cn>200</cn>   <!--  5 Hz -->
+                    <cn>166.6</cn> <!-- ~6 Hz -->
+                    <cn>142.9</cn> <!-- ~7 Hz -->
+                    <cn>125</cn>   <!--  8 Hz -->
+                </apply>
+            </apply>
+            
+            <apply><eq/>
+                <ci>number_of_paces</ci>
+                <cn xmlns="http://www.w3.org/1998/Math/MathML">15</cn>
+            </apply>
+        </apply>    
+    </inputs>
+    
+    <simulations>
+        <nestedSimulation prefix="sim">
+            <vectorStepper name="iter" units="dimensionless">
+                <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_cycle_lengths</ci>
+            </vectorStepper>
+            <modifiers/>
+            <nestedProtocol source="../../protocols/SteadyPacing.xml">
+                <!-- Todo: Set APD threshold as an input paramter (we want APD80 here, not 90) -->
+                <setInput name="steady_state_beats">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">number_of_paces</ci>
+                </setInput>
+                <setInput name="pacing_period">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">iter</ci>    
+                </setInput>
+                <selectOutput name="apd90"/>
+            </nestedProtocol>
+        </nestedSimulation>
+    </simulations>
+    
+    <post-processing>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            
+            <!-- Test that expected model outputs exist -->
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
+                    <ci>sim:apd90</ci>
+                </apply>
+            </apply>
+            
+            <!-- Todo: Compute DI as (cycle length (= 1000/input) - APD80)-->
+            
+            <!-- Todo: Compute APD80 / DI -->
+            
+        </apply>
+    </post-processing>
+    
+    <outputVariables>
+        <raw ref="sim:apd90" name="apd90"/>
+    </outputVariables>
+    
+    <!-- Todo: Plot APD against DI -->
+    
+    <!-- Todo: Plot APD / DI against Hz -->
+    
+    <plots>
+        <plot>
+            <title>Ken's Restitution Measure</title>
+            <data>apd90</data>
+          <!-- How do I do this?!?  
+            <x>pacing_cycle_lengths</x>
+            <y>apd90</y> 
+          -->
+        </plot>
+    </plots>
+    
+</protocol>

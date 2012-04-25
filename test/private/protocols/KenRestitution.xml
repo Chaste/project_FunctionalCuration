@@ -9,28 +9,37 @@
         <apply xmlns="http://www.w3.org/1998/Math/MathML">
             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
             <apply><eq/>
-                <ci>pacing_cycle_lengths</ci>
+                <ci>frequencies</ci> <!-- In Hz -->
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-                    <!-- The Steady Pacing Protocol insists on step sizes of 0.1 ms
-                         so we have to define these as multiples of that -->
-                    <cn>1000</cn>  <!--  1 Hz -->
-                    <cn>500</cn>   <!--  2 Hz -->
-                    <cn>333.3</cn> <!-- ~3 Hz -->
-                    <cn>250</cn>   <!--  4 Hz -->
-                    <cn>200</cn>   <!--  5 Hz -->
-                    <cn>166.6</cn> <!-- ~6 Hz -->
-                    <cn>142.9</cn> <!-- ~7 Hz -->
-                    <cn>125</cn>   <!--  8 Hz -->
+                    <cn>1</cn><cn>2</cn><cn>3</cn><cn>4</cn>
+                    <cn>5</cn><cn>6</cn><cn>7</cn><cn>8</cn>
                 </apply>
             </apply>
             
             <apply><eq/>
-                <ci>number_of_paces</ci>
+                <ci>number_of_paces</ci> <!-- How many beats until we assume steady state -->
                 <cn xmlns="http://www.w3.org/1998/Math/MathML">15</cn>
             </apply>
         </apply>    
     </inputs>
+    
+    <library>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>pacing_cycle_lengths</ci> <!-- In ms -->
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                    <lambda>
+                        <bvar><ci>freq</ci></bvar>
+                        <apply><divide/><cn>1000</cn><ci>freq</ci></apply>
+                    </lambda>
+                    <ci>frequencies</ci>
+                </apply>
+            </apply>
+        </apply>
+    </library>
     
     <simulations>
         <nestedSimulation prefix="sim">
@@ -39,14 +48,16 @@
             </vectorStepper>
             <modifiers/>
             <nestedProtocol source="../../protocols/SteadyPacing.xml">
-                <!-- Todo: Set APD threshold as an input paramter (we want APD80 here, not 90) -->
+                <setInput name="apd_percent">
+                    <cn xmlns="http://www.w3.org/1998/Math/MathML">80</cn>
+                </setInput>
                 <setInput name="steady_state_beats">
                     <ci xmlns="http://www.w3.org/1998/Math/MathML">number_of_paces</ci>
                 </setInput>
                 <setInput name="pacing_period">
                     <ci xmlns="http://www.w3.org/1998/Math/MathML">iter</ci>    
                 </setInput>
-                <selectOutput name="apd90"/>
+                <selectOutput name="apd"/>
             </nestedProtocol>
         </nestedSimulation>
     </simulations>
@@ -56,32 +67,62 @@
             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
             
             <!-- Test that expected model outputs exist -->
+            <!-- APD should be 1d array of len = pacing_cycle_lengths.len -->
             <apply>
                 <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
-                    <ci>sim:apd90</ci>
+                    <ci>sim:apd</ci>
                 </apply>
             </apply>
             
-            <!-- Todo: Compute DI as (cycle length (= 1000/input) - APD80)-->
+            <!-- Compute DI as (cycle length (= 1000/input) - APD80)-->
+            <apply><eq/>
+                <ci>di</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/wrap/2">minus</csymbol>
+                    <ci>pacing_cycle_lengths</ci>
+                    <ci>sim:apd</ci>
+                </apply>
+            </apply>
             
-            <!-- Todo: Compute APD80 / DI -->
+            <!-- Compute APD80 / DI -->
+            <apply><eq/>
+                <ci>apd_di_ratio</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/wrap/2">divide</csymbol>
+                    <ci>sim:apd</ci>
+                    <ci>di</ci>
+                </apply>
+            </apply>
             
         </apply>
     </post-processing>
     
     <outputVariables>
-        <raw ref="sim:apd90" name="apd90"/>
+        <raw ref="sim:apd" name="apd80" description="APD80"/>
+        <postprocessed name="di" units="ms" description="Diastolic Interval"/>
+        <postprocessed name="apd_di_ratio" units="dimensionless" description="Restitution ratio"/>
+        <postprocessed name="frequencies" units="Hz" description="Pacing rate"/>
     </outputVariables>
-    
-    <!-- Todo: Plot APD against DI -->
-    
-    <!-- Todo: Plot APD / DI against Hz -->
     
     <plots>
         <plot>
+            <title>Dynamic restitution</title>
+            <x>di</x>
+            <y>apd80</y>
+        </plot>
+        
+        <plot>
             <title>Ken's Restitution Measure</title>
+            <x>frequencies</x>
+            <y>apd_di_ratio</y>
+        </plot>
+        
+        <plot>
+            <title>Raw APDs</title>
             <data>apd90</data>
           <!-- How do I do this?!?  
             <x>pacing_cycle_lengths</x>

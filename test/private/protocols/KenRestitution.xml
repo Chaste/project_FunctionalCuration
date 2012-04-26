@@ -33,7 +33,19 @@
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
                     <lambda>
                         <bvar><ci>freq</ci></bvar>
-                        <apply><divide/><cn>1000</cn><ci>freq</ci></apply>
+                        <!--
+                            The divide-floor-times here is so that the timestep in the nested
+                            steady pacing protocol will divide the cycle length.
+                        -->
+                        <apply><divide/>
+                            <apply><floor/>
+                                <apply><times/>
+                                    <apply><divide/><cn>1000</cn><ci>freq</ci></apply>
+                                    <cn>10</cn>
+                                </apply>
+                            </apply>
+                            <cn>10</cn>
+                        </apply>
                     </lambda>
                     <ci>frequencies</ci>
                 </apply>
@@ -73,6 +85,16 @@
                 <apply>
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
                     <ci>sim:apd</ci>
+                </apply>
+            </apply>
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply><eq/>
+                    <apply>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">NUM_DIMS</csymbol>
+                        <ci>sim:apd</ci>
+                    </apply>
+                    <cn>1</cn>
                 </apply>
             </apply>
             
@@ -116,14 +138,14 @@
         </plot>
         
         <plot>
-            <title>Ken's Restitution Measure</title>
+            <title>Ken Restitution Measure</title>
             <x>frequencies</x>
             <y>apd_di_ratio</y>
         </plot>
         
         <plot>
             <title>Raw APDs</title>
-            <data>apd90</data>
+            <data>apd80</data>
           <!-- How do I do this?!?  
             <x>pacing_cycle_lengths</x>
             <y>apd90</y> 

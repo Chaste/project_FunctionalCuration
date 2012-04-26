@@ -66,11 +66,12 @@ public:
         // Check the results of postprocessing are correct.
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
         NdArray<double> peak_voltage = GET_ARRAY(r_outputs.Lookup("peak_voltage"));
+        TS_ASSERT_EQUALS(peak_voltage.GetNumDimensions(), 0u);
         TS_ASSERT_EQUALS(peak_voltage.GetNumElements(), 1u);
         TS_ASSERT_DELTA(*peak_voltage.Begin(), 46.94, 1e-2);
 
         NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("apd"));
-        TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 1u);
+        TS_ASSERT_EQUALS(apd90.GetNumDimensions(), 0u);
         TS_ASSERT_EQUALS(apd90.GetNumElements(), 1u);
         TS_ASSERT_DELTA(*apd90.Begin(), 361.8468, 1e-2);
     }

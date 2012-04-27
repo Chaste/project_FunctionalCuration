@@ -159,7 +159,9 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
                 std::copy(output_shape.begin(), output_shape.end(), shape.begin() + num_local_dims);
                 NdArray<double> result(shape);
                 result_array = result;
-                pResults->DefineName(r_output_name, boost::make_shared<ArrayValue>(result), GetLocationInfo());
+                AbstractValuePtr p_result = boost::make_shared<ArrayValue>(result);
+                p_result->SetUnits(p_output->GetUnits());
+                pResults->DefineName(r_output_name, p_result, GetLocationInfo());
             }
             else
             {

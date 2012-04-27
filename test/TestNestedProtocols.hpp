@@ -59,8 +59,12 @@ public:
 
         // Check results
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
-        NdArray<double> peak_V = GET_ARRAY(r_outputs.Lookup("peak_voltage", "test"));
-        NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("apd90", "test"));
+        AbstractValuePtr p_peak_V = r_outputs.Lookup("peak_voltage", "test");
+        AbstractValuePtr p_apd90 = r_outputs.Lookup("apd90", "test");
+        TS_ASSERT_EQUALS(p_peak_V->GetUnits(), "mV");
+        TS_ASSERT_EQUALS(p_apd90->GetUnits(), "ms");
+        NdArray<double> peak_V = GET_ARRAY(p_peak_V);
+        NdArray<double> apd90 = GET_ARRAY(p_apd90);
         TS_ASSERT_EQUALS(peak_V.GetNumDimensions(), 1u);
         TS_ASSERT_EQUALS(peak_V.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(peak_V.GetNumElements(), 2u);

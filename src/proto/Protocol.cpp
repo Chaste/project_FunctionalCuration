@@ -225,16 +225,33 @@ void Protocol::Run()
 }
 
 
-void Protocol::WriteToFile(const OutputFileHandler& rHandler,
-                           const std::string& rFileNameBase) const
+void Protocol::SetOutputFolder(const OutputFileHandler& rHandler)
 {
+    mpOutputHandler.reset(new OutputFileHandler(rHandler));
+}
+
+
+void Protocol::WriteToFile(const OutputFileHandler& rHandler,
+                           const std::string& rFileNameBase)
+{
+    SetOutputFolder(rHandler);
+    WriteToFile(rFileNameBase);
+}
+
+
+void Protocol::WriteToFile(const std::string& rFileNameBase) const
+{
+    if (!mpOutputHandler)
+    {
+        EXCEPTION("SetOutputFolder must be called prior to using WriteToFile.");
+    }
     ///\todo Improve format?
     const Environment& r_outputs = rGetOutputsCollection();
     std::set<std::string> missing_outputs;
     // Variable metadata file
     {
         std::string index_file_name = rFileNameBase + "-contents.csv";
-        out_stream p_file = rHandler.OpenOutputFile(index_file_name);
+        out_stream p_file = mpOutputHandler->OpenOutputFile(index_file_name);
         (*p_file) << "Variable id,Variable name,Units,Number of dimensions,File name,Type,Dimensions" << std::endl;
         BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
         {
@@ -274,7 +291,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
     // Stepper values file
     {
         std::string index_file_name = rFileNameBase + "-steppers.csv";
-        out_stream p_file = rHandler.OpenOutputFile(index_file_name);
+        out_stream p_file = mpOutputHandler->OpenOutputFile(index_file_name);
         (*p_file) << "Stepper name,Units,Values" << std::endl;
         boost::shared_ptr<AbstractSimulation> p_sim = mSimulations.back();
         std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = p_sim->rGetSteppers();
@@ -303,7 +320,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
     if (!mPlotSpecifications.empty())
     {
         std::string file_name = rFileNameBase + "-default-plots.csv";
-        out_stream p_file = rHandler.OpenOutputFile(file_name);
+        out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         (*p_file) << "Plot title,First variable,Optional second variable" << std::endl;
         BOOST_FOREACH(boost::shared_ptr<PlotSpecification> p_spec, mPlotSpecifications)
         {
@@ -364,7 +381,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         }
 
         std::string file_name = rFileNameBase + "_" + r_name + ".csv";
-        out_stream p_file = rHandler.OpenOutputFile(file_name);
+        out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         (*p_file) << "# " << p_spec->rGetOutputDescription() << std::endl;
 
         if (p_output->IsArray())
@@ -403,7 +420,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
         p_file->close();
     }
 
-    GeneratePlots(rHandler, rFileNameBase);
+    GeneratePlots(rFileNameBase);
 
     if (!missing_outputs.empty())
     {
@@ -413,8 +430,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 }
 
 
-void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
-                             const std::string& rFileNameBase) const
+void Protocol::GeneratePlots(const std::string& rFileNameBase) const
 {
     const Environment& r_outputs = rGetOutputsCollection();
 
@@ -486,7 +502,7 @@ void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
         // Write data for plotting
         std::string file_name = rFileNameBase + "_" + r_title + "_gnuplot_data.csv";
         FileFinder::ReplaceSpacesWithUnderscores(file_name);
-        out_stream p_file = rHandler.OpenOutputFile(file_name);
+        out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         // Tabular format with no header line for easy processing by gnuplot
         unsigned num_traces;
         if (output_y.GetNumDimensions() == 2)
@@ -517,13 +533,12 @@ void Protocol::GeneratePlots(const OutputFileHandler& rHandler,
         p_file->close();
 
         // Plot!
-        PlotWithGnuplot(p_plot_spec, rHandler, file_name, num_traces, x_length);
+        PlotWithGnuplot(p_plot_spec, file_name, num_traces, x_length);
     }
 }
 
 
 void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
-                               const OutputFileHandler& rHandler,
                                const std::string& rDataFileName,
                                const unsigned numTraces,
                                const unsigned numPointsInTrace) const
@@ -558,8 +573,8 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     }
 
     // Write out a Gnuplot script
-    out_stream p_gnuplot_script = rHandler.OpenOutputFile(script_name);
-    std::string output_dir = rHandler.GetOutputDirectoryFullPath();
+    out_stream p_gnuplot_script = mpOutputHandler->OpenOutputFile(script_name);
+    std::string output_dir = mpOutputHandler->GetOutputDirectoryFullPath();
     *p_gnuplot_script << "# Gnuplot script file generated by Chaste Functional Curation system." << std::endl;
     *p_gnuplot_script << "# Plot of " << pPlotSpec->rGetTitle() << "." << std::endl;
     *p_gnuplot_script << "set terminal postscript eps enhanced size 3, 2 font 16" << std::endl;

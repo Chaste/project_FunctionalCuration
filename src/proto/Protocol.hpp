@@ -76,17 +76,34 @@ public:
     void Run();
 
     /**
-     * Write protocol outputs to a collection of files.
+     * Set the location to which protocol outputs, and any debugging/tracing information,
+     * will be written.  If this is not called prior to running the protocol, then certain
+     * debug/trace features will not be available.
+     *
+     * @param rHandler  output directory to write to
+     */
+    void SetOutputFolder(const OutputFileHandler& rHandler);
+
+    /**
+     * Write protocol outputs to a collection of files within our output folder.
      *
      * Each output will be written to a separate file, the name of which
      * will consist of the variable name appended to rFileNameBase, with
-     * an extension of .dat.
+     * an extension of .csv.
+     *
+     * @param rFileNameBase  base part of output file names
+     */
+    void WriteToFile(const std::string& rFileNameBase) const;
+
+    /**
+     * Write protocol outputs to a collection of files in a given folder.
+     * This just calls SetOutputFolder(rHandler) and WriteToFile(rFileNameBase).
      *
      * @param rHandler  output directory to write to
      * @param rFileNameBase  base part of output file names
      */
     void WriteToFile(const OutputFileHandler& rHandler,
-                     const std::string& rFileNameBase) const;
+                     const std::string& rFileNameBase);
 
     /**
      * Get the number of protocol outputs defined.
@@ -262,35 +279,6 @@ public:
      */
     void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
 
-    /**
-     * Generate and execute a Gnuplot script for the given specification, whose data should already exist in a file.
-     *
-     * \todo #1999 currently only works for two 1d arrays plotted against each other
-     * \todo #1999 make the plot title include the model as well as protocol name
-     *
-     * @param pPlotSpec  The plot specification to get title, variable names etc.
-     * @param rHandler  The output file handler pointing to the current model/protocol output directory.
-     * @param rDataFileName  The name of the csv file to which Gnuplot data has been written
-     * @param numTraces  How many traces are included in the data
-     * @param numPointsInTrace  How many points are in the trace (only needed to work out whether to display as lines or points)
-     */
-    void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
-                         const OutputFileHandler& rHandler,
-                         const std::string& rDataFileName,
-                         const unsigned numTraces,
-                         const unsigned numPointsInTrace) const;
-
-    /**
-     * Generate figures for requested plots, using Gnuplot.
-     * Called from WriteToFile.
-     * See also PlotWithGnuplot, which this method uses.
-     *
-     * @param rHandler  The output file handler pointing to the current model/protocol output directory
-     * @param rFileNameBase  The base name for output files (ignored for the final .eps files, which just use the plot title)
-     */
-    void GeneratePlots(const OutputFileHandler& rHandler,
-                       const std::string& rFileNameBase) const;
-
 private:
     /** Where the protocol was loaded from, for resolving relative imports. */
     FileFinder mSourceFilePath;
@@ -341,6 +329,9 @@ private:
     /** The model being simulated by this protocol. */
     boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> mpModel;
 
+    /** Handler for writing results, debug & tracing information to file. */
+    boost::shared_ptr<OutputFileHandler> mpOutputHandler;
+
     /**
      * Check that the supplied model does have outputs, and cast it.
      *
@@ -359,6 +350,31 @@ private:
      * @param rModelEnvs  environments wrapping the model
      */
     void SetModelEnvironments(const std::map<std::string, EnvironmentPtr>& rModelEnvs);
+
+    /**
+     * Generate and execute a Gnuplot script for the given specification, whose data should already exist in a file.
+     *
+     * \todo #1999 currently only works for two 1d arrays plotted against each other
+     * \todo #1999 make the plot title include the model as well as protocol name
+     *
+     * @param pPlotSpec  The plot specification to get title, variable names etc.
+     * @param rDataFileName  The name of the csv file to which Gnuplot data has been written
+     * @param numTraces  How many traces are included in the data
+     * @param numPointsInTrace  How many points are in the trace (only needed to work out whether to display as lines or points)
+     */
+    void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
+                         const std::string& rDataFileName,
+                         const unsigned numTraces,
+                         const unsigned numPointsInTrace) const;
+
+    /**
+     * Generate figures for requested plots, using Gnuplot.
+     * Called from WriteToFile.
+     * See also PlotWithGnuplot, which this method uses.
+     *
+     * @param rFileNameBase  The base name for output files (ignored for the final .eps files, which just use the plot title)
+     */
+    void GeneratePlots(const std::string& rFileNameBase) const;
 };
 
 #endif // PROTOCOL_HPP_

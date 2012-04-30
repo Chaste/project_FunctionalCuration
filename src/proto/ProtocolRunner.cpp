@@ -88,6 +88,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     // Load the XML protocol
     ProtocolParser parser;
     mpProtocol = parser.ParseFile(rProtoXmlFile);
+    mpProtocol->SetOutputFolder(mHandler);
 
     p_cell->SetMaxSteps(2e7); // We need to allow CVODE to take lots of internal steps for some protocols
     p_cell->SetTimestep(0.5); // Max dt = 0.5ms to ensure stimulus isn't missed
@@ -108,7 +109,7 @@ void ProtocolRunner::RunProtocol()
         try
         {
             std::cout << "Error running protocol. Trying to write intermediate results to file..." << std::endl;
-            mpProtocol->WriteToFile(mHandler, "outputs");
+            mpProtocol->WriteToFile("outputs");
             std::cout << "Intermediate results written; re-throwing error..." << std::endl;
         }
         catch (const Exception& e)
@@ -122,7 +123,7 @@ void ProtocolRunner::RunProtocol()
         throw;
     }
     std::cout << "Writing results to file..." << std::endl;
-    mpProtocol->WriteToFile(mHandler, "outputs");
+    mpProtocol->WriteToFile("outputs");
     // Indicate successful completion
     std::cout << "Done!" << std::endl;
     out_stream p_file = mHandler.OpenOutputFile("success");

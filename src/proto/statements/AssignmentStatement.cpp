@@ -74,9 +74,8 @@ AbstractValuePtr AssignmentStatement::operator()(Environment& rEnv) const
         rEnv.DefineName(mNamesToAssign.front(), p_rhs_value, GetLocationInfo());
         if (GetTrace())
         {
-            std::cout << "Assign " << mNamesToAssign.front() << " <- ";
-            PrintValue(p_rhs_value);
-            std::cout << " at " << GetLocationInfo() << std::endl;
+            TRACE_PROTO("Assign " << mNamesToAssign.front() << " <- " << p_rhs_value
+                        << " at " << GetLocationInfo() << std::endl);
         }
     }
     return boost::make_shared<NullValue>();

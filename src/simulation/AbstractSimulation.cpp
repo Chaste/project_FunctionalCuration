@@ -111,6 +111,23 @@ std::string AbstractSimulation::GetOutputsPrefix() const
     return mOutputsPrefix;
 }
 
+
+void AbstractSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler)
+{
+    mpOutputHandler = pHandler;
+}
+
+
+FileFinder AbstractSimulation::GetOutputFolder() const
+{
+    FileFinder folder;
+    if (mpOutputHandler)
+    {
+        folder = mpOutputHandler->FindFile("");
+    }
+    return folder;
+}
+
 //
 // Methods for creating and collecting simulation results
 //

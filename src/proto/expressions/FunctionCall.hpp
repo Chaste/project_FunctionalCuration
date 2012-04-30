@@ -53,6 +53,14 @@ class FunctionCall : public AbstractExpression
 {
 public:
     /**
+     * Create a function call.
+     *
+     * @param pFunction  the expression giving the function to call
+     * @param rParameters  the expressions giving the function arguments
+     */
+    FunctionCall(const AbstractExpressionPtr pFunction, const std::vector<AbstractExpressionPtr>& rParameters);
+
+    /**
      * Convenience constructor for the common case where the function is looked up in the
      * environment.
      *
@@ -60,14 +68,6 @@ public:
      * @param rParameters  the expressions giving the function arguments
      */
     FunctionCall(const std::string& rName, const std::vector<AbstractExpressionPtr>& rParameters);
-
-    /**
-     * Create a function call.
-     *
-     * @param pFunction  the expression giving the function to call
-     * @param rParameters  the expressions giving the function arguments
-     */
-    FunctionCall(const AbstractExpressionPtr pFunction, const std::vector<AbstractExpressionPtr>& rParameters);
 
     /**
      * Evaluate the expression in an environment.

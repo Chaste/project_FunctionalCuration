@@ -45,6 +45,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ModifierCollection.hpp"
 #include "Environment.hpp"
 #include "LocatableConstruct.hpp"
+#include "OutputFileHandler.hpp"
+#include "FileFinder.hpp"
 
 class AbstractSimulation;
 typedef boost::shared_ptr<AbstractSimulation> AbstractSimulationPtr;
@@ -141,6 +143,19 @@ public:
     /** Get the namespace prefix to use for outputs from this simulation. */
     std::string GetOutputsPrefix() const;
 
+    /**
+     * Set where to write any debug tracing to, if desired.
+     *
+     * @param pHandler  handler for the output folder
+     */
+    virtual void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
+
+    /**
+     * Get the folder to which to write any debug tracing, if it has been set.
+     * (If not, an unset FileFinder will be returned.)
+     */
+    FileFinder GetOutputFolder() const;
+
 protected:
     /**
      * This method must be called by subclasses as the first thing within their simulation loop.
@@ -215,6 +230,9 @@ protected:
 
     /** The environment in which this simulation is run. */
     EnvironmentPtr mpEnvironment;
+
+    /** Where to write tracing/debug output, if desired. */
+    boost::shared_ptr<OutputFileHandler> mpOutputHandler;
 
 private:
     /** The namespace prefix to use for outputs from this simulation. */

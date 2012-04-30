@@ -38,38 +38,78 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VectorStreaming.hpp"
 #include "ProtoHelperMacros.hpp"
 
-void PrintValue(AbstractValuePtr pValue)
+
+out_stream DebugProto::mpTraceFile;
+
+
+void DebugProto::SetTraceFolder(const OutputFileHandler& rHandler)
+{
+    if (mpTraceFile.get())
+    {
+        // Close previous trace file
+        mpTraceFile->close();
+    }
+    mpTraceFile = rHandler.OpenOutputFile("trace.txt", std::ios_base::app);
+}
+
+
+void DebugProto::StopTracing()
+{
+    if (mpTraceFile.get())
+    {
+        mpTraceFile->close();
+        mpTraceFile.release();
+    }
+}
+
+
+/**
+ * Helper function implementing the streaming operators.
+ *
+ * @param rStream  where to write
+ * @param pValue  what to write
+ * @param synopsisOnly  whether to write only a synopsis of large values
+ */
+void WriteValue(std::ostream& rStream, const AbstractValuePtr& pValue, bool synopsisOnly)
 {
     if (pValue->IsArray())
     {
         NdArray<double> value = GET_ARRAY(pValue);
-        std::cout << "shape " << value.GetShape();
+        rStream << "shape " << value.GetShape();
         std::vector<double> values(value.Begin(), value.End());
-        if (values.size() < 100) std::cout << ": " << values;
+        if (!synopsisOnly || values.size() < 10) rStream << ": " << values;
     }
     else if (pValue->IsDefault())
     {
-        std::cout << "default-param";
+        rStream << "default-param";
     }
     else if (pValue->IsNull())
     {
-        std::cout << "null";
+        rStream << "null";
     }
     else if (pValue->IsLambda())
     {
-        std::cout << "function";
+        rStream << "function";
     }
     else if (pValue->IsString())
     {
-        std::cout << "string(" << boost::dynamic_pointer_cast<StringValue>(pValue)->GetString() << ")";
+        rStream << "string(" << boost::dynamic_pointer_cast<StringValue>(pValue)->GetString() << ")";
     }
     else if (pValue->IsTuple())
     {
         boost::shared_ptr<TupleValue> p_value = boost::dynamic_pointer_cast<TupleValue>(pValue);
-        std::cout << "tuple{" << p_value->GetNumItems() << "}:";
+        rStream << "tuple{" << p_value->GetNumItems() << "}:";
         for (unsigned i=0; i<p_value->GetNumItems(); ++i)
         {
-            std::cout << " " << p_value->GetItem(i);
+            rStream << " " << p_value->GetItem(i);
         }
     }
 }
+
+
+std::ostream& operator<< (std::ostream& rStream, const AbstractValuePtr& rpV)
+{
+    WriteValue(rStream, rpV, dynamic_cast<std::ofstream*>(&rStream) == NULL);
+    return rStream;
+}
+

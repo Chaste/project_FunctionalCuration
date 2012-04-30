@@ -66,3 +66,10 @@ void NestedSimulation::SetCell(boost::shared_ptr<AbstractCardiacCellInterface> p
     AbstractSimulation::SetCell(pCell);
     mpNestedSimulation->SetCell(pCell);
 }
+
+
+void NestedSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler)
+{
+    AbstractSimulation::SetOutputFolder(pHandler);
+    mpNestedSimulation->SetOutputFolder(pHandler);
+}

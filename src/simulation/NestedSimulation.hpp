@@ -63,6 +63,13 @@ public:
      */
     virtual void SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
 
+    /**
+     * Set where to write any debug tracing to, if desired.
+     *
+     * @param pHandler  handler for the output folder
+     */
+    void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
+
 protected:
     /**
      * Run a simulation, filling in the results.

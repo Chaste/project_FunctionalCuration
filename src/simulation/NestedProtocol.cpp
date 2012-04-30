@@ -132,8 +132,27 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
         mpProtocol->SetInput(r_input.first, r_input.second);
     }
     mpProtocol->rGetInputsEnvironment().SetDelegateeEnvironment(EnvironmentCPtr());
+    if (pResults && mpOutputHandler && GetTrace())
+    {
+        // Make the nested protocol save all its results each run
+        unsigned run_number = 1u;
+        const unsigned num_local_dims = this->rGetSteppers().size() - 1u;
+        for (unsigned i=0; i<num_local_dims; ++i)
+        {
+            run_number *= (rGetSteppers()[i]->GetCurrentOutputNumber() + 1u);
+        }
+        run_number--;
+        std::stringstream run_dir;
+        run_dir << "run_" << run_number;
+        OutputFileHandler this_run(mpOutputHandler->FindFile(run_dir.str()));
+        mpProtocol->SetOutputFolder(this_run);
+    }
     // Run the nested protocol
     mpProtocol->Run();
+    if (pResults && mpOutputHandler && GetTrace())
+    {
+        mpProtocol->WriteToFile("outputs");
+    }
     if (pResults)
     {
         bool first_run = (pResults->GetNumberOfDefinitions() == 0u);

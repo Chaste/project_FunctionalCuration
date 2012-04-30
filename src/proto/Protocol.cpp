@@ -40,8 +40,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <algorithm>
 #include <iterator>
 #include <set>
-#include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
-#include <boost/foreach.hpp> // NB: Not available on Boost 1.33.1
+#include <boost/pointer_cast.hpp>
+#include <boost/foreach.hpp>
 #include <boost/assign/list_of.hpp>
 
 #include "Exception.hpp"
@@ -49,6 +49,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtoHelperMacros.hpp"
 #include "VectorStreaming.hpp"
 #include "BacktraceException.hpp"
+#include "DebugProto.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
 typedef std::pair<std::string, std::string> StringPair;
@@ -144,6 +145,10 @@ void Protocol::InitialiseLibrary()
 void Protocol::Run()
 {
     std::cout << "Running protocol..." << std::endl;
+    if (mpOutputHandler)
+    {
+        DebugProto::SetTraceFolder(*mpOutputHandler);
+    }
     ResetOutputs(mOutputs);
     // If we get an error at any stage, we want to ensure as many partial results as possible
     // are stored, but still report the error(s)
@@ -167,6 +172,16 @@ void Protocol::Run()
                               "The simulation prefix " << prefix << " has been used for multiple simulations.",
                               p_sim->GetLocationInfo());
                 mOutputs[prefix] = p_results;
+            }
+            if (mpOutputHandler)
+            {
+                DebugProto::SetTraceFolder(*mpOutputHandler);
+                // Remove the simulation output folder if empty
+                FileFinder sim_debug_output = p_sim->GetOutputFolder();
+                if (sim_debug_output.IsPathSet() && sim_debug_output.IsDir() && sim_debug_output.IsEmpty())
+                {
+                    sim_debug_output.Remove();
+                }
             }
             simulation_number++;
         }
@@ -216,6 +231,10 @@ void Protocol::Run()
             errors.push_back(e);
         }
     }
+    if (mpOutputHandler)
+    {
+        DebugProto::StopTracing();
+    }
     if (!errors.empty())
     {
         ///\todo Make an Exception subclass which reports a set of errors?
@@ -228,6 +247,16 @@ void Protocol::Run()
 void Protocol::SetOutputFolder(const OutputFileHandler& rHandler)
 {
     mpOutputHandler.reset(new OutputFileHandler(rHandler));
+    BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
+    {
+        const std::string prefix = p_sim->GetOutputsPrefix();
+        if (!prefix.empty())
+        {
+            FileFinder subfolder = rHandler.FindFile("simulation_" + prefix);
+            boost::shared_ptr<OutputFileHandler> p_sim_handler(new OutputFileHandler(subfolder));
+            p_sim->SetOutputFolder(p_sim_handler);
+        }
+    }
 }
 
 

@@ -64,9 +64,7 @@ AbstractValuePtr AbstractExpression::TraceResult(AbstractValuePtr pResult) const
 {
     if (GetTrace())
     {
-        std::cout << "Result: ";
-        PrintValue(pResult);
-        std::cout << " at " << GetLocationInfo() << std::endl;
+        TRACE_PROTO("Result: " << pResult << " at " << GetLocationInfo() << std::endl);
     }
     return pResult;
 }

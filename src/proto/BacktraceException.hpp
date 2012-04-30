@@ -129,7 +129,7 @@ private:
  * @param msg  the error message to use if the test fails, as a streamed expression
  * @param loc  the source location that caused the error
  */
-#define PROTO_ASSERT2(test, msg, loc)                  \
+#define PROTO_ASSERT2(test, msg, loc)            \
     if (!(test)) PROTO_EXCEPTION2(msg, loc)
 
 /**

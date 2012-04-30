@@ -36,19 +36,59 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef DEBUGPROTO_HPP_
 #define DEBUGPROTO_HPP_
 
-/**
- * @file Useful functions for debugging protocols.
- */
-
 #include <iostream>
 
 #include "AbstractValue.hpp"
+#include "OutputFileHandler.hpp"
 
 /**
- * Print out (a synopsis of, if large) the given value.
- * @param pValue
+ * Useful functions for debugging protocols.  Typically this will be used in
+ * conjunction with the TRACE_PROTO macro defined below: controlling code will
+ * call DebugProto::SetTraceFolder to enable full tracing, and low-level code
+ * will call TRACE_PROTO at appropriate points.
  */
-void PrintValue(AbstractValuePtr pValue);
+class DebugProto
+{
+public:
+    /**
+     * Set where tracing files should be written.
+     *
+     * @param rHandler  handler for the folder to write to
+     */
+    static void SetTraceFolder(const OutputFileHandler& rHandler);
 
+    /**
+     * Stop writing trace output to file.
+     */
+    static void StopTracing();
+
+    /** The tracing file to write, if desired. */
+    static out_stream mpTraceFile;
+};
+
+
+/**
+ * Support for writing out arbitrary protocol values to output streams.
+ * Unless writing to a file, will only write a synopsis of large values.
+ *
+ * @param rStream  the stream to write to
+ * @param rpV  the value to write
+ */
+std::ostream& operator<< (std::ostream& rStream, const AbstractValuePtr& rpV);
+
+
+/**
+ * Stream some 'stuff' to std::out and a trace file, if set with DebugProto::SetTraceFolder.
+ *
+ * @param stuff  what to stream
+ */
+#define TRACE_PROTO(stuff)                       \
+    do {                                         \
+        std::cout << stuff;                      \
+        if (DebugProto::mpTraceFile.get())       \
+        {                                        \
+            *(DebugProto::mpTraceFile) << stuff; \
+        }                                        \
+    } while (false)
 
 #endif // DEBUGPROTO_HPP_

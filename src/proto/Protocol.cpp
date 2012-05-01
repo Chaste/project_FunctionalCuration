@@ -268,6 +268,14 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 }
 
 
+std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec)
+{
+    std::string eps_file_name = pPlotSpec->rGetTitle() + ".eps";
+    FileFinder::ReplaceSpacesWithUnderscores(eps_file_name);
+    return eps_file_name;
+}
+
+
 void Protocol::WriteToFile(const std::string& rFileNameBase) const
 {
     if (!mpOutputHandler)
@@ -350,7 +358,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
     {
         std::string file_name = rFileNameBase + "-default-plots.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
-        (*p_file) << "Plot title,First variable,Optional second variable" << std::endl;
+        (*p_file) << "Plot title,File name,First variable,Optional second variable" << std::endl;
         BOOST_FOREACH(boost::shared_ptr<PlotSpecification> p_spec, mPlotSpecifications)
         {
             bool all_variables_exist = true;
@@ -385,7 +393,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
                 p_spec->SetVariableUnits(units); // Store for later plotting use
                 p_spec->SetVariableDescriptions(descriptions); // Store for later plotting use
                 const std::string& r_title = p_spec->rGetTitle();
-                (*p_file) << '"' << r_title << '"';
+                (*p_file) << '"' << r_title << "\"," << PlotFileName(p_spec);
                 BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
                 {
                     (*p_file) << ",\"" << r_name << "\"";
@@ -587,8 +595,7 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     std::string ylabel = pPlotSpec->rGetVariableDescriptions()[1];     // get variable name
     ylabel += " (" + pPlotSpec->rGetVariableUnits()[1] + ")";   // add units
 
-    std::string eps_file_name = pPlotSpec->rGetTitle() + ".eps";
-    FileFinder::ReplaceSpacesWithUnderscores(eps_file_name);
+    std::string eps_file_name = PlotFileName(pPlotSpec);
 
     // Decide whether to plot with points or lines
     std::string points_or_lines;

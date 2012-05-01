@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "LambdaClosure.hpp"
 
 #include "BacktraceException.hpp"
+#include "DebugProto.hpp"
 
 LambdaClosure::LambdaClosure(EnvironmentCPtr pDefiningEnv,
                              const std::vector<std::string>& rFormalParameters,
@@ -77,7 +78,7 @@ AbstractValuePtr LambdaClosure::operator()(const Environment& rCallersEnv,
     EnvironmentPtr p_local_env(new Environment(mpDefiningEnv.lock()->GetAsDelegatee()));
     p_local_env->DefineNames(mFormalParameters, params, GetLocationInfo());
     AbstractValuePtr p_result;
-    PROPAGATE_BACKTRACE(p_result = p_local_env->ExecuteStatements(mBody, true /* says return is allowed */));
+    PROPAGATE_BACKTRACE_ENV(p_result = p_local_env->ExecuteStatements(mBody, true /* says return is allowed */), *p_local_env);
     return p_result;
 }
 

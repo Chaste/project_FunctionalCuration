@@ -35,6 +35,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DebugProto.hpp"
 
+#include <boost/foreach.hpp>
+
 #include "VectorStreaming.hpp"
 #include "ProtoHelperMacros.hpp"
 
@@ -59,6 +61,21 @@ void DebugProto::StopTracing()
     {
         mpTraceFile->close();
         mpTraceFile.release();
+    }
+}
+
+
+bool DebugProto::IsTracing()
+{
+    return mpTraceFile.get();
+}
+
+
+void DebugProto::TraceEnv(const Environment& rEnv)
+{
+    BOOST_FOREACH(const std::string& r_name, rEnv.GetDefinedNames())
+    {
+        TRACE_PROTO("  " << r_name << " = " << rEnv.Lookup(r_name, "DebugProto::TraceEnv") << std::endl);
     }
 }
 

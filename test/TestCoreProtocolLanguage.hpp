@@ -43,6 +43,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProtocolLanguage.hpp"
 
+#include "OutputFileHandler.hpp"
+#include "FileFinder.hpp"
+#include "DebugProto.hpp"
+
 using boost::assign::list_of;
 using boost::make_shared;
 
@@ -251,7 +255,7 @@ public:
          * Test some exceptions / backtraces
          */
         {
-            // sum(1.0)
+            // sum(null)
             std::vector<AbstractExpressionPtr> inputs;
             inputs.push_back(NULL_EXPR); LOC(inputs.back());
             inputs.push_back(DEFAULT_EXPR); LOC(inputs.back());
@@ -267,6 +271,17 @@ public:
                     "  ./projects/FunctionalCuration/test/TestCoreProtocolLanguage.hpp:64:0      fold\n"
                     "Second argument to fold should be an array.");
             TS_ASSERT_THROWS_CONTAINS(env.ExecuteStatements(stmts), "fold\nSecond argument to fold should be an array.");
+            // And again but with tracing
+            OutputFileHandler handler("TestCoreProtocolLanguage_Tracing");
+            FileFinder trace = handler.FindFile("trace.txt");
+            DebugProto::SetTraceFolder(handler);
+            TS_ASSERT(DebugProto::IsTracing());
+            TS_ASSERT(trace.Exists());
+            TS_ASSERT(trace.IsEmpty());
+            TS_ASSERT_THROWS_CONTAINS(env.ExecuteStatements(stmts), "fold\nSecond argument to fold should be an array.");
+            DebugProto::StopTracing();
+            TS_ASSERT(trace.Exists());
+            TS_ASSERT(!trace.IsEmpty());
         }
         {
             DEFINE_STMT(assert0, ASSERT_STMT(CONST(0)));

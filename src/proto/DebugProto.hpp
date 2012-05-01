@@ -39,6 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 #include "AbstractValue.hpp"
+#include "Environment.hpp"
 #include "OutputFileHandler.hpp"
 
 /**
@@ -61,6 +62,18 @@ public:
      * Stop writing trace output to file.
      */
     static void StopTracing();
+
+    /**
+     * Whether we are currently tracing to file.
+     */
+    static bool IsTracing();
+
+    /**
+     * Trace the values in the given environment.
+     *
+     * @param rEnv  the environment to output
+     */
+    static void TraceEnv(const Environment& rEnv);
 
     /** The tracing file to write, if desired. */
     static out_stream mpTraceFile;
@@ -85,7 +98,7 @@ std::ostream& operator<< (std::ostream& rStream, const AbstractValuePtr& rpV);
 #define TRACE_PROTO(stuff)                       \
     do {                                         \
         std::cout << stuff;                      \
-        if (DebugProto::mpTraceFile.get())       \
+        if (DebugProto::IsTracing())             \
         {                                        \
             *(DebugProto::mpTraceFile) << stuff; \
         }                                        \

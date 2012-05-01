@@ -46,6 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Environment.hpp"
 #include "ValueTypes.hpp"
 #include "ProtoHelperMacros.hpp"
+#include "DebugProto.hpp"
 
 #define NEW_ENV_A(name, args)  EnvironmentPtr _p_##name(new Environment args); Environment& name = *_p_##name;
 #define NEW_ENV(name)  NEW_ENV_A(name, ())
@@ -88,6 +89,9 @@ public:
         NEW_ENV(env2);
         env2.Merge(env, "test");
         TS_ASSERT_EQUALS(env.GetDefinedNames(), env2.GetDefinedNames());
+
+        // Test debug tracing of environments
+        DebugProto::TraceEnv(env);
     }
 
     void TestOverwritingEnv() throw (Exception)

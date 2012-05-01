@@ -147,6 +147,24 @@ private:
     } while (false)
 
 /**
+ * Propagate a BacktraceException, with environment tracing.
+ * @param call  the statement to execute that might throw an error
+ * @param env  the caller's environment
+ */
+#define PROPAGATE_BACKTRACE_ENV(call, env)       \
+    do {                                         \
+        try {                                    \
+            call;                                \
+        } catch (const BacktraceException& rE) { \
+            if (DebugProto::IsTracing()) {       \
+                TRACE_PROTO("Variables defined at " << GetLocationInfo() << ":\n"); \
+                DebugProto::TraceEnv(env);                                          \
+            }                                                                       \
+            throw BacktraceException(rE, GetLocationInfo(), __FILE__, __LINE__);    \
+        }                                        \
+    } while (false)
+
+/**
  * Propagate a BacktraceException.
  * Calls the context's GetLocationInfo method to determine the error's source.
  * @param call  the statement to execute that might throw an error

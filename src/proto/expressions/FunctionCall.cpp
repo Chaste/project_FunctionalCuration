@@ -36,9 +36,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FunctionCall.hpp"
 
 #include <boost/make_shared.hpp>
-#include "BacktraceException.hpp"
 #include "LambdaClosure.hpp"
 #include "NameLookup.hpp"
+#include "BacktraceException.hpp"
+#include "DebugProto.hpp"
 
 FunctionCall::FunctionCall(const std::string& rName,
                            const std::vector<AbstractExpressionPtr>& rParameters)
@@ -61,6 +62,6 @@ AbstractValuePtr FunctionCall::operator()(const Environment& rEnv) const
     }
     std::vector<AbstractValuePtr> actual_params = EvaluateChildren(rEnv);
     AbstractValuePtr p_result;
-    PROPAGATE_BACKTRACE(p_result = (*static_cast<LambdaClosure*>(p_lambda.get()))(rEnv, actual_params));
+    PROPAGATE_BACKTRACE_ENV(p_result = (*static_cast<LambdaClosure*>(p_lambda.get()))(rEnv, actual_params), rEnv);
     return TraceResult(p_result);
 }

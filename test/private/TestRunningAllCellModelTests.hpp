@@ -64,30 +64,38 @@ typedef N_Vector VECTOR;
  */
 class TestRunningAllCellModelTests : public CxxTest::TestSuite
 {
-    std::vector<std::string> mProtocolFiles;
 public:
 
     void TestProtocolsForManyCellModels() throw(Exception, std::bad_alloc)
     {
-        mProtocolFiles.clear();
-        mProtocolFiles.push_back("protocols/ICaL.xml");
-        mProtocolFiles.push_back("protocols/S1S2.xml");
-        mProtocolFiles.push_back("protocols/SteadyPacing.xml");
-        mProtocolFiles.push_back("private/protocols/INa_IV_curve.xml");
-        mProtocolFiles.push_back("private/protocols/Hypokalaemia.xml");
-        mProtocolFiles.push_back("private/protocols/SteadyStateRunner.xml");
-        mProtocolFiles.push_back("private/protocols/IK1_IV_curve.xml");
-        mProtocolFiles.push_back("private/protocols/IKr_IV_curve.xml");
-        mProtocolFiles.push_back("private/protocols/IKs_IV_curve.xml");
+        FileFinder proto_root("projects/FunctionalCuration/test", RelativeTo::ChasteSourceRoot);
+        std::vector<std::string> protocol_files;
         if (CommandLineArguments::Instance()->OptionExists("--protocols"))
         {
-            mProtocolFiles = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protocols");
+            protocol_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protocols");
+        }
+        else
+        {
+            protocol_files.push_back("protocols/ICaL.xml");
+            protocol_files.push_back("protocols/S1S2.xml");
+            protocol_files.push_back("protocols/SteadyPacing.xml");
+            protocol_files.push_back("private/protocols/INa_IV_curve.xml");
+            protocol_files.push_back("private/protocols/Hypokalaemia.xml");
+            protocol_files.push_back("private/protocols/SteadyStateRunner.xml");
+            protocol_files.push_back("private/protocols/IK1_IV_curve.xml");
+            protocol_files.push_back("private/protocols/IKr_IV_curve.xml");
+            protocol_files.push_back("private/protocols/IKs_IV_curve.xml");
         }
 
-        std::vector<std::string> cellml_files = GetAListOfCellMLFiles();
+        FileFinder model_root("projects/FunctionalCuration/cellml", RelativeTo::ChasteSourceRoot);
+        std::vector<std::string> cellml_files;
         if (CommandLineArguments::Instance()->OptionExists("--models"))
         {
             cellml_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--models");
+        }
+        else
+        {
+            cellml_files = GetAListOfCellMLFiles();
         }
 
         // Collectively ensure the root output folder exists, then isolate processes
@@ -106,10 +114,10 @@ public:
             std::cout << "\nRunning protocols for " << cellml_files[i] << std::endl << std::flush;
 
             // RUN ALL PROTOCOLS IN THE LIST
-            FileFinder model("projects/FunctionalCuration/cellml/" + cellml_files[i] + ".cellml", RelativeTo::ChasteSourceRoot);
-            for (unsigned protocol_idx = 0; protocol_idx<mProtocolFiles.size(); ++protocol_idx)
+            FileFinder model(cellml_files[i] + ".cellml", model_root);
+            for (unsigned protocol_idx = 0; protocol_idx<protocol_files.size(); ++protocol_idx)
             {
-                FileFinder proto_xml("projects/FunctionalCuration/test/" + mProtocolFiles[protocol_idx], RelativeTo::ChasteSourceRoot);
+                FileFinder proto_xml(protocol_files[protocol_idx], proto_root);
                 std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.GetLeafNameNoExtension());
 
                 try
@@ -120,7 +128,7 @@ public:
                 catch (Exception& e)
                 {
                     std::cerr << "A protocol failed : " << e.GetMessage() << std::endl;
-                    WARNING("Model " << cellml_files[i] << " and Protocol " << mProtocolFiles[protocol_idx] << " failed.");
+                    WARNING("Model " << cellml_files[i] << " and Protocol " << protocol_files[protocol_idx] << " failed.");
                 }
             }
         }

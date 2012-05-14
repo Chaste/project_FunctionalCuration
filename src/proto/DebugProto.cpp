@@ -60,7 +60,7 @@ void DebugProto::StopTracing()
     if (mpTraceFile.get())
     {
         mpTraceFile->close();
-        mpTraceFile.release();
+        mpTraceFile.reset();
     }
 }
 

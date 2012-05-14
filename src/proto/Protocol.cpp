@@ -175,6 +175,7 @@ void Protocol::Run()
             }
             if (mpOutputHandler)
             {
+                // Re-set the trace folder in case a nested protocol changed it
                 DebugProto::SetTraceFolder(*mpOutputHandler);
                 // Remove the simulation output folder if empty
                 FileFinder sim_debug_output = p_sim->GetOutputFolder();

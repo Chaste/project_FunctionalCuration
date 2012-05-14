@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:proto="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    
+    <inputs>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>pacing_period</ci>
+                <cn>1000</cn>
+            </apply>       
+            <apply><eq/>
+                <ci>max_paces</ci>
+                <cn>10000</cn>
+            </apply>
+        </apply>    
+    </inputs>
+    
+    <simulations>
+        <nestedSimulation prefix="sim">
+            <vectorStepper name="steady_state_beats" units="dimensionless">
+                <value>1</value>
+                <value>2</value>
+                <!--<value>3</value>-->
+            </vectorStepper>
+            <modifiers>
+                <resetState>
+                    <when>EVERY_LOOP</when>
+                </resetState>
+            </modifiers>
+            <nestedProtocol source="SteadyStateRunner.xml">
+                <setInput name="steady_state_beats">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">steady_state_beats</ci>
+                </setInput>
+                <setInput name="pacing_period">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_period</ci>
+                </setInput>
+                <setInput name="max_paces">
+                    <ci xmlns="http://www.w3.org/1998/Math/MathML">max_paces</ci>
+                </setInput>
+                <selectOutput name="found_steady_state"/>
+                <selectOutput name="num_paces"/>
+            </nestedProtocol>
+        </nestedSimulation>
+    </simulations>
+
+    <outputVariables>
+        <raw name="found_steady_state" ref="sim:found_steady_state" description="Whether a pseudo-steady-state was found"/>
+        <raw name="num_paces" ref="sim:num_paces" description="How many sets of paces before reaching pseudo-steady-state (or giving up)"/>
+    </outputVariables>    
+</protocol>

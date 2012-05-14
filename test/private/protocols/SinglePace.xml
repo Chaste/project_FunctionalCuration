@@ -236,6 +236,7 @@
         <postprocessed name="difference_in_state_variables" units="mixed"/>
         <postprocessed name="initial_state_variables" units="mixed"/>
         <postprocessed name="final_state_variables" units="mixed"/>
+        <postprocessed name="num_paces" units="dimensionless" ref="steady_state_beats" description="Number of paces simulated"/>
     </outputVariables>
     
     <plots>

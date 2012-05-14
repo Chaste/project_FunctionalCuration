@@ -125,17 +125,21 @@ void Protocol::FinaliseSetup()
 }
 
 
-void Protocol::InitialiseLibrary()
+void Protocol::InitialiseLibrary(bool reinit)
 {
+    if (reinit)
+    {
+        mpLibrary->Clear();
+    }
     // First initialise the libraries of imported protocols
     BOOST_FOREACH(StringProtoPair import, mImports)
     {
-        import.second->InitialiseLibrary();
+        import.second->InitialiseLibrary(reinit);
     }
     // Now do our library
     const unsigned library_size = mpLibrary->GetNumberOfDefinitions();
     assert(library_size == 0 || library_size == mLibraryStatements.size());
-    if (library_size == 0)
+    if (library_size == 0 || reinit)
     {
         mpLibrary->ExecuteStatements(mLibraryStatements);
     }
@@ -694,8 +698,9 @@ boost::shared_ptr<ModelStateCollection> Protocol::GetStateCollection()
 
 void Protocol::SetInput(const std::string& rName, AbstractExpressionPtr pValue)
 {
+    mpInputs->RemoveDefinition(rName, "Setting protocol input");
     AbstractValuePtr p_value = (*pValue)(*mpInputs);
-    mpInputs->OverwriteDefinition(rName, p_value, "Setting protocol input");
+    mpInputs->DefineName(rName, p_value, "Setting protocol input");
 }
 
 

@@ -116,6 +116,12 @@ EnvironmentCPtr FindDelegatee(const Environment& rEnv, std::string& rName, const
 }
 
 
+void Environment::Clear()
+{
+    mBindings.clear();
+}
+
+
 AbstractValuePtr Environment::Lookup(const std::string& rName, const std::string& rCallerLocation) const
 {
     AbstractValuePtr p_result;
@@ -203,6 +209,27 @@ void Environment::OverwriteDefinition(const std::string& rName, const AbstractVa
     else if (mAllowOverwrite)
     {
         it->second = pValue;
+    }
+    else
+    {
+        PROTO_EXCEPTION2("This environment does not support overwriting mappings.", rCallerLocation);
+    }
+}
+
+
+void Environment::RemoveDefinition(const std::string& rName, const std::string& rCallerLocation)
+{
+    if (mAllowOverwrite)
+    {
+        std::map<std::string, AbstractValuePtr>::iterator it = mBindings.find(rName);
+        if (it == mBindings.end())
+        {
+            PROTO_EXCEPTION2("Name " << rName << " is not defined and may not be removed.", rCallerLocation);
+        }
+        else
+        {
+            mBindings.erase(it);
+        }
     }
     else
     {

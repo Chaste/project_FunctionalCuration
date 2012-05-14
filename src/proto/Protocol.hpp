@@ -140,6 +140,10 @@ public:
 
     /**
      * Set the value of a protocol input.
+     *
+     * Note that the defining expression is evaluated in the context of the inputs environment.
+     * However the old definition of the input is removed *before* it is evaluated.
+     *
      * @param rName  the input name
      * @param pValue  an expression giving its new value
      */
@@ -267,8 +271,10 @@ public:
      * This method runs the library program.  In normal usage it is run by SetModel, as the
      * library may reference model variables.  However, a separate method is provided so that
      * tests of protocol libraries don't need to provide a model.
+     *
+     * @param reinit  whether to clear the library and re-run the library program
      */
-    void InitialiseLibrary();
+    void InitialiseLibrary(bool reinit=false);
 
     /**
      * Set the model being simulated by this protocol.

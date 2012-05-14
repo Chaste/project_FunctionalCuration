@@ -84,6 +84,13 @@ void AbstractSimulation::InitialiseSteppers()
     {
         p_stepper->Initialise();
     }
+    if (!mpStepper->IsEndFixed() && !mOutputsPrefix.empty())
+    {
+        // Create an environment to contain views of the simulation outputs thus far, for
+        // use in the loop condition test if needed.
+        EnvironmentPtr p_view_env(new Environment(true/* allow overwrite */));
+        mpEnvironment->SetDelegateeEnvironment(p_view_env, mOutputsPrefix);
+    }
 }
 
 
@@ -96,13 +103,6 @@ Environment& AbstractSimulation::rGetEnvironment()
 void AbstractSimulation::SetOutputsPrefix(const std::string& rPrefix)
 {
     mOutputsPrefix = rPrefix;
-    if (!mpStepper->IsEndFixed() && !rPrefix.empty())
-    {
-        // Create an environment to contain views of the simulation outputs thus far, for
-        // use in the loop condition test if needed.
-        EnvironmentPtr p_view_env(new Environment(true/* allow overwrite */));
-        mpEnvironment->SetDelegateeEnvironment(p_view_env, rPrefix);
-    }
 }
 
 

@@ -132,6 +132,8 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
         mpProtocol->SetInput(r_input.first, r_input.second);
     }
     mpProtocol->rGetInputsEnvironment().SetDelegateeEnvironment(EnvironmentCPtr());
+    // Re-run the imported protocol's library, since it may depend on protocol inputs
+    mpProtocol->InitialiseLibrary(true);
     if (pResults && mpOutputHandler && GetTrace())
     {
         // Make the nested protocol save all its results each run

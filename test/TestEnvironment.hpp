@@ -92,6 +92,14 @@ public:
 
         // Test debug tracing of environments
         DebugProto::TraceEnv(env);
+
+        // Test clearing an environment
+        env.Clear();
+        TS_ASSERT_EQUALS(env.GetNumberOfDefinitions(), 0u);
+        env.DefineName(name, p_val, "");
+        TS_ASSERT_EQUALS(env.Lookup(name), p_val);
+        TS_ASSERT_THROWS_CONTAINS(env.RemoveDefinition(name, ""),
+                                  "This environment does not support overwriting mappings.");
     }
 
     void TestOverwritingEnv() throw (Exception)
@@ -111,6 +119,13 @@ public:
         TS_ASSERT_EQUALS(env.Lookup(name), p_val2);
         TS_ASSERT_THROWS_CONTAINS(env.OverwriteDefinition("name2", p_val2, ""),
                                   "Name name2 is not defined and may not be overwritten.");
+
+        env.RemoveDefinition(name, "");
+        TS_ASSERT_THROWS_CONTAINS(env.Lookup(name), "Name " + name + " is not defined in this environment.");
+        env.DefineName(name, p_val, "");
+        TS_ASSERT_EQUALS(env.Lookup(name), p_val);
+        TS_ASSERT_THROWS_CONTAINS(env.RemoveDefinition("name2", ""),
+                                  "Name name2 is not defined and may not be removed.");
     }
 
     void TestDelegation() throw (Exception)

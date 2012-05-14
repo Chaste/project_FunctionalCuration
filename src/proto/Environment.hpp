@@ -105,6 +105,11 @@ public:
     EnvironmentCPtr GetAsDelegatee() const;
 
     /**
+     * Remove all definitions from this environment.
+     */
+    void Clear();
+
+    /**
      * Look up a name in the environment and return the mapped value.
      * @param rName  the name to look up
      * @param rCallerLocation  location information to use in error backtrace if name isn't defined
@@ -150,6 +155,16 @@ public:
      */
     virtual void OverwriteDefinition(const std::string& rName, const AbstractValuePtr pValue,
                                      const std::string& rCallerLocation);
+
+    /**
+     * Iff this environment supports overwriting definitions, this method will remove an existing
+     * definition of the given name.
+     * Delegatees are not consulted by this method: the name must be defined in this environment.
+     *
+     * @param rName
+     * @param rCallerLocation  location information to use in error backtrace if name is not already defined
+     */
+    void RemoveDefinition(const std::string& rName, const std::string& rCallerLocation);
 
     /** Get the number of definitions in this environment. */
     virtual unsigned GetNumberOfDefinitions() const;

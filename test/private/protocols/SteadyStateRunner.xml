@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
 <protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:proto="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
     
@@ -24,6 +25,19 @@
     </inputs>          
 
     <import source="../../../src/proto/library/BasicLibrary.xml" mergeDefinitions="true"/>
+    
+    <library>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <apply><eq/>
+                <ci>max_single_pace_runs</ci>
+                <apply><divide/>
+                    <ci>max_paces</ci>
+                    <ci>steady_state_beats</ci>
+                </apply>
+            </apply>
+        </apply>
+    </library>
 
     <simulations>
         <nestedSimulation prefix="outer">
@@ -39,7 +53,7 @@
                         </apply>
                         <apply><lt/>
                             <ci>paces</ci>
-                            <ci>max_paces</ci>
+                            <ci>max_single_pace_runs</ci>
                         </apply>
                     </apply>
                 </condition>
@@ -63,16 +77,19 @@
             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
             <apply><eq/>
                 <ci>num_paces</ci>
-                <apply>
-                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                <apply><times/>
                     <apply>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">SHAPE</csymbol>
-                        <ci>outer:norm_of_differences</ci>
+                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">SHAPE</csymbol>
+                            <ci>outer:norm_of_differences</ci>
+                        </apply>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                            <cn>0</cn><cn>0</cn><cn>0</cn><cn>0</cn>
+                        </apply>
                     </apply>
-                    <apply>
-                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
-                        <cn>0</cn><cn>0</cn><cn>0</cn><cn>0</cn>
-                    </apply>
+                    <ci>steady_state_beats</ci>
                 </apply>
             </apply>
             
@@ -106,8 +123,9 @@
         <postprocessed name="steady_state_variables" units="mixed" description="The state variables at an approximately steady state"/>
         <postprocessed name="found_steady_state" units="boolean" description="Whether we found a pseudo-steady-state, or gave up"/>
         <postprocessed name="pace_final_state_variables" units="mixed" description="State variables at the end of each pace"/>
+        <postprocessed name="steady_state_beats" units="dimensionless" description="The number of paces per check of state variables"/>
         
-        <raw name="norm_of_differences" ref="outer:norm_of_differences" description="Norm of the change in state variables over each pace"/>
+        <raw name="norm_of_differences" ref="outer:norm_of_differences" description="Norm of the change in state variables over each 'pace'"/>
     </outputVariables>
     
     <!--

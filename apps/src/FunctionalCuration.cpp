@@ -65,9 +65,16 @@ int main(int argc, char *argv[])
     // you clean up PETSc before quitting.
     try
     {
+        bool png_output = (argc > 1 && std::string(argv[1]) == "--png");
+        if (png_output)
+        {
+            // Strip the option from args
+            argc--;
+            argv++;
+        }
         if (argc<3 || argc>4)
         {
-            ExecutableSupport::PrintError("Usage: FunctionalCuration model.cellml proto.xml [output_dir]", true);
+            ExecutableSupport::PrintError("Usage: FunctionalCuration [--png] model.cellml proto.xml [output_dir]", true);
             exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
         }
         else
@@ -92,6 +99,7 @@ int main(int argc, char *argv[])
                 }
             }
             ProtocolRunner runner(model, proto_xml, output_folder);
+            runner.SetPngOutput(png_output);
             runner.RunProtocol();
         }
     }

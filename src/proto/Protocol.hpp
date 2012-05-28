@@ -106,6 +106,13 @@ public:
                      const std::string& rFileNameBase);
 
     /**
+     * Set whether to write plots to PNG format as well as the default EPS.
+     *
+     * @param writePng  whether .png files should be created for plots
+     */
+    void SetPngOutput(bool writePng);
+
+    /**
      * Get the number of protocol outputs defined.
      *
      * @param simulation  which simulation to get the number of outputs of, by index
@@ -338,6 +345,9 @@ private:
     /** Handler for writing results, debug & tracing information to file. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
 
+    /** Whether to write plots to .png as well as .eps. */
+    bool mWritePng;
+
     /**
      * Check that the supplied model does have outputs, and cast it.
      *
@@ -363,22 +373,24 @@ private:
      * \todo #1999 currently only works for two 1d arrays plotted against each other
      * \todo #1999 make the plot title include the model as well as protocol name
      *
-     * @param pPlotSpec  The plot specification to get title, variable names etc.
-     * @param rDataFileName  The name of the csv file to which Gnuplot data has been written
-     * @param numTraces  How many traces are included in the data
-     * @param numPointsInTrace  How many points are in the trace (only needed to work out whether to display as lines or points)
+     * @param pPlotSpec  the plot specification to get title, variable names etc.
+     * @param rDataFileName  the name of the csv file to which Gnuplot data has been written
+     * @param numTraces  how many traces are included in the data
+     * @param numPointsInTrace  how many points are in the trace (only needed to work out whether to display as lines or points)
+     * @param writePng  whether to write a PNG (true) or EPS (false) file
      */
     void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                          const std::string& rDataFileName,
                          const unsigned numTraces,
-                         const unsigned numPointsInTrace) const;
+                         const unsigned numPointsInTrace,
+                         bool writePng) const;
 
     /**
      * Generate figures for requested plots, using Gnuplot.
      * Called from WriteToFile.
      * See also PlotWithGnuplot, which this method uses.
      *
-     * @param rFileNameBase  The base name for output files (ignored for the final .eps files, which just use the plot title)
+     * @param rFileNameBase  the base name for output files (ignored for the final .eps files, which just use the plot title)
      */
     void GeneratePlots(const std::string& rFileNameBase) const;
 };

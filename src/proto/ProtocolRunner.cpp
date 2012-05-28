@@ -98,6 +98,12 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
 }
 
 
+void ProtocolRunner::SetPngOutput(bool writePng)
+{
+    mpProtocol->SetPngOutput(writePng);
+}
+
+
 void ProtocolRunner::RunProtocol()
 {
     try

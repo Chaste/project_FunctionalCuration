@@ -72,6 +72,13 @@ public:
      */
     ProtocolPtr GetProtocol();
 
+    /**
+     * Set whether to write plots to PNG format as well as the default EPS.
+     *
+     * @param writePng  whether .png files should be created for plots
+     */
+    void SetPngOutput(bool writePng);
+
 private:
     /** The handler for file output. */
     OutputFileHandler mHandler;

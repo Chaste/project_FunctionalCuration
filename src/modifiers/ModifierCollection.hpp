@@ -78,19 +78,19 @@ public:
     /**
      * Apply each modifier in this collection in turn, starting with the first.
      * 
-     * @param pCell  the cell to modify
+     * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    void operator()(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    void operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                     boost::shared_ptr<AbstractStepper> pStepper);
 
     /**
      * Apply each modifier in this collection that takes effect AT_END in turn, starting with the first.
      *
-     * @param pCell  the cell to modify
+     * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    void ApplyAtEnd(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    void ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                     boost::shared_ptr<AbstractStepper> pStepper);
 
 private:

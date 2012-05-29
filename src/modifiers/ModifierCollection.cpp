@@ -53,22 +53,22 @@ boost::shared_ptr<AbstractSimulationModifier>& ModifierCollection::operator[](un
 }
 
 
-void ModifierCollection::operator()(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void ModifierCollection::operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                     boost::shared_ptr<AbstractStepper> pStepper)
 {
     for (Collection::iterator it = mModifiers.begin(); it != mModifiers.end(); ++it)
     {
-        (**it)(pCell, pStepper);
+        (**it)(pModel, pStepper);
     }
 }
 
 
-void ModifierCollection::ApplyAtEnd(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void ModifierCollection::ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                     boost::shared_ptr<AbstractStepper> pStepper)
 {
     for (Collection::iterator it = mModifiers.begin(); it != mModifiers.end(); ++it)
     {
-        (*it)->ApplyAtEnd(pCell, pStepper);
+        (*it)->ApplyAtEnd(pModel, pStepper);
     }
 }
 

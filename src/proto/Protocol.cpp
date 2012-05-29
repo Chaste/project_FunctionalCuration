@@ -886,23 +886,20 @@ void Protocol::AddDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecifica
 // Associating a protocol with a model
 //
 
-boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> Protocol::CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const
+void Protocol::CheckModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel) const
 {
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_model
-        = boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(pModel);
-    if (!p_model)
+    if (!pModel)
     {
         EXCEPTION("Given model doesn't have any protocol outputs.");
     }
-    if (p_model->GetNumberOfOutputs() == 0 && p_model->rGetVectorOutputNames().size() == 0)
+    if (pModel->GetNumberOfOutputs() == 0 && pModel->rGetVectorOutputNames().size() == 0)
     {
         EXCEPTION("Number of model outputs is zero.");
     }
-    if (!boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(p_model))
+    if (!boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pModel))
     {
         EXCEPTION("Model has an incorrect base class!");
     }
-    return p_model;
 }
 
 
@@ -919,9 +916,10 @@ void Protocol::SetModelEnvironments(const std::map<std::string, EnvironmentPtr>&
 }
 
 
-void Protocol::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)
+void Protocol::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
 {
-    mpModel = CheckModel(pModel);
+    CheckModel(pModel);
+    mpModel = pModel;
     // Get the model wrapper environments, and ensure that every other environment (including in
     // imported protocols) can delegate to them for ontology prefixes.
     mpModel->SetNamespaceBindings(mOntologyNamespaceBindings);
@@ -930,7 +928,7 @@ void Protocol::SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel)
     // Associate each simulation with this model
     for (unsigned simulation=0; simulation<mSimulations.size(); ++simulation)
     {
-        mSimulations[simulation]->SetCell(pModel);
+        mSimulations[simulation]->SetModel(mpModel);
     }
     // Now run all the library programs, if present
     InitialiseLibrary();

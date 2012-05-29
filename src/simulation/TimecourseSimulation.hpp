@@ -47,12 +47,12 @@ public:
     /**
      * Constructor.
      *
-     * @param pCell  the cell model the protocol is being run on
+     * @param pModel  the model the protocol is being run on
      * @param pStepper  controls the iteration around this simulation's loop
      * @param pModifiers  details any modifications to be made to the cell or
      *     simulation parameters as the simulation progresses
      */
-    TimecourseSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    TimecourseSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                          boost::shared_ptr<AbstractStepper> pStepper,
                          boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
 

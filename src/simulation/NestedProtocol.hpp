@@ -81,9 +81,9 @@ public:
     /**
      * Set the model being simulated by the nested protocol.
      *
-     * @param pCell  the cell model the protocol is being run on
+     * @param pModel  the model the protocol is being run on
      */
-    void SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
+    void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
 
 private:
     /** The nested protocol itself. */

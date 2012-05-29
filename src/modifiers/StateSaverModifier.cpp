@@ -34,6 +34,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "StateSaverModifier.hpp"
+#include "VectorHelperFunctions.hpp"
 
 template<typename VECTOR>
 StateSaverModifier<VECTOR>::StateSaverModifier(ApplyWhen when,
@@ -47,10 +48,10 @@ StateSaverModifier<VECTOR>::StateSaverModifier(ApplyWhen when,
 
 
 template<typename VECTOR>
-void StateSaverModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void StateSaverModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                              boost::shared_ptr<AbstractStepper> pStepper)
 {
-    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pCell);
+    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pModel);
     assert(p_system);
     mpStateCollection->SaveState(mStateName, p_system);
 }

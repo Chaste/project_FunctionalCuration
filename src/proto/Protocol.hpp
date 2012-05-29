@@ -51,7 +51,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "OutputFileHandler.hpp"
 #include "FileFinder.hpp"
-#include "AbstractCardiacCellInterface.hpp"
 
 // See below!
 class Protocol;
@@ -286,11 +285,9 @@ public:
     /**
      * Set the model being simulated by this protocol.
      *
-     * \todo #1872 set model for imported protocols too
-     *
      * @param pModel  the model being simulated
      */
-    void SetModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel);
+    void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
 
 private:
     /** Where the protocol was loaded from, for resolving relative imports. */
@@ -353,7 +350,7 @@ private:
      *
      * @param pModel  the model
      */
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> CheckModel(boost::shared_ptr<AbstractCardiacCellInterface> pModel) const;
+    void CheckModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel) const;
 
     /**
      * Ensure that this protocol, and any it imports, can access model variables through the

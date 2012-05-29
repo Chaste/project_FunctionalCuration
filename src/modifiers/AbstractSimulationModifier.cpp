@@ -47,23 +47,23 @@ AbstractSimulationModifier::~AbstractSimulationModifier()
 }
 
 
-void AbstractSimulationModifier::operator()(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void AbstractSimulationModifier::operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                             boost::shared_ptr<AbstractStepper> pStepper)
 {
     if (mWhen == EVERY_LOOP ||
         (mWhen == AT_START_ONLY && pStepper->GetCurrentOutputPoint() == 0))
     {
-        ReallyApply(pCell, pStepper);
+        ReallyApply(pModel, pStepper);
     }
 }
 
 
 
-void AbstractSimulationModifier::ApplyAtEnd(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void AbstractSimulationModifier::ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                             boost::shared_ptr<AbstractStepper> pStepper)
 {
     if (mWhen == AT_END)
     {
-        ReallyApply(pCell, pStepper);
+        ReallyApply(pModel, pStepper);
     }
 }

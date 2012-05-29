@@ -39,7 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/shared_ptr.hpp>
 
 #include "AbstractStepper.hpp"
-#include "AbstractCardiacCellInterface.hpp"
+#include "AbstractSystemWithOutputs.hpp"
 #include "LocatableConstruct.hpp"
 
 /**
@@ -69,35 +69,35 @@ public:
     virtual ~AbstractSimulationModifier();
 
     /**
-     * Apply this modification to the cell model.
+     * Apply this modification to the model.
      *
      * This method is called by the simulation engine, checks the stepper's state against
      * our #mWhen specification, and calls ReallyApply if the conditions match.  It may
      * be overridden by subclasses if they need to do something completely different.
      *
-     * @param pCell  the cell to modify
+     * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    virtual void operator()(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    virtual void operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                             boost::shared_ptr<AbstractStepper> pStepper);
 
     /**
-     * Apply this modification to the cell model if it takes effect at the end of a loop.
+     * Apply this modification to the model if it takes effect at the end of a loop.
      *
-     * @param pCell  the cell to modify
+     * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    virtual void ApplyAtEnd(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    virtual void ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                             boost::shared_ptr<AbstractStepper> pStepper);
 
 protected:
     /**
      * Method subclasses must supply which really implements the modification.
      *
-     * @param pCell  the cell to modify
+     * @param pModel  the cell to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    virtual void ReallyApply(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    virtual void ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                              boost::shared_ptr<AbstractStepper> pStepper) =0;
 
     /** When to apply this modification. */

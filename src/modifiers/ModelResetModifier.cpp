@@ -49,10 +49,10 @@ ModelResetModifier<VECTOR>::ModelResetModifier(ApplyWhen when,
 
 
 template<typename VECTOR>
-void ModelResetModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void ModelResetModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                              boost::shared_ptr<AbstractStepper> pStepper)
 {
-    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pCell);
+    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pModel);
     assert(p_system);
     // Do the reset
     if (mStateName.empty())

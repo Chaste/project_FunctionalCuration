@@ -51,13 +51,13 @@ SetVariableModifier::SetVariableModifier(ApplyWhen when,
 }
 
 
-void SetVariableModifier::ReallyApply(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+void SetVariableModifier::ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                       boost::shared_ptr<AbstractStepper> pStepper)
 {
     AbstractValuePtr p_value = (*mpValueExpression)(pStepper->rGetEnvironment());
     PROTO_ASSERT(p_value->IsDouble(), "The value computed by a setVariable modifier must be a real number.");
 
-    AbstractCvodeSystem* p_sys = dynamic_cast<AbstractCvodeSystem*>(pCell.get());
+    AbstractCvodeSystem* p_sys = dynamic_cast<AbstractCvodeSystem*>(pModel.get());
     if (p_sys)
     {
         const double old_value = GET_SIMPLE_VALUE(pStepper->rGetEnvironment().Lookup(mVariableName, GetLocationInfo()));

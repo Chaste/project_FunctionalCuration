@@ -61,12 +61,12 @@ public:
 
 private:
     /**
-     * Apply this modification to the cell model.
+     * Apply this modification to the model.
      *
-     * @param pCell  the cell to modify
+     * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    void ReallyApply(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    void ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                      boost::shared_ptr<AbstractStepper> pStepper);
 
     /** The collection in which to store the saved state. */

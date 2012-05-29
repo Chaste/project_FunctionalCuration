@@ -50,11 +50,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TupleExpression.hpp"
 
 
-AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                        boost::shared_ptr<AbstractStepper> pStepper,
                                        boost::shared_ptr<ModifierCollection> pModifiers,
                                        boost::shared_ptr<std::vector<boost::shared_ptr<AbstractStepper> > > pSteppers)
-    : mpCell(pCell),
+    : mpModel(pModel),
       mpStepper(pStepper),
       mpModifiers(pModifiers),
       mpSteppers(pSteppers),
@@ -157,7 +157,7 @@ void AbstractSimulation::LoopBodyStartHook(EnvironmentPtr pResults)
 {
     if (mpModifiers)
     {
-        (*mpModifiers)(mpCell, mpStepper);
+        (*mpModifiers)(mpModel, mpStepper);
     }
     // If this is a while loop, we may need to allocate more memory for the results arrays
     if (pResults && !mpStepper->IsEndFixed() && pResults->GetNumberOfDefinitions() > 0u)
@@ -186,7 +186,7 @@ void AbstractSimulation::LoopEndHook(EnvironmentPtr pResults)
 {
     if (mpModifiers)
     {
-        mpModifiers->ApplyAtEnd(mpCell, mpStepper);
+        mpModifiers->ApplyAtEnd(mpModel, mpStepper);
     }
 }
 
@@ -198,9 +198,6 @@ void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
     assert(pResults);
 
     // Get the system being simulated
-    boost::shared_ptr<const AbstractUntemplatedSystemWithOutputs> p_system
-        = boost::dynamic_pointer_cast<const AbstractUntemplatedSystemWithOutputs>(mpCell);
-    assert(p_system);
     const std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = rGetSteppers();
 
     // Figure out the (initial) sizes
@@ -212,8 +209,8 @@ void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
     }
 
     // Create output arrays
-    const std::vector<std::string> output_names = p_system->GetOutputNames();
-    const std::vector<std::string> output_units = p_system->GetOutputUnits();
+    const std::vector<std::string> output_names = mpModel->GetOutputNames();
+    const std::vector<std::string> output_units = mpModel->GetOutputUnits();
     const unsigned num_outputs = output_names.size();
     assert(num_outputs == output_units.size());
     for (unsigned i=0; i<num_outputs; ++i)
@@ -225,9 +222,9 @@ void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
     }
 
     // Create arrays for vector outputs
-    const std::vector<std::string>& r_vector_output_names = p_system->rGetVectorOutputNames();
+    const std::vector<std::string>& r_vector_output_names = mpModel->rGetVectorOutputNames();
     const unsigned num_vector_outputs = r_vector_output_names.size();
-    const std::vector<unsigned> vector_output_lengths = p_system->GetVectorOutputLengths();
+    const std::vector<unsigned> vector_output_lengths = mpModel->GetVectorOutputLengths();
     for (unsigned i=0; i<num_vector_outputs; ++i)
     {
         NdArray<double>::Extents shape(outputs_shape);

@@ -39,7 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 NestedSimulation::NestedSimulation(boost::shared_ptr<AbstractSimulation> pNestedSimulation,
                                    boost::shared_ptr<AbstractStepper> pStepper,
                                    boost::shared_ptr<ModifierCollection> pModifiers)
-    : AbstractSimulation(pNestedSimulation->GetCell(), pStepper, pModifiers, pNestedSimulation->GetSteppers()),
+    : AbstractSimulation(pNestedSimulation->GetModel(), pStepper, pModifiers, pNestedSimulation->GetSteppers()),
       mpNestedSimulation(pNestedSimulation)
 {
     mpNestedSimulation->rGetEnvironment().SetDelegateeEnvironment(mpEnvironment->GetAsDelegatee());
@@ -61,10 +61,10 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
     LoopEndHook(pResults);
 }
 
-void NestedSimulation::SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell)
+void NestedSimulation::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
 {
-    AbstractSimulation::SetCell(pCell);
-    mpNestedSimulation->SetCell(pCell);
+    AbstractSimulation::SetModel(pModel);
+    mpNestedSimulation->SetModel(pModel);
 }
 
 

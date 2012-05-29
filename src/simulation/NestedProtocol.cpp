@@ -103,7 +103,7 @@ public:
 NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
                                const std::map<std::string, AbstractExpressionPtr>& rInputSpecifications,
                                const std::vector<std::string>& rOutputSpecifications)
-    : AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInterface>(),
+    : AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs>(),
                          AbstractStepperPtr(new FakeStepper)),
       mpProtocol(pProtocol),
       mInputSpecifications(rInputSpecifications),
@@ -113,11 +113,11 @@ NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
 }
 
 
-void NestedProtocol::SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell)
+void NestedProtocol::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
 {
     PROTO_ASSERT(!mOutputSpecifications.empty(), "No results are being retained from the nested protocol.");
-    AbstractSimulation::SetCell(pCell);
-    mpProtocol->SetModel(pCell);
+    AbstractSimulation::SetModel(pModel);
+    mpProtocol->SetModel(pModel);
 }
 
 

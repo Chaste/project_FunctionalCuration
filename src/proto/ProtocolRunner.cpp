@@ -83,7 +83,8 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     boost::shared_ptr<AbstractCvodeCell> p_cell(dynamic_cast<AbstractCvodeCell*>(p_loader->CreateCell(p_solver, p_stimulus)));
     // Check we have the right bases
     assert(dynamic_cast<AbstractDynamicallyLoadableEntity*>(p_cell.get()));
-    assert(dynamic_cast<AbstractUntemplatedSystemWithOutputs*>(p_cell.get()));
+    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_model = boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(p_cell);
+    assert(p_model);
 
     // Load the XML protocol
     ProtocolParser parser;
@@ -94,7 +95,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     p_cell->SetTimestep(0.5); // Max dt = 0.5ms to ensure stimulus isn't missed
     p_cell->SetTolerances(/*rel*/1e-6, /*abs*/1e-8); // Guard against changes to defaults
     p_cell->SetAutoReset(false); // Speedier simulations
-    mpProtocol->SetModel(p_cell);
+    mpProtocol->SetModel(p_model);
 }
 
 

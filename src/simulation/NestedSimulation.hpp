@@ -58,10 +58,10 @@ public:
                      boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
 
     /**
-     * Set method for #mpCell used by the initial parser implementation.
-     * @param pCell  the cell model the protocol is being run on
+     * Set method for #mpModel used by the initial parser implementation.
+     * @param pModel  the model the protocol is being run on
      */
-    virtual void SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
+    virtual void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
 
     /**
      * Set where to write any debug tracing to, if desired.

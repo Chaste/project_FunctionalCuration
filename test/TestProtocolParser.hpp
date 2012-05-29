@@ -465,7 +465,7 @@ public:
         ProtocolParser parser;
         FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
-        p_proto->SetModel(p_cell);
+        p_proto->SetModel(boost::dynamic_pointer_cast<AbstractSystemWithOutputs<VECTOR> >(p_cell));
         p_proto->Run();
         p_proto->WriteToFile(handler, "TestBasicSimulationAndApd");
 

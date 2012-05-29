@@ -40,7 +40,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 
-#include "AbstractCardiacCellInterface.hpp"
+#include "AbstractSystemWithOutputs.hpp"
 #include "AbstractStepper.hpp"
 #include "ModifierCollection.hpp"
 #include "Environment.hpp"
@@ -63,14 +63,14 @@ public:
     /**
      * Constructor.
      *
-     * @param pCell  the cell model the protocol is being run on
+     * @param pModel  the model the protocol is being run on
      * @param pStepper  controls the iteration around this simulation's loop
      * @param pModifiers  details any modifications to be made to the cell or
      *     simulation parameters as the simulation progresses
      * @param pSteppers  if this is part of a nested simulation, the shared
      *     collection of steppers.  pStepper will be added by this constructor.
      */
-    AbstractSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                        AbstractStepperPtr pStepper,
                        boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>(),
                        StepperCollection pSteppers=StepperCollection());
@@ -97,10 +97,10 @@ public:
      */
     virtual void Run(EnvironmentPtr pResults)=0;
 
-    /** Get method for #mpCell. */
-    boost::shared_ptr<AbstractCardiacCellInterface> GetCell()
+    /** Get method for #mpModel. */
+    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> GetModel()
     {
-        return mpCell;
+        return mpModel;
     }
 
     /** Get method for #mpSteppers. */
@@ -116,15 +116,13 @@ public:
     }
 
     /**
-     * Set method for #mpCell used by the initial parser implementation.
+     * Set method for #mpModel used by the initial parser implementation.
      *
-     * \todo Store AbstractUntemplatedSystemWithOutputs instead?
-     *
-     * @param pCell  the cell model the protocol is being run on
+     * @param pModel  the model the protocol is being run on
      */
-    virtual void SetCell(boost::shared_ptr<AbstractCardiacCellInterface> pCell)
+    virtual void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
     {
-        mpCell = pCell;
+        mpModel = pModel;
     }
 
     /** Call Initialise on all the steppers in this simulation. */
@@ -207,9 +205,9 @@ protected:
     void CreateResultViews(EnvironmentPtr pResults);
 
     /**
-     * The cell model the protocol is being run on.
+     * The model the protocol is being run on.
      */
-    boost::shared_ptr<AbstractCardiacCellInterface> mpCell;
+    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> mpModel;
 
     /**
      * The stepper controlling this simulation's loop.

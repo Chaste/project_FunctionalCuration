@@ -35,7 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TimecourseSimulation.hpp"
 
-#include "AbstractSystemWithOutputs.hpp"
+#include "AbstractCardiacCellInterface.hpp"
 #include "AbstractParameterisedSystem.hpp"
 #include "BacktraceException.hpp"
 #include "NdArray.hpp"
@@ -43,10 +43,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "VectorHelperFunctions.hpp"
 
-TimecourseSimulation::TimecourseSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+TimecourseSimulation::TimecourseSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                            boost::shared_ptr<AbstractStepper> pStepper,
                                            boost::shared_ptr<ModifierCollection> pModifiers)
-    : AbstractSimulation(pCell, pStepper, pModifiers)
+    : AbstractSimulation(pModel, pStepper, pModifiers)
 {
 }
 
@@ -119,11 +119,11 @@ void AddOutputDataTemplated(EnvironmentPtr pResults,
  * simulation - there's no need to test before calling.
  *
  * @param pResults  the results environment
- * @param pCell  the model being simulated
+ * @param pModel  the model being simulated
  * @param pSim  the simulation
  */
 void AddOutputData(EnvironmentPtr pResults,
-                   boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+                   boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                    AbstractSimulation* pSim)
 {
     if (!pResults)
@@ -132,7 +132,7 @@ void AddOutputData(EnvironmentPtr pResults,
         return;
     }
     boost::shared_ptr<AbstractSystemWithOutputs<N_Vector> > p_system
-        = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<N_Vector> >(pCell);
+        = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<N_Vector> >(pModel);
     if (p_system)
     {
         AddOutputDataTemplated<N_Vector>(pResults, p_system, pSim);
@@ -140,7 +140,7 @@ void AddOutputData(EnvironmentPtr pResults,
     else
     {
         boost::shared_ptr<AbstractSystemWithOutputs<std::vector<double> > > p_system2
-            = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<std::vector<double> > >(pCell);
+            = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<std::vector<double> > >(pModel);
         if (p_system2)
         {
             AddOutputDataTemplated<std::vector<double> >(pResults, p_system2, pSim);
@@ -156,20 +156,24 @@ void AddOutputData(EnvironmentPtr pResults,
 void TimecourseSimulation::Run(EnvironmentPtr pResults)
 {
     boost::shared_ptr<AbstractUntemplatedParameterisedSystem> p_model
-        = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(mpCell);
+        = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(mpModel);
+    ///\todo #1923 We should have an alternative base that's just a solvable ODE system
+    boost::shared_ptr<AbstractCardiacCellInterface> p_cell
+        = boost::dynamic_pointer_cast<AbstractCardiacCellInterface>(mpModel);
+    assert(p_cell);
     // Loop over time
     for (mpStepper->Reset(); !mpStepper->AtEnd(); /* step done in loop body */)
     {
         LoopBodyStartHook(pResults);
         // Compute outputs here, so we get the initial state
-        AddOutputData(pResults, mpCell, this);
+        AddOutputData(pResults, mpModel, this);
         LoopBodyEndHook(pResults);
         // Simulate until the next output point, if there is one
         const double curr_time = mpStepper->GetCurrentOutputPoint();
         const double next_time = mpStepper->Step();
         if (!mpStepper->AtEnd() && p_model->GetNumberOfStateVariables() > 0u)
         {
-            mpCell->SolveAndUpdateState(curr_time, next_time);
+            p_cell->SolveAndUpdateState(curr_time, next_time);
         }
     }
     LoopEndHook(pResults);

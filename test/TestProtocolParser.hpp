@@ -483,7 +483,7 @@ public:
         const unsigned num_timesteps = 1201u;
         TS_ASSERT_EQUALS(p_proto->GetNumberOfOutputs(), 3u); // V from model plus APD & DI
         const Environment& r_sim2_outputs = p_proto->rGetOutputsCollection("sim2");
-        NdArray<double> time = GET_ARRAY(r_sim2_outputs.Lookup("time"));
+        NdArray<double> time = GET_ARRAY(r_sim2_outputs.Lookup("environment_time"));
         TS_ASSERT_EQUALS(time.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(time.GetShape()[0], num_runs);
         TS_ASSERT_EQUALS(time.GetShape()[1], num_timesteps);
@@ -518,7 +518,7 @@ public:
         TS_ASSERT_EQUALS(p_proto->GetNumberOfOutputs("sim1"), 5u);
         const Environment& r_outputs_3d = p_proto->rGetOutputsCollection(0u);
         TS_ASSERT_EQUALS(&r_outputs_3d, &(p_proto->rGetOutputsCollection("sim1")));
-        NdArray<double> time_3d = GET_ARRAY(r_outputs_3d.Lookup("time"));
+        NdArray<double> time_3d = GET_ARRAY(r_outputs_3d.Lookup("environment_time"));
         TS_ASSERT_EQUALS(time_3d.GetNumDimensions(), 3u);
         TS_ASSERT_EQUALS(time_3d.GetShape()[0], 3u);
         TS_ASSERT_EQUALS(time_3d.GetShape()[1], 3u);

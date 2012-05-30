@@ -88,8 +88,7 @@ std::vector<std::string> AbstractUntemplatedSystemWithOutputs::GetOutputNames() 
         switch (mOutputsInfo[i].second)
         {
         case FREE:
-            // Special-case for the free variable, assuming it is time
-            names.push_back("time");
+            names.push_back(p_this->GetSystemInformation()->GetFreeVariableName());
             break;
         case STATE:
             names.push_back(p_this->rGetStateVariableNames()[mOutputsInfo[i].first]);
@@ -117,8 +116,7 @@ std::vector<std::string> AbstractUntemplatedSystemWithOutputs::GetOutputUnits() 
         switch (mOutputsInfo[i].second)
         {
         case FREE:
-            // Special-case for the free variable, assuming it is time (which is always ms in Chaste)
-            units.push_back("milliseconds");
+            units.push_back(p_this->GetSystemInformation()->GetFreeVariableUnits());
             break;
         case STATE:
             units.push_back(p_this->rGetStateVariableUnits()[mOutputsInfo[i].first]);
@@ -147,8 +145,7 @@ unsigned AbstractUntemplatedSystemWithOutputs::GetOutputIndex(const std::string&
         switch (mOutputsInfo[i].second)
         {
         case FREE:
-            // Special-case for the free variable.  There's probably a better way to do this, as the model might call it something else...
-            if (rName == "time")
+            if (rName == p_this->GetSystemInformation()->GetFreeVariableName())
             {
                 index = i;
             }
@@ -183,6 +180,12 @@ unsigned AbstractUntemplatedSystemWithOutputs::GetOutputIndex(const std::string&
         EXCEPTION("No output named '" + rName + "'.");
     }
     return index;
+}
+
+
+void AbstractUntemplatedSystemWithOutputs::SetFreeVariable(double freeVariable)
+{
+    mFreeVariable = freeVariable;
 }
 
 
@@ -260,9 +263,7 @@ inline void CreateNewVector(N_Vector& rVec, unsigned size)
 
 
 template<typename VECTOR>
-VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
-        double time,
-        const VECTOR& rState)
+VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs()
 {
     AbstractParameterisedSystem<VECTOR>* p_this = dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this);
     assert(p_this);
@@ -278,11 +279,12 @@ VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
         switch (mOutputsInfo[i].second)
         {
         case FREE:
-            // Special-case for the free variable, assuming it is time
-            SetVectorComponent(outputs, i, time);
+            // Special-case for the free variable
+            SetVectorComponent(outputs, i, this->mFreeVariable);
             break;
         case STATE:
-            SetVectorComponent(outputs, i, GetVectorComponent(rState, mOutputsInfo[i].first));
+            SetVectorComponent(outputs, i, GetVectorComponent(p_this->rGetStateVariables(),
+                                                              mOutputsInfo[i].first));
             break;
         case PARAMETER:
             SetVectorComponent(outputs, i, p_this->GetParameter(mOutputsInfo[i].first));
@@ -290,7 +292,8 @@ VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
         case DERIVED:
             if (!computed_derived_quantities)
             {
-                derived_quantities = p_this->ComputeDerivedQuantities(time, rState);
+                derived_quantities = p_this->ComputeDerivedQuantities(this->mFreeVariable,
+                                                                      p_this->rGetStateVariables());
                 computed_derived_quantities = true;
             }
             SetVectorComponent(outputs, i, GetVectorComponent(derived_quantities, mOutputsInfo[i].first));
@@ -308,7 +311,7 @@ VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs(
 
 
 template<typename VECTOR>
-std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(double time, const VECTOR& rState)
+std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs()
 {
     AbstractParameterisedSystem<VECTOR>* p_this = dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this);
     assert(p_this);
@@ -328,11 +331,12 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(doub
             switch (mVectorOutputsInfo[i][j].second)
             {
             case FREE:
-                // Special-case for the free variable, assuming it is time
-                SetVectorComponent(r_output, j, time);
+                // Special-case for the free variable
+                SetVectorComponent(r_output, j, this->mFreeVariable);
                 break;
             case STATE:
-                SetVectorComponent(r_output, j, GetVectorComponent(rState, mVectorOutputsInfo[i][j].first));
+                SetVectorComponent(r_output, j, GetVectorComponent(p_this->rGetStateVariables(),
+                                                                   mVectorOutputsInfo[i][j].first));
                 break;
             case PARAMETER:
                 SetVectorComponent(r_output, j, p_this->GetParameter(mVectorOutputsInfo[i][j].first));
@@ -340,7 +344,8 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs(doub
             case DERIVED:
                 if (!computed_derived_quantities)
                 {
-                    derived_quantities = p_this->ComputeDerivedQuantities(time, rState);
+                    derived_quantities = p_this->ComputeDerivedQuantities(this->mFreeVariable,
+                                                                          p_this->rGetStateVariables());
                     computed_derived_quantities = true;
                 }
                 SetVectorComponent(r_output, j, GetVectorComponent(derived_quantities, mVectorOutputsInfo[i][j].first));

@@ -83,6 +83,20 @@ public:
     std::vector<unsigned> GetVectorOutputLengths() const;
 
     /**
+     * Set the current value of the free variable (typically time).
+     *
+     * @param freeVariable  the new value
+     */
+    void SetFreeVariable(double freeVariable);
+
+    /**
+     * Solve the system from the current state up to the given point.
+     *
+     * @param endPoint  the final value of the free variable
+     */
+    virtual void SolveModel(double endPoint) =0;
+
+    /**
      * Set the bindings from prefix to namespace URI used by the protocol for accessing model
      * variables.  The Environment wrappers around this model can then be created and
      * retrieved with rGetEnvironmentMap.
@@ -138,6 +152,9 @@ protected:
     /** Names of system outputs that are vectors of variables. */
     std::vector<std::string> mVectorOutputNames;
 
+    /** Stores the current value of the free variable; used for solving the system. */
+    double mFreeVariable;
+
     /** Environments wrapping model variables, with their prefixes. */
     std::map<std::string, EnvironmentPtr> mEnvironmentMap;
 
@@ -161,25 +178,14 @@ class AbstractSystemWithOutputs : public AbstractUntemplatedSystemWithOutputs
 {
 public:
     /**
-     * Compute the system outputs from the given system state.
-     * Uses the current values for the parameters.
-     *
-     * \todo  Is using current param values safe for all protocols?  Will need to watch out for this.
-     *
-     * @param time  the time at which to compute the outputs
-     * @param rState  values for the state variables
+     * Compute the system outputs from the current system state.
      */
-    VECTOR ComputeOutputs(double time,
-                          const VECTOR& rState);
+    VECTOR ComputeOutputs();
 
     /**
-     * Compute the system outputs which are vectors of variables from the given system state.
-     * Uses the current values for the parameters.
-     *
-     * @param time  the time at which to compute the outputs
-     * @param rState  values for the state variables
+     * Compute the system outputs which are vectors of variables from the current system state.
      */
-    std::vector<VECTOR> ComputeVectorOutputs(double time, const VECTOR& rState);
+    std::vector<VECTOR> ComputeVectorOutputs();
 
     /**
      * Set the bindings from prefix to namespace URI used by the protocol for accessing model

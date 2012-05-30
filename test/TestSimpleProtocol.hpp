@@ -84,8 +84,8 @@ class TestSimpleProtocol : public CxxTest::TestSuite
         // Should be sorted alphabetically
         TS_ASSERT_EQUALS(names[0], "FonRT");
         TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("FonRT"), 0u);
-        TS_ASSERT_EQUALS(names[1], "time");
-        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("time"), 1u);
+        TS_ASSERT_EQUALS(names[1], "environment_time");
+        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("environment_time"), 1u);
         TS_ASSERT_EQUALS(names[2], "fast_sodium_current__V");
         TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("fast_sodium_current__V"), 2u);
         TS_ASSERT_EQUALS(names[3], "membrane_fast_sodium_current_conductance");
@@ -95,29 +95,33 @@ class TestSimpleProtocol : public CxxTest::TestSuite
         std::vector<std::string> units = p_cell_op->GetOutputUnits();
         TS_ASSERT_EQUALS(units.size(), 5u);
         TS_ASSERT_EQUALS(units[0], "per_millivolt");
-        TS_ASSERT_EQUALS(units[1], "milliseconds");
+        TS_ASSERT_EQUALS(units[1], "millisecond");
         TS_ASSERT_EQUALS(units[2], "millivolt");
         TS_ASSERT_EQUALS(units[3], "milliS_per_cm2");
         TS_ASSERT_EQUALS(units[4], "millivolt");
         TS_ASSERT_THROWS_THIS(p_cell_op->GetOutputIndex("no_var"), "No output named 'no_var'.");
 
         // Check output values
-        VECTOR inits = pCell->GetInitialConditions();
-        VECTOR init_outputs = p_cell_op->ComputeOutputs(0.0, inits);
-        TS_ASSERT_EQUALS(GetVectorSize(init_outputs), 5u);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 0), 0.037435728309031795, 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 1), 0.0, 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 2), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 3), pCell->GetParameter(0u), 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 4), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
-
-        VECTOR fini_outputs = p_cell_op->ComputeOutputs(1000.0, pCell->rGetStateVariables());
+        boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(pCell)->SetFreeVariable(1000.0);
+        // The above line is needed because we haven't simulated the system using a TimecourseSimulation
+        VECTOR fini_outputs = p_cell_op->ComputeOutputs();
         TS_ASSERT_EQUALS(GetVectorSize(fini_outputs), 5u);
         TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 0), 0.037435728309031795, 1e-12);
         TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 1), 1000.0, 1e-12);
         TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 2), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
         TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 3), pCell->GetParameter(0u), 1e-12);
         TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 4), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
+
+        pCell->ResetToInitialConditions();
+        boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(pCell)->SetFreeVariable(0.0);
+        VECTOR inits = pCell->GetInitialConditions();
+        VECTOR init_outputs = p_cell_op->ComputeOutputs();
+        TS_ASSERT_EQUALS(GetVectorSize(init_outputs), 5u);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 0), 0.037435728309031795, 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 1), 0.0, 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 2), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 3), pCell->GetParameter(0u), 1e-12);
+        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 4), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
 
         DeleteVector(inits);
         DeleteVector(init_outputs);

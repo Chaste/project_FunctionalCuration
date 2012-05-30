@@ -65,7 +65,6 @@ void AddOutputDataTemplated(EnvironmentPtr pResults,
 {
     // Get the model information
     assert(pModel);
-    const VECTOR& r_state = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pModel)->rGetStateVariables();
     std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = pSim->rGetSteppers();
 
     // Figure out which part of the output arrays to fill
@@ -79,8 +78,7 @@ void AddOutputDataTemplated(EnvironmentPtr pResults,
     // Fill in outputs
     const std::vector<std::string> output_names = pModel->GetOutputNames();
     const unsigned num_outputs = output_names.size();
-    const double time = r_steppers.back()->GetCurrentOutputPoint();
-    VECTOR outputs = pModel->ComputeOutputs(time, r_state);
+    VECTOR outputs = pModel->ComputeOutputs();
     assert(GetVectorSize(outputs) == num_outputs);
     for (unsigned i=0; i<num_outputs; ++i)
     {
@@ -92,7 +90,7 @@ void AddOutputDataTemplated(EnvironmentPtr pResults,
     // Fill in vector outputs
     const std::vector<std::string>& r_vector_output_names = pModel->rGetVectorOutputNames();
     const unsigned num_vector_outputs = r_vector_output_names.size();
-    std::vector<VECTOR> vector_outputs = pModel->ComputeVectorOutputs(time, r_state);
+    std::vector<VECTOR> vector_outputs = pModel->ComputeVectorOutputs();
     assert(vector_outputs.size() == num_vector_outputs);
     for (unsigned i=0; i<num_vector_outputs; ++i)
     {
@@ -155,25 +153,20 @@ void AddOutputData(EnvironmentPtr pResults,
 
 void TimecourseSimulation::Run(EnvironmentPtr pResults)
 {
-    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> p_model
-        = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(mpModel);
-    ///\todo #1923 We should have an alternative base that's just a solvable ODE system
-    boost::shared_ptr<AbstractCardiacCellInterface> p_cell
-        = boost::dynamic_pointer_cast<AbstractCardiacCellInterface>(mpModel);
-    assert(p_cell);
     // Loop over time
-    for (mpStepper->Reset(); !mpStepper->AtEnd(); /* step done in loop body */)
+    mpStepper->Reset();
+    mpModel->SetFreeVariable(mpStepper->GetCurrentOutputPoint());
+    while (!mpStepper->AtEnd())
     {
         LoopBodyStartHook(pResults);
         // Compute outputs here, so we get the initial state
         AddOutputData(pResults, mpModel, this);
         LoopBodyEndHook(pResults);
         // Simulate until the next output point, if there is one
-        const double curr_time = mpStepper->GetCurrentOutputPoint();
         const double next_time = mpStepper->Step();
-        if (!mpStepper->AtEnd() && p_model->GetNumberOfStateVariables() > 0u)
+        if (!mpStepper->AtEnd())
         {
-            p_cell->SolveAndUpdateState(curr_time, next_time);
+            mpModel->SolveModel(next_time);
         }
     }
     LoopEndHook(pResults);

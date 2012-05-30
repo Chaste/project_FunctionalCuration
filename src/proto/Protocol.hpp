@@ -374,12 +374,16 @@ private:
      * @param rDataFileName  the name of the csv file to which Gnuplot data has been written
      * @param numTraces  how many traces are included in the data
      * @param numPointsInTrace  how many points are in the trace (only needed to work out whether to display as lines or points)
+     * @param xLabel  label for the plot x axis
+     * @param yLabel  label for the plot y axis
      * @param writePng  whether to write a PNG (true) or EPS (false) file
      */
     void PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                          const std::string& rDataFileName,
                          const unsigned numTraces,
                          const unsigned numPointsInTrace,
+                         const std::string& xLabel,
+                         const std::string& yLabel,
                          bool writePng) const;
 
     /**

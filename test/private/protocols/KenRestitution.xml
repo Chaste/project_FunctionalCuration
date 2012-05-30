@@ -139,7 +139,7 @@
         </plot>
         
         <plot>
-            <title>Ken Restitution Measure</title>
+            <title>Ken's Restitution Measure</title>
             <x>frequencies</x>
             <y>apd_di_ratio</y>
         </plot>

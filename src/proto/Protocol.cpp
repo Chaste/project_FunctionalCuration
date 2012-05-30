@@ -287,6 +287,14 @@ std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec,
     }
     std::string file_name = pPlotSpec->rGetTitle() + ext;
     FileFinder::ReplaceSpacesWithUnderscores(file_name);
+    // Strip quote characters
+    for (std::string::iterator it = file_name.begin(); it != file_name.end(); ++it)
+    {
+        while (*it == '\'' || *it == '"')
+        {
+            it = file_name.erase(it);
+        }
+    }
     return file_name;
 }
 
@@ -498,15 +506,9 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
         const std::string& r_title = p_plot_spec->rGetTitle();
         const std::vector<std::string>& r_names = p_plot_spec->rGetVariableNames();
 
-        // We only deal with 2D data at present...
-        if (r_names.size() != 2u)
-        {
-            std::cerr << "Automatic plot generation only supported for x-y plots; skipping plot '" << r_title << "' for now." << std::endl;
-            continue;
-        }
-
         // Get the arrays to plot
         std::vector<AbstractValuePtr> arrays;
+        bool missing_array = false;
         BOOST_FOREACH(const std::string& r_name, r_names)
         {
             try
@@ -519,42 +521,88 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                 else
                 {
                     std::cerr << "Cannot plot non-array output '" << r_name << "'." << std::endl;
+                    missing_array = true;
                 }
             }
             catch (const Exception& e)
             {
+                missing_array = true;
                 // Error for missing output was already printed by caller
             }
         }
         // Don't plot if any required output is missing
-        if (arrays.size() != r_names.size())
+        if (missing_array)
         {
             continue;
         }
 
-        std::cout << "Plotting " << r_title << ":\t" << r_names[1] << " against " << r_names[0] << std::endl;
+        std::string label_x, label_y;
+        std::cout << "Plotting " << r_title << ":\t";
+        if (r_names.size() == 1u)
+        {
+            std::cout << r_names[0] << " against steppers" << std::endl;
+            label_y = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
+        }
+        else if (r_names.size() == 2u)
+        {
+            std::cout << r_names[1] << " against " << r_names[0] << std::endl;
+            label_x = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
+            label_y = p_plot_spec->rGetVariableDescriptions()[1] + " (" + p_plot_spec->rGetVariableUnits()[1] + ")";
+        }
+        else
+        {
+            std::cout << " multiple variables against " << r_names[0] << std::endl;
+            label_x = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
+            label_y = "Various";
+        }
 
         // Check the shapes of the arrays to plot
         // X must be 1d
-        NdArray<double> output_x = GET_ARRAY(arrays[0]);
+        NdArray<double> output_x;
+        if (r_names.size() == 1u)
+        {
+            ///\todo #1999
+            std::cout << "Skipping data case for now." << std::endl;
+            continue;
+        }
+        else
+        {
+            output_x = GET_ARRAY(arrays[0]);
+            arrays.erase(arrays.begin());
+        }
         if (output_x.GetNumDimensions() != 1)
         {
             std::cerr << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
             continue;
         }
         const unsigned x_length = output_x.GetShape()[0];
-        // Y can be 2d, but the second dimension must match the length of X
-        NdArray<double> output_y = GET_ARRAY(arrays[1]);
-        if (output_y.GetNumDimensions() < 1 || output_y.GetNumDimensions() > 2)
+        // Y arrays can be n-d, but the last dimension must match the length of X
+        std::vector<NdArray<double> > y_arrays;
+        std::vector<unsigned> num_traces;
+        unsigned total_num_traces = 0u;
+        BOOST_FOREACH(AbstractValuePtr p_array_val, arrays)
         {
-            std::cerr << "The Y data for a plot must be a 1d or 2d array, not " << output_y.GetNumDimensions() << "d." << std::endl;
-            continue;
-        }
-        if (output_y.GetShape().back() != x_length)
-        {
-            std::cerr << "The last dimension of the Y data for a plot must be the same size as the X data. "
-                      << "Y shape " << output_y.GetShape() << " is not compatible with X length " << x_length << std::endl;
-            continue;
+            NdArray<double> output_y = GET_ARRAY(p_array_val);
+            y_arrays.push_back(output_y);
+            if (output_y.GetNumDimensions() < 1)
+            {
+                std::cerr << "The Y data for a plot must be a true array, not a single value." << std::endl;
+                continue;
+            }
+            if (output_y.GetShape().back() != x_length)
+            {
+                std::cerr << "The last dimension of the Y data for a plot must be the same size as the X data. "
+                          << "Y shape " << output_y.GetShape() << " is not compatible with X length " << x_length << std::endl;
+                continue;
+            }
+            // Each Y array may represent multiple traces if it has more than one dimension
+            unsigned my_num_traces = 1u;
+            for (unsigned i=0; i<output_y.GetNumDimensions()-1; ++i)
+            {
+                my_num_traces *= output_y.GetShape()[i];
+            }
+            total_num_traces += my_num_traces;
+            num_traces.push_back(my_num_traces);
         }
 
         // Write data for plotting
@@ -562,39 +610,37 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
         FileFinder::ReplaceSpacesWithUnderscores(file_name);
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         // Tabular format with no header line for easy processing by gnuplot
-        unsigned num_traces;
-        if (output_y.GetNumDimensions() == 2)
-        {
-            num_traces = output_y.GetShape()[0];
-        }
-        else
-        {
-            num_traces = 1;
-        }
-        NdArray<double>::Indices y_idxs = output_y.GetIndices();
         for (NdArray<double>::ConstIterator it_x=output_x.Begin();
              it_x != output_x.End();
              ++it_x)
         {
-            y_idxs.back() = it_x.rGetIndices().back(); // Both point at same X index
             (*p_file) << *it_x;
-            for (unsigned i=0; i<num_traces; ++i)
+            // Now we iterate over Y data
+            for (unsigned i=0; i<y_arrays.size(); ++i)
             {
-                if (num_traces > 1)
+                NdArray<double>& output_y = y_arrays[i];
+                // Find the first Y entry for this X position
+                NdArray<double>::ConstIterator it_y = output_y.Begin();
+                it_y += it_x.rGetIndices().back();
+                for (unsigned trace=0; trace<num_traces[i]; ++trace)
                 {
-                    y_idxs.front() = i; // Point at correct Y index
+                    (*p_file) << "," << *it_y;
+                    // Increment by the size of the last dimension to point at the next trace for this X
+                    if (trace < num_traces[i]-1)
+                    {
+                        it_y += output_y.GetShape().back();
+                    }
                 }
-                (*p_file) << "," << output_y[y_idxs];
             }
             (*p_file) << std::endl;
         }
         p_file->close();
 
         // Plot!
-        PlotWithGnuplot(p_plot_spec, file_name, num_traces, x_length, false);
+        PlotWithGnuplot(p_plot_spec, file_name, total_num_traces, x_length, label_x, label_y, false);
         if (mWritePng)
         {
-            PlotWithGnuplot(p_plot_spec, file_name, num_traces, x_length, true);
+            PlotWithGnuplot(p_plot_spec, file_name, total_num_traces, x_length, label_x, label_y, true);
         }
     }
 }
@@ -604,23 +650,17 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                                const std::string& rDataFileName,
                                const unsigned numTraces,
                                const unsigned numPointsInTrace,
+                               const std::string& xLabel,
+                               const std::string& yLabel,
                                bool writePng) const
 {
     // At present this is hardcoded to 2 columns of data x,y points.
-    // \todo #1999 generalise to other situations
-    // \todo #1999 make the plot title include the model as well as protocol name
+    /// \todo #1999 generalise to other situations
+    /// \todo #1999 make the plot title include the model as well as protocol name
 
     // Find the csv file name, and remove .csv to make the .gp file name
     size_t dot = rDataFileName.rfind('.');
     std::string script_name = rDataFileName.substr(0, dot) + ".gp";
-
-    // Generate axes labels
-    std::string xlabel = pPlotSpec->rGetVariableDescriptions()[0];     // get variable name
-    xlabel += " (" + pPlotSpec->rGetVariableUnits()[0] + ")";   // add units
-
-    std::string ylabel = pPlotSpec->rGetVariableDescriptions()[1];     // get variable name
-    ylabel += " (" + pPlotSpec->rGetVariableUnits()[1] + ")";   // add units
-
     std::string fig_file_name = PlotFileName(pPlotSpec, writePng);
 
     // Decide whether to plot with points or lines
@@ -654,8 +694,8 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     *p_gnuplot_script << std::endl;
     *p_gnuplot_script << "set output \"" << output_dir << fig_file_name << "\"" << std::endl;
     *p_gnuplot_script << "set title \"" << pPlotSpec->rGetTitle() << "\"" << std::endl;
-    *p_gnuplot_script << "set xlabel \"" << xlabel << "\"" << std::endl;
-    *p_gnuplot_script << "set ylabel \"" << ylabel << "\"" << std::endl;
+    *p_gnuplot_script << "set xlabel \"" << xLabel << "\"" << std::endl;
+    *p_gnuplot_script << "set ylabel \"" << yLabel << "\"" << std::endl;
     //*p_gnuplot_script << "set xtics 400" << std::endl;
     *p_gnuplot_script << "set grid" << std::endl;
     *p_gnuplot_script << "set autoscale" << std::endl;

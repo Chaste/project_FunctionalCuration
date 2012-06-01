@@ -470,7 +470,7 @@ public:
         p_proto->WriteToFile(handler, "TestBasicSimulationAndApd");
 
         // Test metadata files
-        std::vector<std::string> filenames = list_of("-contents.csv")("-steppers.csv")("-default-plots.csv");
+        std::vector<std::string> filenames = list_of("-contents.csv")("-default-plots.csv");
         BOOST_FOREACH(std::string filename, filenames)
         {
             FileFinder ref_file("projects/FunctionalCuration/test/data/test_basic_simulation/TestBasicSimulationAndApd" + filename, RelativeTo::ChasteSourceRoot);

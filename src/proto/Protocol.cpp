@@ -350,34 +350,6 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
         }
     }
 
-    // Stepper values file
-    {
-        std::string index_file_name = rFileNameBase + "-steppers.csv";
-        out_stream p_file = mpOutputHandler->OpenOutputFile(index_file_name);
-        (*p_file) << "Stepper name,Units,Values" << std::endl;
-        boost::shared_ptr<AbstractSimulation> p_sim = mSimulations.back();
-        std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = p_sim->rGetSteppers();
-        BOOST_FOREACH(boost::shared_ptr<AbstractStepper> p_stepper, r_steppers)
-        {
-            if (p_stepper) // See #1911
-            {
-                try
-                {
-                    (*p_file) << '"' << p_stepper->GetIndexName() << "\",\"" << p_stepper->GetUnits() << '"';
-                    for (p_stepper->Reset(); !p_stepper->AtEnd(); p_stepper->Step())
-                    {
-                        (*p_file) << "," << p_stepper->GetCurrentOutputPoint();
-                    }
-                    (*p_file) << std::endl;
-                }
-                catch (const Exception& e)
-                {
-                    std::cerr << "Error writing stepper " << p_stepper->GetIndexName() << ":" << e.GetMessage();
-                }
-            }
-        }
-    }
-
     // Default plots file
     if (!mPlotSpecifications.empty())
     {

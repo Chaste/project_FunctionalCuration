@@ -77,7 +77,7 @@ public:
         FileFinder out_dir(dirname, RelativeTo::ChasteTestOutput);
 
         // Test metadata files
-        std::vector<std::string> filenames = boost::assign::list_of("-contents.csv")("-steppers.csv")("-default-plots.csv");
+        std::vector<std::string> filenames = boost::assign::list_of("-contents.csv")("-default-plots.csv");
         BOOST_FOREACH(std::string filename, filenames)
         {
             FileFinder ref_file("outputs" + filename, ref_dir);

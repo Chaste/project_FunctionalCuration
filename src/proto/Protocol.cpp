@@ -56,16 +56,12 @@ typedef std::pair<std::string, std::string> StringPair;
 typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
 typedef std::pair<std::string, ProtocolPtr> StringProtoPair;
 
-/*
- *
- * Un-templated abstract class implementation.
- *
- */
 
 Protocol::Protocol()
     : mpInputs(new Environment(true)),
       mpLibrary(new Environment),
-      mpModelStateCollection(new ModelStateCollection)
+      mpModelStateCollection(new ModelStateCollection),
+      mWritePng(false)
 {
     mpLibrary->SetDelegateeEnvironment(mpInputs->GetAsDelegatee());
 }
@@ -273,6 +269,21 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 }
 
 
+std::string SanitiseFileName(const std::string& rFileName)
+{
+    std::string name = rFileName;
+    FileFinder::ReplaceSpacesWithUnderscores(name);
+    // Strip quote characters
+    for (std::string::iterator it = name.begin(); it != name.end(); ++it)
+    {
+        while (*it == '\'' || *it == '"')
+        {
+            it = name.erase(it);
+        }
+    }
+    return name;
+}
+
 std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec,
                          bool png=false)
 {
@@ -286,16 +297,7 @@ std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec,
         ext = ".png";
     }
     std::string file_name = pPlotSpec->rGetTitle() + ext;
-    FileFinder::ReplaceSpacesWithUnderscores(file_name);
-    // Strip quote characters
-    for (std::string::iterator it = file_name.begin(); it != file_name.end(); ++it)
-    {
-        while (*it == '\'' || *it == '"')
-        {
-            it = file_name.erase(it);
-        }
-    }
-    return file_name;
+    return SanitiseFileName(file_name);
 }
 
 
@@ -333,7 +335,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
                 (*p_file) << '"' << r_name << "\",\"" << p_spec->rGetOutputDescription()
                           << "\",\"" << p_output->GetUnits()
                           << "\"," << output.GetNumDimensions()
-                          << "," << (rFileNameBase + "_" + r_name + ".csv")
+                          << "," << SanitiseFileName(rFileNameBase + "_" + r_name + ".csv")
                           << "," << p_spec->rGetOutputType();
                 BOOST_FOREACH(NdArray<double>::Index len, output.GetShape())
                 {
@@ -395,11 +397,11 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
                     AbstractValuePtr p_output = r_outputs.Lookup(r_name);
                     units.push_back(p_output->GetUnits());
                     // Look up the output description for this plot
-                    BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
+                    BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_output_spec, mOutputSpecifications)
                     {
-                        if (p_output == r_outputs.Lookup(p_spec->rGetOutputName()))
+                        if (r_name == p_output_spec->rGetOutputName())
                         {
-                            descriptions.push_back(p_spec->rGetOutputDescription());
+                            descriptions.push_back(p_output_spec->rGetOutputDescription());
                             break;
                         }
                     }
@@ -440,7 +442,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
             continue;
         }
 
-        std::string file_name = rFileNameBase + "_" + r_name + ".csv";
+        std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_name + ".csv");
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         (*p_file) << "# " << p_spec->rGetOutputDescription() << std::endl;
 
@@ -536,40 +538,86 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
             continue;
         }
 
+        // Figure out axis labels, and the X axis data array
         std::string label_x, label_y;
-        std::cout << "Plotting " << r_title << ":\t";
-        if (r_names.size() == 1u)
-        {
-            std::cout << r_names[0] << " against steppers" << std::endl;
-            label_y = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
-        }
-        else if (r_names.size() == 2u)
-        {
-            std::cout << r_names[1] << " against " << r_names[0] << std::endl;
-            label_x = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
-            label_y = p_plot_spec->rGetVariableDescriptions()[1] + " (" + p_plot_spec->rGetVariableUnits()[1] + ")";
-        }
-        else
-        {
-            std::cout << " multiple variables against " << r_names[0] << std::endl;
-            label_x = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
-            label_y = "Various";
-        }
-
-        // Check the shapes of the arrays to plot
-        // X must be 1d
         NdArray<double> output_x;
         if (r_names.size() == 1u)
         {
-            ///\todo #1999
-            std::cout << "Skipping data case for now." << std::endl;
-            continue;
+            // Find the output specification for this variable
+            BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_output_spec, mOutputSpecifications)
+            {
+                if (r_names.front() == p_output_spec->rGetOutputName())
+                {
+                    PROTO_ASSERT2(p_output_spec->rGetOutputType() == "Raw",
+                                  "Only 'Raw' type outputs may be plotted using the 'data' form.",
+                                  p_plot_spec->GetLocationInfo());
+                    // Find the simulation it comes from
+                    const std::string& r_ref = p_output_spec->rGetOutputRef();
+                    size_t colon = r_ref.find(':');
+                    PROTO_ASSERT2(colon != std::string::npos,
+                                  "A raw output reference must be a prefixed name, not '" << r_ref << "'.",
+                                  p_output_spec->GetLocationInfo());
+                    std::string prefix = r_ref.substr(0, colon);
+                    BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
+                    {
+                        if (prefix == p_sim->GetOutputsPrefix())
+                        {
+                            std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = p_sim->rGetSteppers();
+                            if (!r_steppers.empty() && r_steppers.back())
+                            {
+                                // Create a new array containing the stepper data
+                                boost::shared_ptr<AbstractStepper> p_stepper = r_steppers.back();
+                                if (p_stepper->GetNumberOfOutputPoints() == 0u)
+                                {
+                                    ///\todo Avoid nested protocols having a fake stepper!
+                                    assert(r_steppers.size() > 1u);
+                                    p_stepper = r_steppers[r_steppers.size()-2];
+                                }
+                                PROTO_ASSERT2(p_stepper->IsEndFixed(),
+                                              "Unable to plot against inner while loop at present.",
+                                              p_plot_spec->GetLocationInfo());
+                                label_x = p_stepper->GetIndexName() + " (" + p_stepper->GetUnits() + ")";
+                                NdArray<double>::Extents x_shape(1u);
+                                x_shape[0] = p_stepper->GetNumberOfOutputPoints();
+                                NdArray<double> x(x_shape);
+                                output_x = x;
+                                NdArray<double>::Iterator it_x = x.Begin();
+                                for (p_stepper->Reset(); !p_stepper->AtEnd(); p_stepper->Step())
+                                {
+                                    *it_x++ = p_stepper->GetCurrentOutputPoint();
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            PROTO_ASSERT2(!label_x.empty(), "Unable to find X axis label.", p_plot_spec->GetLocationInfo());
+            PROTO_ASSERT2(output_x.GetNumElements() > 0u, "Unable to find X axis data.",
+                          p_plot_spec->GetLocationInfo());
+            label_y = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
         }
         else
         {
+            label_x = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
+            if (r_names.size() == 2u)
+            {
+                label_y = p_plot_spec->rGetVariableDescriptions()[1] + " (" + p_plot_spec->rGetVariableUnits()[1] + ")";
+            }
+            else
+            {
+                label_y = "Various";
+            }
             output_x = GET_ARRAY(arrays[0]);
             arrays.erase(arrays.begin());
         }
+
+        // Tracing what we're doing
+        std::cout << "Plotting " << r_title << ":\t" << label_y << " against " << label_x << "..." << std::endl;
+
+        // Check the shapes of the arrays to plot
+        // X must be 1d
         if (output_x.GetNumDimensions() != 1)
         {
             std::cerr << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
@@ -606,8 +654,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
         }
 
         // Write data for plotting
-        std::string file_name = rFileNameBase + "_" + r_title + "_gnuplot_data.csv";
-        FileFinder::ReplaceSpacesWithUnderscores(file_name);
+        std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_title + "_gnuplot_data.csv");
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         // Tabular format with no header line for easy processing by gnuplot
         for (NdArray<double>::ConstIterator it_x=output_x.Begin();

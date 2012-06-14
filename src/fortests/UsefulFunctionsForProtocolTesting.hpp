@@ -226,10 +226,6 @@ void CreateOptionsFile(const OutputFileHandler& rHandler,
         {
             (*p_optfile) << "<arg>" << rArgs[i] << "</arg>" << std::endl;
         }
-        if (rModelName=="pasek_simurda_orchard_christe_2008") // This model triggers a bug in rnv and needs this.
-        {
-            (*p_optfile) << "<arg>--assume-valid</arg>" << std::endl;
-        }
         (*p_optfile) << "</command_line_args>" << std::endl
                      << rExtraXml << std::endl
                      << "</pycml_config>" << std::endl;

@@ -69,10 +69,6 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     {
         options.push_back("--opt");
     }
-    if (model_name == "pasek_simurda_orchard_christe_2008") // This model triggers a bug in rnv and needs this.
-    {
-        options.push_back("--assume-valid");
-    }
 
     // Do the conversion
     CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");

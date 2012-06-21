@@ -1,0 +1,268 @@
+(* EBNF for a textual syntax of the Oxford prototype protocol language. *)
+
+protocol = [nsdecls], [inputs], [imports], [library], [units], [modelInterface],
+           [simulations], [post-processing], [outputs], [plots] ;
+
+
+(* Normal identifiers consist of alphanumeric characters and underscores.  However,
+   in many places variable references may also contain colons, which are used as a
+   prefix separator.  A complete protocol implies many environments mapping names to
+   values.  One environment may delegate to another for lookups with a particular
+   prefix.  This mechanism is used, for example, to refer to simulation results (the
+   simulation specifies the prefix to use), names from imported protocols, and also
+   model variables.  In the latter case we utilise ontology terms, i.e. URIs, and the
+   prefix is given by namespace bindings in the protocol XML.
+   TODO: Document name resolution algorithm, with graph of environment delegations. *)
+ident = ? [_a-zA-Z][_0-9a-zA-Z]*(:[_a-zA-Z][_0-9a-zA-Z]*)* ? ;
+ncIdent = ? [_a-zA-Z][_0-9a-zA-Z]* ? ;
+
+(* Quotes around variable name references are optional, since (at present) spaces
+   are not allowed in variable names. *)
+varRef = ident | ('"', ident, '"') ;
+
+(* Whitespace *)
+ws = ? white space characters ? ;
+(* Shorthand for mandatory whitespace *)
+mws = ws, {ws};
+
+(* Statements (whether in the protocol language as a whole, or in the post-processing
+   sub-language) are typically terminated by newlines, but may use an explicit semicolon.
+   Preceeding whitespace is also allowed. *)
+stmtE = {ws}, ('\n' | ';') ;
+
+(* Blocks are delimited by curly braces, with optional whitespace. *)
+blkS = {ws}, '{', {ws} ;
+blkE = {ws}, '}', {ws} ;
+
+(* More shorthands *)
+eq = {ws}, "=", {ws} ;
+
+(* Namespace declarations for referring to model variables, binding a prefix used in
+   the protocol to a URI. *)
+nsdecls = { nsdecl, {ws} } ;
+uri = ? URI ? ;
+nsdecl = "namespace", mws, ncIdent, eq, '"', uri, '"', stmtE ;
+
+
+(* Inputs are given as a sequence of assignments in the post-processing language,
+   defining the default values.
+   They are evaluated in an initially empty environment, so must be self-contained. *)
+inputs = "inputs", blkS, statementList, blkE ;
+
+
+(* Imported protocols may either be merged with the importer, or stored separately
+   with a prefix assigned for use in referring to their contents later.  The inputs
+   of an imported protocol may be overridden.
+   This thus allows us to develop both generic protocols which may be specialised
+   for particular scenarios (by overriding inputs), and also libraries of protocol
+   components for reuse. *)
+imports = {import} ;
+import = "import", mws, [ident, eq, '"', path, '"'], [ setInputs ], stmtE ;
+setInputs = blkS, { assignmentStmt }, blkE ;
+
+(* For using prefixed imports elsewhere *)
+useImports = "use", mws, "imports", mws, ncIdent, stmtE ;
+
+
+(* The protocol library is a sequence of assignments defining useful functions and
+   variables for use in later parts of the protocol.  The expressions here can make
+   use of protocol inputs and imported libraries. *)
+library = "library", blkS, statementList, blkE ;
+
+
+(* Since our implementation only supports CellML, we use CellML's units syntax in XML.
+   I'm not sure what would be best for a textual syntax; perhaps base on F#? *)
+units = ? units definitions ? ;
+
+(* A units reference *)
+unitsRef = "units", mws, '"', ident, '"' ;
+
+(* This section defines the interface between the model and protocol.
+   Most importantly it specifies the model inputs and outputs, together with their
+   units as expected by the protocol.  Inputs may be set by the protocol (e.g. in
+   modifiers, see below), and outputs are the variables which are recorded while
+   running a simulation and hence generate n-d arrays.
+   Units conversions which aren't simple scalings may also be defined.  These
+   utilise the values of model or protocol variables to convert between quantities
+   in different dimensions.
+   Finally, the mathematics of the model may be altered, e.g. to replace the equation
+   defining the stimulus current, or replace the ODE for V by an input parameter. *)
+modelInterface = "model", mws, "interface", blkS,
+                 {useImports}, [setIndependentVariableUnits],
+                 {specifyInputVariable}, {specifyOutputVariable},
+                 {declareNewVariable}, {addOrReplaceEquation},
+                 {unitsConversionRule}, blkE ;
+
+specifyInputVariable = "input", mws, varRef, stmtE ;
+specifyOutputVariable = "output", mws, varRef, stmtE ;
+
+(* Simulations may be defined either as a straightforward timecourse solve of
+   the model, or a nested loop embedding another simulation.  Each simulation
+   definition may define a prefix, in which case the requested model outputs
+   are stored into n-dimensional arrays in a mapping associated with the given
+   prefix, and made available both to simulations run later and the post-processing
+   section.
+   All simulation definitions must include a range, which provides the name,
+   units and values of the loop control variable.
+   Note that we don't define the simulation algorithm or its parameters.  These
+   are defined in SED-ML, so we've not looked at the issue.  Our implementation
+   just uses defaults. *)
+simulations = {simulation} ;
+simulation = timecourseSimulation | nestedSimulation ;
+timecourseSimulation = "simulation", mws, [ ident, eq ], "timecourse", blkS,
+                       basicSimulation, blkE ;
+nestedSimulation = "simulation", mws, [ ident, eq ], "nested", blkS,
+                   basicSimulation,
+                   "nests", mws, ident, stmtE, blkE ;
+basicSimulation = range, [modifiers] ;
+
+range = "range", mws, ident, mws, unitsRef, mws, rangeDetails, stmtE ;
+rangeDetails = uniformRange | vectorRange | whileRange ;
+uniformRange = "uniform", mws, number, ':', [number, ':'], number ;
+vectorRange = "vector", mws, '[', number, {',', number}, ']' ;
+whileRange = "while", mws, expression ;
+
+(* Modifiers are applied only at the granularity of the simulation loop in the
+   protocol (so more fine-grained behaviour must be encoded in model modifications).
+   A modifier may be applied either at the start or end of a simulation, or at the
+   start of each time around the simulation loop.  There are three kinds.  The save
+   and reset state modifiers allow a model's state at a particular point to be
+   recorded, and the model later reset to that state (this is useful for doing an
+   initial simulation to determine steady state, for instance).  The final modifier
+   allows any model input or state variable to be set to a new value, computed by an
+   expression in the post-processing language. *)
+modifiers = "modifiers", blkS, {modifier}, blkE ;
+modifier = "at", mws, modifierWhen, mws, (setVariable | saveState | resetState), stmtE ;
+modifierWhen = "start" | ("each", mws, "loop") | "end" ;
+setVariable = "set", mws, varRef, eq, expression ;
+saveState = "save", mws, "as", mws, ncIdent ;
+resetState = "reset", [mws, "to", mws, ncIdent] ;
+
+
+(* The post-processing section consists of a sequence of statements which are
+   executed in order.  See below for more about the statement structure. *)
+post-processing = { StatementList | useImports } ;
+
+
+(* The outputs section identifies which variables should be considered as the
+   outputs of the protocol as a whole.  These may be 'raw' outputs from a
+   simulation, or the results of post-processing steps (in which case the units
+   must be specified, since we do not propagate units information through the
+   post-processing).  Each output may be given a human-readable description as
+   well as its name, which may differ from that used elsewhere in the protocol.
+   This is required when referring to a variable using a prefix.  (Note that a
+   prefix is not required to access post-processing results defined in this
+   protocol.) *)
+outputs = { rawOutput, processedOutput, useImports } ;
+rawOutput = CommonOutputDefinition ;
+processedOutput = CommonOutputDefinition, "units", text ;
+CommonOutputDefinition = ["description", text], "name", Ident, ["ref", NcIdent] ;
+
+
+(* Default graphs of interest for the protocol may be specified.  We've not
+   looked at this aspect in any detail yet. *)
+plots = { plot | useImports } ;
+plot = title, x, y ;
+
+
+
+(* The post-processing language. *)
+(* For the most part, our MathML extensions consist only in the use of csymbol
+   elements with specific definitionURLs as operators, encoding the extra features
+   we need.  Each definitionURL occurs within our namespace; here I only give the
+   leaf terms. *)
+(* There are 3 kinds of statement.  Assignment is represented simply with the MathML
+   'eq' operator.  Normally the first operand will be a single name (ci element), but
+   a tuple value may be assigned to a tuple of names (this allows functions to return
+   multiple values).  Note that the language is pure, so multiple assignments to the
+   same name are not allowed.
+   A return statement is only allowed within the context of a function body (not e.g.
+   directly in the post-processing section).
+   Finally, we also allow assertions, which take a single operand and test whether
+   it is non-zero, terminating the protocol if not (no error handling is supported
+   in the language). *)
+StatementList = apply, "statementList", Statement, { Statement } ;
+Statement = apply,
+    ("eq", Expression, Expression) | ("return", Expression) | ("assert", Expression) ;
+
+(* An expression is essentially just a MathML expression, using our extensions
+   (except for the statements).  The internal structure is more restricted than
+   indicated here, of course. *)
+Expression = piecewise | apply | lambda | cn | ci | csymbol ;
+
+(*
+   Values yielded by expressions in the post-processing language may be of 7 kinds.
+   - Regular n-dimensional array of real numbers (IEEE double precision).  These are
+     created with the newArray operator (see below).
+   - Single real number (equivalent to 0d array) - the cn element.
+   - Lambda closure (functions are first class).
+   - Tuple of values - created with the tuple csymbol operator.
+   - Special "null" value (for use as a sentinel etc.) - the null csymbol.
+   - String (only used for array comprehensions; see below).  They are represented
+     by the string csymbol, with the string value as the element's text content.
+   - Special "default parameter" value (primarily useful for implementation, but also
+     allows us to say explicitly "use the default value" when passing parameters) -
+     the defaultParameter csymbol.
+
+   Six key operators are added for working with n-d arrays.
+   - newArray: arrays may be created either by listing their elements (which may be
+     arrays) as the operands, or by an "array comprehension" - with a single defining
+     expression using some new variables as the sole operand, along with definitions
+     of the ranges over which the index variables vary contained in a
+     domainofappliation qualifier (we don't follow the standard MathML syntax here,
+     but put a sequence of 5-tuples (dimension, start, stride, end, varname) in the
+     qualifier).
+   - view: this allows extracting sub-arrays of the first operand.  Subsequent
+     operands are 3- or 4-tuples ([dimension], start, stride, end) specifying what
+     parts of the array to extract.  The special "null" value may be passed for
+     dimension to specify a default; nulls for start or end indicate the beginning or
+     end of the array respectively.  The stride may be negative.  If it is zero then
+     we must have start=end, and the resulting view will have reduced dimensionality.
+   - map: maps a function (the first operand) onto one or more arrays (subsequent
+     operands), which must all have the same shape.
+   - fold: a (left) fold over a single dimension of an array.  The operands are: the
+     function to fold, the operand array, an initial value (if null, the default, then
+     the first entry of the operand is used), and the dimension to fold along (defaults
+     to the last).  Note that the folded function must return just a single real number,
+     not an array, for simplicity of implementation.
+   - find: analogous to Matlab's find function, this finds the non-zero entries in an
+     array, returning an array of indices suitable for passing to the index operator.
+     The shape of the result is num_non_zeros x num_input_dimensions.
+   - index: the most complex operator, this creates a subarray of the first operand
+     containing only those elements whose indices are in the second operand.  The
+     language data model requires regular arrays, so by default an assertion is
+     tripped if the result would be irregular.  However, further operands may specify
+     either to pad short rows along one dimension with a given value, or shrink either
+     left or right along one dimension to make the result regular.
+
+   Function definitions use the normal MathML lambda, but extend the semantics.
+   Firstly, the body may be a statement list as well as just a single expression
+   (in the latter case it's treated as an implicit return statement).  Secondly,
+   default values may be specified by wrapping the bvar in a semantics element,
+   along with an annotation-xml element containing the default value.  This must
+   parse as a pure value, not an expression, so a common motif is to use "default
+   parameter" as the default value, and compute the real default within the function
+   body.
+
+   There are also a couple of "helper" operators.  The accessor csymbol allows us to
+   test value types and properties.  What property to get/test is specified by the
+   text content:
+   - Type tests: IS_ARRAY, IS_SIMPLE_VALUE, IS_FUNCTION, IS_TUPLE, IS_NULL, IS_STRING,
+     IS_DEFAULT  (these all evaluate to 0 or 1 representing false or true resp.)
+   - Array properties: NUM_DIMS, NUM_ELEMENTS, SHAPE (this gives a 1d array)
+
+   Finally the 'wrap' family of csymbols are syntactic sugar converting MathML
+   operators to first-class functions.  The csymbol name looks like "baseURI/wrap/n"
+   where n is the number of operands desired, and the text content gives the MathML
+   operator name.
+
+   The language design is not always amenable to constructing an algorithm for the
+   desired post-processing operation easily.  Computing APD in particular took some
+   time to figure out, and could still benefit from improvements.  The focus has
+   been on maintaining a small core language that is very susceptible to static
+   analysis and computational optimisation (e.g. for parallel execution, GPUs, etc.),
+   but programmability for non-CS people does suffer.  The import mechanism helps with
+   this, as libraries of functions can be developed, but future development of the
+   language may need to add other features (e.g. a limited notion of state, error
+   handling to cope with unusual behaviour in one timeseries within an array, etc.).
+*)

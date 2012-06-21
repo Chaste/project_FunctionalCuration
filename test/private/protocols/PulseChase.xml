@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<?oxygen RNGSchema="../../../src/proto/parsing/protocol.rnc" type="compact"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:tmp="urn:temporary-2020-science-ns">
+    
+    <!-- SBML parameter indexes: 20 = gN, 21 = RLtime, 22 = MHCprod, 17 = gM -->
+    <!-- Labelling sets gN = MHCprod, gM = 0 -->
+    <!-- Unlabelling sets gM = MHCprod, gN = 0 -->
+    
+    <!-- Declare protocol inputs with default values -->
+    <inputs>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            <!-- How long to label for -->
+            <apply><eq/>
+                <ci>label_duration</ci>
+                <cn>300</cn>
+            </apply>
+            <!-- When to stop labelling -->
+            <apply><eq/>
+                <ci>unlabel_time</ci>
+                <cn>600000</cn>
+            </apply>
+            <!-- Whether to include Tapasin -->
+            <apply><eq/>
+                <ci>use_tapasin</ci>
+                <cn>1</cn>
+            </apply>
+        </apply>
+    </inputs>
+    
+    <import source="../../../src/proto/library/BasicLibrary.xml" prefix="std"/>
+        
+    <modelInterface>
+        <specifyInputVariable name="tmp:gN"/>
+        <specifyInputVariable name="tmp:gM"/>
+        <specifyInputVariable name="tmp:tapasin"/>
+        <specifyOutputVariable name="tmp:time"/>
+        <!--
+            This would be an ontology term with which all complexes of labelled MHC are annotated
+            (or alternatively a superclass of the terms for each labelled complex).
+            The last dimension of the resulting array will vary over model variable.
+        -->
+        <specifyOutputVariable name="tmp:labelled_MHC"/>
+        <specifyOutputVariable name="tmp:labelled_MHC_cell_surface"/>
+        <specifyOutputVariable name="tmp:labelled_MHC_in_ER"/>
+        <specifyOutputVariable name="tmp:labelled_MHC_tapasin_bound"/>
+    </modelInterface>
+    
+    <simulations>
+        <!-- Do a timecourse simulation, labelling when requested -->
+        <timecourseSimulation prefix="sim">
+            <uniformStepper name="time" units="unspecified">
+                <start>0.0</start>
+                <stop>0.0</stop><!-- Needs to be filled in... -->
+                <step>1.0</step>
+            </uniformStepper>
+            <modifiers>
+                <setVariable>
+                    <when>AT_START_ONLY</when>
+                    <name>tmp:tapasin</name>
+                    <value>
+                        <piecewise xmlns="http://www.w3.org/1998/Math/MathML">
+                            <piece>
+                                <ci>tmp:tapasin</ci>
+                                <apply><eq/>
+                                    <ci>use_tapasin</ci>
+                                    <cn>1</cn>
+                                </apply>
+                            </piece>
+                            <!--
+                                The "0 * tapasin" is to avoid needing to know the units of concentration.
+                                I'm still not sure how to do units in a cross-language manner, since they use non-standard MathML extensions.
+                            -->
+                            <otherwise><apply><times/><cn>0</cn><ci>tmp:tapasin</ci></apply></otherwise>
+                        </piecewise>
+                    </value>
+                </setVariable>
+                <setVariable>
+                    <when>EVERY_LOOP</when>
+                    <name>tmp:gN</name> <!-- Set to MHCprod when labelled; 0 otherwise -->
+                    <value>
+                        <piecewise xmlns="http://www.w3.org/1998/Math/MathML">
+                            <piece>
+                                <ci>tmp:MHCprod</ci>
+                                <apply><and/>
+                                    <apply><geq/>
+                                        <ci>time</ci>
+                                        <apply><minus/>
+                                            <ci>unlabel_time</ci>
+                                            <ci>label_duration</ci>
+                                        </apply>
+                                    </apply>
+                                    <apply><leq/>
+                                        <ci>time</ci>
+                                        <ci>unlabel_time</ci>
+                                    </apply>
+                                </apply>
+                            </piece>
+                            <otherwise>
+                                <ci>0</ci>
+                            </otherwise>
+                        </piecewise>
+                    </value>
+                </setVariable>
+                <setVariable>
+                    <when>EVERY_LOOP</when>
+                    <name>tmp:gM</name> <!-- Set to 0 when labelled; MHCprod otherwise -->
+                    <value>
+                        <piecewise xmlns="http://www.w3.org/1998/Math/MathML">
+                            <piece>
+                                <ci>0</ci>
+                                <apply><and/>
+                                    <apply><geq/>
+                                        <ci>time</ci>
+                                        <apply><minus/>
+                                            <ci>unlabel_time</ci>
+                                            <ci>label_duration</ci>
+                                        </apply>
+                                    </apply>
+                                    <apply><leq/>
+                                        <ci>time</ci>
+                                        <ci>unlabel_time</ci>
+                                    </apply>
+                                </apply>
+                            </piece>
+                            <otherwise>
+                                <ci>tmp:MHCprod</ci>
+                            </otherwise>
+                        </piecewise>
+                    </value>
+                </setVariable>
+            </modifiers>
+        </timecourseSimulation>
+    </simulations>
+    
+    <post-processing>
+        <apply xmlns="http://www.w3.org/1998/Math/MathML">
+            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/statementList"/>
+            
+            <!-- Test that expected model outputs exist -->
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
+                    <ci>sim:labelled_MHC</ci>
+                </apply>
+            </apply>
+            <apply>
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/accessor">IS_ARRAY</csymbol>
+                    <ci>sim:time</ci>
+                </apply>
+            </apply>
+            
+            <!-- Sum all the labelled MHC complexes -->
+            <apply><eq/>
+                <ci>all_labelled_MHC</ci>
+                <apply><ci>std:sum</ci>
+                    <ci>sim:labelled_MHC</ci>
+                    <!-- sum will sum over the last dimension by default -->
+                </apply>
+            </apply>
+            
+            <!-- endoH resistance: cell-surface MHC divided by total MHC -->
+            <apply><eq/>
+                <ci>endoH_resistance</ci>
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/wrap/2">divide</csymbol>
+                    <ci>sim:labelled_MHC_cell_surface</ci>
+                    <ci>all_labelled_MHC</ci>
+                </apply>
+            </apply>
+        </apply>
+    </post-processing>
+    
+    <outputVariables>
+        <raw name="time" ref="sim:time"/>
+        <postprocessed name="all_labelled_MHC" units="???"/>
+    </outputVariables>
+    
+    <plots>
+        <plot>
+            <title>Labelled MHC complexes over time</title>
+            <x>time</x>
+            <y>all_labelled_MHC</y>
+        </plot>
+    </plots>
+    
+    <!-- Other possibilities include:
+        Perhaps parameter estimation using Filzbach: requires the KiSAO functionality from SED-ML.
+        
+        Post-processing to compute BIC.
+        
+        Degree of optimization experiment: this would require an outer loop over parameter scaling,
+        and post-processing to calculate the various measures described in fig. S5.  Five simulations
+        would be performed, varying each of the five parameters, in order to produce one plot.  The
+        whole protocol would have inputs indicating which allele and optimisation measure to consider.
+        At present I don't think there's a mechanism for importing a generic description of the
+        simulation for this experiment; perhaps one should be added (building on the variable name
+        support for array comprehensions).
+    -->
+</protocol>

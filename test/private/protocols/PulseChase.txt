@@ -1,0 +1,81 @@
+# TODO: discuss with Andrew how they'd like to reference model variables.
+namespace tmp = "urn:temporary-2020-science-ns"
+
+# SBML parameter indexes: 20 = gN, 21 = RLtime, 22 = MHCprod, 17 = gM
+# Labelling sets gN = MHCprod, gM = 0
+# Unlabelling sets gM = MHCprod, gN = 0
+
+# Declare protocol inputs with default values
+inputs {
+    label_duration = 300  # How long to label for
+    unlabel_time = 600000 # When to stop labelling
+    use_tapasin = 1       # Whether to include Tapasin
+}
+
+# Standard post-processing library
+import std = "../../../src/proto/library/BasicLibrary.xml"
+
+# TODO: what should units definitions look like?  Base on F# or similar?
+
+# Mapping from model variables to protocol
+model interface {
+    input "tmp:gN"
+    input "tmp:gM"
+    input "tmp:tapasin"
+    
+    output "tmp:time"
+    # tmp:labelled_MHC would be an ontology term with which all complexes of labelled MHC are annotated
+    # (or alternatively a superclass of the terms for each labelled complex).
+    # The last dimension of the resulting array will vary over model variable.
+    output "tmp:labelled_MHC"
+    output "tmp:labelled_MHC_cell_surface"
+    output "tmp:labelled_MHC_in_ER"
+    output "tmp:labelled_MHC_tapasin_bound"
+}
+
+simulation "sim" timecourse {
+    range "time" units "unspecified" uniform 0:1:1000000
+    modifiers {
+        # Potentially quotes around variable names could be optional if the ontology terms do not include spaces.
+        # There may need to be a line continuation mechanism for mathematics; perhaps just use ()?
+        
+        # The "0*tmp:tapasin" is to avoid needing to know the units of concentration; cross-language units is tricky.
+        at start set tmp:tapasin = (use_tapasin == 1) ? tmp:tapasin : 0 * tmp:tapasin
+        
+        # Set to MHCprod when labelled; 0 otherwise
+        at each loop set tmp:gN = (time >= (unlabel_time - label_duration) && time <= unlabel_time) ? tmp:MHCprod : 0
+        
+        # Set to 0 when labelled; MHCprod otherwise
+        at each loop set tmp:gM = (time >= (unlabel_time - label_duration) && time <= unlabel_time) ? 0 : tmp:MHCprod
+    }
+}
+
+simulation "repeat" nested {
+    range "run" units "dimensionless" vector [1, 2, 3, 4]
+    nests "sim"
+}
+
+post-processing {
+    # Test that expected model outputs exist
+    assert sim:labelled_MHC.IS_ARRAY
+    assert sim:time.IS_ARRAY
+    
+    # Sum all the labelled MHC complexes
+    all_labelled_MHC = std:sum(sim:labelled_MHC) # Sums over the last dimension by default
+    
+    # endoH resistance: cell-surface MHC divided by total MHC
+    endoH_resistance = map(/, sim:labelled_MHC_cell_surface, all_labelled_MHC)
+}
+
+outputs {
+    time = sim:time
+    all_labelled_MHC { units "unknown" }
+    endoH_resistance { units "dimensionless" }
+}
+
+plots {
+    plot "Labelled MHC complexes over time" {
+        x = time
+        y = all_labelled_MHC
+    }
+}

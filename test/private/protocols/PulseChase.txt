@@ -40,13 +40,13 @@ simulation "sim" timecourse {
         # There may need to be a line continuation mechanism for mathematics; perhaps just use ()?
         
         # The "0*tmp:tapasin" is to avoid needing to know the units of concentration; cross-language units is tricky.
-        at start set tmp:tapasin = (use_tapasin == 1) ? tmp:tapasin : 0 * tmp:tapasin
+        at start set tmp:tapasin = if (use_tapasin == 1) then tmp:tapasin else 0 * tmp:tapasin
         
         # Set to MHCprod when labelled; 0 otherwise
-        at each loop set tmp:gN = (time >= (unlabel_time - label_duration) && time <= unlabel_time) ? tmp:MHCprod : 0
+        at each loop set tmp:gN = if (time >= (unlabel_time - label_duration) && time <= unlabel_time) then tmp:MHCprod else 0
         
         # Set to 0 when labelled; MHCprod otherwise
-        at each loop set tmp:gM = (time >= (unlabel_time - label_duration) && time <= unlabel_time) ? 0 : tmp:MHCprod
+        at each loop set tmp:gM = if (time >= (unlabel_time - label_duration) && time <= unlabel_time) then 0 else tmp:MHCprod
     }
 }
 

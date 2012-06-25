@@ -36,6 +36,8 @@ blkE = {ws}, '}', {ws} ;
 
 (* More shorthands *)
 eq = {ws}, "=", {ws} ;
+quotedString = ? any string in matching quotes ? ;
+
 
 (* Namespace declarations for referring to model variables, binding a prefix used in
    the protocol to a URI. *)
@@ -96,6 +98,7 @@ modelInterface = "model", mws, "interface", blkS,
 specifyInputVariable = "input", mws, varRef, stmtE ;
 specifyOutputVariable = "output", mws, varRef, stmtE ;
 
+
 (* Simulations may be defined either as a straightforward timecourse solve of
    the model, or a nested loop embedding another simulation.  Each simulation
    definition may define a prefix, in which case the requested model outputs
@@ -141,7 +144,7 @@ resetState = "reset", [mws, "to", mws, ncIdent] ;
 
 (* The post-processing section consists of a sequence of statements which are
    executed in order.  See below for more about the statement structure. *)
-post-processing = { StatementList | useImports } ;
+post-processing = "post-processing", blkS, { statementList | useImports }, blkE ;
 
 
 (* The outputs section identifies which variables should be considered as the
@@ -153,42 +156,56 @@ post-processing = { StatementList | useImports } ;
    This is required when referring to a variable using a prefix.  (Note that a
    prefix is not required to access post-processing results defined in this
    protocol.) *)
-outputs = { rawOutput, processedOutput, useImports } ;
-rawOutput = CommonOutputDefinition ;
-processedOutput = CommonOutputDefinition, "units", text ;
-CommonOutputDefinition = ["description", text], "name", Ident, ["ref", NcIdent] ;
+outputs = "outputs", blkS, {useImports | output}, blkE ;
+output = ncIdent, [eq, varRef], [blkS, [unitsRef], [outputDescription] , blkE] ;
+outputDescription = "description", mws, quotedString ;
 
 
 (* Default graphs of interest for the protocol may be specified.  We've not
    looked at this aspect in any detail yet. *)
-plots = { plot | useImports } ;
-plot = title, x, y ;
-
+plots = "plots", blkS, { plot | useImports }, blkE ;
+plot = "plot", mws, quotedString, blkS, plotDetails, blkE ;
+plotDetails = {ws}, "x", eq, ident, stmtE,
+              {ws}, "y", eq, ident, stmtE ;
 
 
 (* The post-processing language. *)
-(* For the most part, our MathML extensions consist only in the use of csymbol
-   elements with specific definitionURLs as operators, encoding the extra features
-   we need.  Each definitionURL occurs within our namespace; here I only give the
-   leaf terms. *)
-(* There are 3 kinds of statement.  Assignment is represented simply with the MathML
-   'eq' operator.  Normally the first operand will be a single name (ci element), but
-   a tuple value may be assigned to a tuple of names (this allows functions to return
-   multiple values).  Note that the language is pure, so multiple assignments to the
-   same name are not allowed.
-   A return statement is only allowed within the context of a function body (not e.g.
-   directly in the post-processing section).
-   Finally, we also allow assertions, which take a single operand and test whether
-   it is non-zero, terminating the protocol if not (no error handling is supported
-   in the language). *)
-StatementList = apply, "statementList", Statement, { Statement } ;
-Statement = apply,
-    ("eq", Expression, Expression) | ("return", Expression) | ("assert", Expression) ;
+(* There are 3 kinds of statement: assignment, function return, and assertions. *)
+statementList = statement, {statement} ;
+statement = {ws}, (assignStmt | returnStmt | assertStmt), stmtE ;
+(* If assigning to multiple names, the RHS must evaluate to a tuple with the correct size. *)
+assignStmt = ident, {",", ident}, eq, expression ;
+returnStmt = "return", mws, expression ;
+assertStmt = "assert", mws, expression ;
 
-(* An expression is essentially just a MathML expression, using our extensions
-   (except for the statements).  The internal structure is more restricted than
-   indicated here, of course. *)
-Expression = piecewise | apply | lambda | cn | ci | csymbol ;
+(* In the XML syntax, an expression is essentially just a MathML expression, using our extension
+   operators.  I've left the notes I originally wrote about the value space etc. below. *)
+expression = {ws}, ["(", {ws}], ( number | array | varRef | specialExpr | ifExpr | arrayView |
+                                  functionCall | lambdaDefn | builtinFn | operatorApplication ),
+                   [{ws}, ")"], {ws} ;
+oneOrMoreExprs = expression, { ",", expression } ;
+
+specialExpr = tuple | "null" | "default" | ("str", quotedString) ;
+tuple = "(", oneOrMoreExprs, ")" ;
+
+array = "[", oneOrMoreExprs, "]" ;
+
+arrayView = ;
+
+ifExpr = "if", mws, expression, mws, "then", mws, expression, mws, "else", mws, expression ;
+
+builtinFn = "map" | "fold" | "find" | "index"
+          | "+" | "-" | "*" | "/" | "^" | "%"
+          | "exp" | "ln" | "log"
+          | "floor" | "ceil" | "abs" | "round" | "quotient"
+          | "sin" | "cos" | ? other trig... ? ;
+
+functionCall = expression, "(", oneOrMoreExprs, ")" ;
+
+lambdaDefn = ;
+
+operatorApplication = ;
+
 
 (*
    Values yielded by expressions in the post-processing language may be of 7 kinds.

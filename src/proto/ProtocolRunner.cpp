@@ -73,7 +73,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     // Do the conversion
     CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
     converter.CreateOptionsFile(mHandler, model_name, options);
-    DynamicCellModelLoader* p_loader = converter.Convert(copied_model);
+    DynamicCellModelLoaderPtr p_loader = converter.Convert(copied_model);
     boost::shared_ptr<AbstractStimulusFunction> p_stimulus;
     boost::shared_ptr<AbstractIvpOdeSolver> p_solver;
     boost::shared_ptr<AbstractCvodeCell> p_cell(dynamic_cast<AbstractCvodeCell*>(p_loader->CreateCell(p_solver, p_stimulus)));

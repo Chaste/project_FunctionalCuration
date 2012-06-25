@@ -453,7 +453,7 @@ public:
 
         // Do the conversion
         CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
-        DynamicCellModelLoader* p_loader = converter.Convert(copied_cellml);
+        DynamicCellModelLoaderPtr p_loader = converter.Convert(copied_cellml);
         boost::shared_ptr<AbstractCardiacCellInterface> p_abs_cell(CreateCellFromLoader(*p_loader));
         boost::shared_ptr<CELL_TYPE> p_cell = boost::dynamic_pointer_cast<CELL_TYPE>(p_abs_cell);
         assert(p_cell);

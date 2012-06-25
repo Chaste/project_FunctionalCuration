@@ -145,7 +145,7 @@ public:
         // Do the conversion
         CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
         FileFinder copied_cellml(dirname + "/LuoRudy1991.cellml", RelativeTo::ChasteTestOutput);
-        DynamicCellModelLoader* p_loader;
+        DynamicCellModelLoaderPtr p_loader;
         p_loader = converter.Convert(copied_cellml);
         boost::shared_ptr<AbstractCardiacCell> p_cell;
         p_cell = boost::dynamic_pointer_cast<AbstractCardiacCell>(RunLr91Test(*p_loader, 0u));

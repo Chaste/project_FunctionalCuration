@@ -43,8 +43,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * An Environment subclass that wraps a model, exposing its parameters, state variables, and derived
  * quantities as simple values.
  *
- * \todo How do we pass the right time to GetAnyVariable?
- * \todo How do we handle derived quantities?  If time is OK, it should work, albeit inefficiently.
+ * \todo Do derived quantities need to be handled more efficiently?
  */
 template<typename VECTOR>
 class ModelWrapperEnvironment : public Environment

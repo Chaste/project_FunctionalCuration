@@ -42,6 +42,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractSystemWithOutputs.hpp"
 #include "LocatableConstruct.hpp"
 
+
+class AbstractSimulationModifier;
+typedef boost::shared_ptr<AbstractSimulationModifier> AbstractSimulationModifierPtr;
+
+
 /**
  * Base class for modifications that can be made to a cell model or simulation
  * environment as the simulation progresses.

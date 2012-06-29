@@ -208,6 +208,7 @@ void Protocol::Run()
         }
     }
     // Transfer requested outputs to mOutputs
+    std::cout << "Recording protocol outputs..." << std::endl;
     EnvironmentPtr p_proto_outputs = mOutputs[""];
     BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
     {

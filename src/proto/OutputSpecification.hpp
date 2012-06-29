@@ -37,7 +37,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define OUTPUTSPECIFICATION_HPP_
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 #include "LocatableConstruct.hpp"
+
+class OutputSpecification;
+typedef boost::shared_ptr<OutputSpecification> OutputSpecificationPtr;
 
 /**
  * This little class describes an output of a protocol, giving details such as

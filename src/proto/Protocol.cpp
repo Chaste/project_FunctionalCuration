@@ -49,6 +49,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtoHelperMacros.hpp"
 #include "VectorStreaming.hpp"
 #include "BacktraceException.hpp"
+#include "ExceptionSet.hpp"
 #include "DebugProto.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
@@ -100,6 +101,15 @@ void ResetOutputs(std::map<std::string, EnvironmentPtr>& rOutputs)
 
 void Protocol::FinaliseSetup()
 {
+    // Check for duplicate plot titles (otherwise only the last would be written to file)
+    std::set<std::string> plot_titles;
+    BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, mPlotSpecifications)
+    {
+        PROTO_ASSERT2(plot_titles.find(p_plot_spec->rGetTitle()) == plot_titles.end(),
+                      "Plot title '" << p_plot_spec->rGetTitle() << "' has already been used.",
+                      p_plot_spec->GetLocationInfo());
+        plot_titles.insert(p_plot_spec->rGetTitle());
+    }
     // Set default input definitions
     mpInputs->ExecuteStatements(mInputStatements);
     // Add delegatees for any imported libraries
@@ -239,8 +249,7 @@ void Protocol::Run()
     }
     if (!errors.empty())
     {
-        ///\todo Make an Exception subclass which reports a set of errors?
-        throw errors.front();
+        THROW_EXCEPTIONS(errors);
     }
     std::cout << "Finished running protocol." << std::endl;
 }
@@ -277,7 +286,7 @@ std::string SanitiseFileName(const std::string& rFileName)
     // Strip quote characters
     for (std::string::iterator it = name.begin(); it != name.end(); ++it)
     {
-        while (*it == '\'' || *it == '"')
+        while (*it == '\'' || *it == '"' || *it == '(' || *it == ')')
         {
             it = name.erase(it);
         }
@@ -934,6 +943,7 @@ void Protocol::AddOutputSpecs(const std::vector<boost::shared_ptr<OutputSpecific
     mOutputSpecifications.resize(mOutputSpecifications.size() + rSpecifications.size());
     std::copy(rSpecifications.begin(), rSpecifications.end(), mOutputSpecifications.end()-rSpecifications.size());
 }
+
 
 void Protocol::AddDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecification> >& rSpecifications)
 {

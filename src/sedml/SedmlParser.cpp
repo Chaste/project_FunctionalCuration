@@ -528,7 +528,7 @@ boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> SedmlParser::CreateModel
     FileFinder copied_model = handler.CopyFileTo(model_file);
     std::string model_name = copied_model.GetLeafNameNoExtension();
     std::vector<std::string> options = boost::assign::list_of("--cvode");//("--expose-annotated-variables");
-    FileFinder this_file(__FILE__, RelativeTo::Absolute);
+    FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
     FileFinder proto_wrapper("SedmlWrapper.py", this_file);
     options.push_back("--protocol=" + proto_wrapper.GetAbsolutePath());
     options.push_back("--protocol-options=\"" + mSedmlFile.GetAbsolutePath() + " " + rModel + " "

@@ -189,6 +189,11 @@ void AbstractUntemplatedSystemWithOutputs::SetFreeVariable(double freeVariable)
 }
 
 
+double AbstractUntemplatedSystemWithOutputs::GetFreeVariable() const
+{
+    return mFreeVariable;
+}
+
 const std::map<std::string, EnvironmentPtr>& AbstractUntemplatedSystemWithOutputs::rGetEnvironmentMap() const
 {
     return mEnvironmentMap;
@@ -203,6 +208,12 @@ const std::string& AbstractUntemplatedSystemWithOutputs::rGetShortName(const std
         EXCEPTION("Variable reference '" << rVariableReference << "' not found in this model.");
     }
     return it->second;
+}
+
+
+AbstractUntemplatedSystemWithOutputs::AbstractUntemplatedSystemWithOutputs()
+    : mFreeVariable(DOUBLE_UNSET)
+{
 }
 
 

@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ABSTRACTSIMULATION_HPP_
 #define ABSTRACTSIMULATION_HPP_
 
+#include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>

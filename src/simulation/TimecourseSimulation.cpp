@@ -129,6 +129,7 @@ void AddOutputData(EnvironmentPtr pResults,
         // Not storing output
         return;
     }
+#ifdef CHASTE_CVODE
     boost::shared_ptr<AbstractSystemWithOutputs<N_Vector> > p_system
         = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<N_Vector> >(pModel);
     if (p_system)
@@ -137,6 +138,7 @@ void AddOutputData(EnvironmentPtr pResults,
     }
     else
     {
+#endif // CHASTE_CVODE
         boost::shared_ptr<AbstractSystemWithOutputs<std::vector<double> > > p_system2
             = boost::dynamic_pointer_cast<AbstractSystemWithOutputs<std::vector<double> > >(pModel);
         if (p_system2)
@@ -147,7 +149,9 @@ void AddOutputData(EnvironmentPtr pResults,
         {
             PROTO_EXCEPTION2("Unexpected template parameter for model.", pSim->GetLocationInfo());
         }
+#ifdef CHASTE_CVODE
     }
+#endif // CHASTE_CVODE
 }
 
 

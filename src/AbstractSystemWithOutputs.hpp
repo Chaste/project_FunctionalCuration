@@ -90,6 +90,11 @@ public:
     void SetFreeVariable(double freeVariable);
 
     /**
+     * Get the current value of the free variable (typically time).
+     */
+    double GetFreeVariable() const;
+
+    /**
      * Solve the system from the current state up to the given point.
      *
      * @param endPoint  the final value of the free variable
@@ -130,6 +135,9 @@ public:
         PARAMETER, ///< A modifiable parameter
         DERIVED    ///< A derived quantity
     };
+
+    /** Default constructor sets the free variable to an 'unset' value. */
+    AbstractUntemplatedSystemWithOutputs();
 
     /** Virtual destructor to force this class to be polymorphic. */
     virtual ~AbstractUntemplatedSystemWithOutputs();

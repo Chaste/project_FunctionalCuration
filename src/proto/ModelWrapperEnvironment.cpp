@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ModelWrapperEnvironment.hpp"
 
 #include <boost/assign/list_inserter.hpp> // for 'push_back()'
+#include <boost/pointer_cast.hpp>
 
 #ifdef CHASTE_CVODE
 #include <nvector/nvector_serial.h>
@@ -44,6 +45,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BacktraceException.hpp"
 #include "ValueTypes.hpp"
 #include "ProtoHelperMacros.hpp"
+#include "AbstractSystemWithOutputs.hpp"
 
 template<typename VECTOR>
 ModelWrapperEnvironment<VECTOR>::ModelWrapperEnvironment(boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > pModel)
@@ -57,10 +59,22 @@ AbstractValuePtr ModelWrapperEnvironment<VECTOR>::Lookup(const std::string& rNam
     AbstractValuePtr p_result;
     try
     {
-        unsigned idx = mpModel->GetAnyVariableIndex(rName);
-        double value = mpModel->GetAnyVariable(idx);
+        double free_var = boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(mpModel)->GetFreeVariable();
+        double value = DOUBLE_UNSET;
+        std::string units;
+        if (rName == mpModel->GetSystemInformation()->GetFreeVariableName())
+        {
+            value = free_var;
+            units = mpModel->GetSystemInformation()->GetFreeVariableUnits();
+        }
+        else
+        {
+            unsigned idx = mpModel->GetAnyVariableIndex(rName);
+            value = mpModel->GetAnyVariable(idx, free_var);
+            units = mpModel->GetAnyVariableUnits(idx);
+        }
         p_result.reset(new SimpleValue(value));
-        p_result->SetUnits(mpModel->GetAnyVariableUnits(idx));
+        p_result->SetUnits(units);
     }
     catch (const Exception& e)
     {
@@ -91,7 +105,14 @@ void ModelWrapperEnvironment<VECTOR>::OverwriteDefinition(const std::string& rNa
     double value = GET_SIMPLE_VALUE(pValue);
     try
     {
-        mpModel->SetAnyVariable(rName, value);
+        if (rName == mpModel->GetSystemInformation()->GetFreeVariableName())
+        {
+            boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(mpModel)->SetFreeVariable(value);
+        }
+        else
+        {
+            mpModel->SetAnyVariable(rName, value);
+        }
     }
     catch (const Exception& e)
     {
@@ -105,7 +126,8 @@ unsigned ModelWrapperEnvironment<VECTOR>::GetNumberOfDefinitions() const
 {
     return mpModel->GetNumberOfStateVariables()
             + mpModel->GetNumberOfParameters()
-            + mpModel->GetNumberOfDerivedQuantities();
+            + mpModel->GetNumberOfDerivedQuantities()
+            + 1 /* free variable */;
 }
 
 
@@ -116,6 +138,7 @@ std::vector<std::string> ModelWrapperEnvironment<VECTOR>::GetDefinedNames() cons
     boost::assign::push_back(names).range(mpModel->rGetStateVariableNames())
                                    .range(mpModel->rGetParameterNames())
                                    .range(mpModel->rGetDerivedQuantityNames());
+    names.push_back(mpModel->GetSystemInformation()->GetFreeVariableName());
     return names;
 }
 

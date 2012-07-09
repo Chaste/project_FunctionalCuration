@@ -56,6 +56,12 @@ def fix_amara():
     setattr(amara.binderyxpath.xpath_attr_wrapper, '__init__', meth)
 fix_amara()
 
+# TODO: relative models and MIRIAM URNs
+# http://www.ebi.ac.uk/miriamws/main/rest/resolve/%s  for a URN gives XML like
+# <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+#  <uris><uri type="URL">http://www.ebi.ac.uk/biomodels-main/BIOMD0000000139</uri>
+#        <uri type="URL">http://biomodels.caltech.edu/BIOMD0000000139</uri></uris>
+
 
 class SedmlParser(object):
     """This class parses a SED-ML file and applies the model modifications defined therein."""

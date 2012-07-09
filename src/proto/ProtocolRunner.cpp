@@ -45,6 +45,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CellMLToSharedLibraryConverter.hpp"
 #include "DynamicCellModelLoader.hpp"
 #include "AbstractDynamicallyLoadableEntity.hpp"
+#include "ExecutableSupport.hpp"
+
 #include "ProtocolParser.hpp"
 
 
@@ -103,6 +105,11 @@ void ProtocolRunner::SetPngOutput(bool writePng)
 
 void ProtocolRunner::RunProtocol()
 {
+    // Record provenance info
+    ExecutableSupport::SetOutputDirectory(mHandler.GetOutputDirectoryFullPath());
+    ExecutableSupport::WriteMachineInfoFile("machine_info");
+    ExecutableSupport::WriteProvenanceInfoFile();
+    // Run protocol
     try
     {
         mpProtocol->Run();

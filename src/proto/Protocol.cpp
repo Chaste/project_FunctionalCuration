@@ -69,30 +69,15 @@ Protocol::Protocol()
 
 
 /**
- * Ensure the given environment can access simulation results.
- *
- * @param rEnv  the environment that needs access
- * @param rResultsEnvs  mapping from prefix to results environment
- */
-void AddSimulationResultsDelegatees(Environment& rEnv, std::map<std::string, EnvironmentPtr>& rResultsEnvs)
-{
-    BOOST_FOREACH(StringEnvPair binding, rResultsEnvs)
-    {
-        if (!binding.first.empty())
-        {
-            rEnv.SetDelegateeEnvironment(binding.second, binding.first);
-        }
-    }
-}
-
-
-/**
  * Reset the provided outputs collection, in order to allow a protocol to be (re-)run.
  * @param rOutputs  the protocol outputs
  */
 void ResetOutputs(std::map<std::string, EnvironmentPtr>& rOutputs)
 {
-    rOutputs.clear();
+    BOOST_FOREACH(StringEnvPair output_env, rOutputs)
+    {
+        output_env.second->Clear();
+    }
     // Ensure the final outputs environment exists
     EnvironmentPtr p_proto_outputs(new Environment);
     rOutputs[""] = p_proto_outputs;
@@ -114,8 +99,10 @@ void Protocol::FinaliseSetup()
     mpInputs->ExecuteStatements(mInputStatements);
     // Add delegatees for any imported libraries
     Environment& r_library = rGetLibrary();
+    std::set<std::string> library_prefixes;
     BOOST_FOREACH(StringProtoPair import, mImports)
     {
+        library_prefixes.insert(import.first);
         r_library.SetDelegateeEnvironment(import.second->rGetLibrary().GetAsDelegatee(), import.first);
     }
     // Set delegatees for simulations
@@ -126,6 +113,23 @@ void Protocol::FinaliseSetup()
         if (!r_sim_env.GetDelegateeEnvironment())
         {
             r_sim_env.SetDelegateeEnvironment(r_library.GetAsDelegatee());
+        }
+    }
+    // Make the library delegate to (empty at present) prefixed simulation results environments,
+    // and store pointers to those environments in mOutputs.
+    BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
+    {
+        const std::string prefix = p_sim->GetOutputsPrefix();
+        if (!prefix.empty())
+        {
+            PROTO_ASSERT2(library_prefixes.find(prefix) == library_prefixes.end(),
+                          "The simulation prefix '" << prefix << "' has already been used for a protocol import.",
+                          p_sim->GetLocationInfo());
+            PROTO_ASSERT2(!mOutputs[prefix],
+                          "The simulation prefix '" << prefix << "' has been used for multiple simulations.",
+                          p_sim->GetLocationInfo());
+            r_library.SetDelegateeEnvironment(p_sim->GetResultsEnvironment(), prefix);
+            mOutputs[prefix] = p_sim->GetResultsEnvironment();
         }
     }
 }
@@ -171,18 +175,8 @@ void Protocol::Run()
         {
             const std::string prefix = p_sim->GetOutputsPrefix();
             std::cout << "Running simulation " << simulation_number << " " << prefix << "..." << std::endl;
-            AddSimulationResultsDelegatees(p_sim->rGetEnvironment(), mOutputs);
             p_sim->InitialiseSteppers();
-            EnvironmentPtr p_results = p_sim->Run();
-            if (!prefix.empty())
-            {
-                // Store the outputs
-                assert(p_results);
-                PROTO_ASSERT2(!mOutputs[prefix],
-                              "The simulation prefix " << prefix << " has been used for multiple simulations.",
-                              p_sim->GetLocationInfo());
-                mOutputs[prefix] = p_results;
-            }
+            p_sim->Run();
             if (mpOutputHandler)
             {
                 // Re-set the trace folder in case a nested protocol changed it
@@ -201,10 +195,8 @@ void Protocol::Run()
     {
         errors.push_back(e);
     }
-    // Ensure post-processing can access simulation results
-    EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
-    AddSimulationResultsDelegatees(*p_post_proc_env, mOutputs);
     // Post-process the results
+    EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
     if (errors.empty())
     {
         std::cout << "Running post-processing..." << std::endl;
@@ -217,7 +209,7 @@ void Protocol::Run()
             errors.push_back(e);
         }
     }
-    // Transfer requested outputs to mOutputs
+    // Transfer requested outputs to mOutputs[""]
     std::cout << "Recording protocol outputs..." << std::endl;
     EnvironmentPtr p_proto_outputs = mOutputs[""];
     BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
@@ -973,32 +965,17 @@ void Protocol::CheckModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs
 }
 
 
-void Protocol::SetModelEnvironments(const std::map<std::string, EnvironmentPtr>& rModelEnvs)
-{
-    BOOST_FOREACH(StringEnvPair binding, rModelEnvs)
-    {
-        mpLibrary->SetDelegateeEnvironment(binding.second, binding.first);
-    }
-    BOOST_FOREACH(StringProtoPair import, mImports)
-    {
-        import.second->SetModelEnvironments(rModelEnvs);
-    }
-}
-
-
 void Protocol::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
 {
     CheckModel(pModel);
     mpModel = pModel;
-    // Get the model wrapper environments, and ensure that every other environment (including in
-    // imported protocols) can delegate to them for ontology prefixes.
+    // Set up the model wrapper environments
     mpModel->SetNamespaceBindings(mOntologyNamespaceBindings);
-    const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
-    SetModelEnvironments(r_model_envs);
     // Associate each simulation with this model
-    for (unsigned simulation=0; simulation<mSimulations.size(); ++simulation)
+    // (and hence set up delegation to the model via the simulation)
+    BOOST_FOREACH(AbstractSimulationPtr p_sim, mSimulations)
     {
-        mSimulations[simulation]->SetModel(mpModel);
+        p_sim->SetModel(mpModel);
     }
     // Now run all the library programs, if present
     InitialiseLibrary();

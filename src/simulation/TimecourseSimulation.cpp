@@ -162,10 +162,10 @@ void TimecourseSimulation::Run(EnvironmentPtr pResults)
     mpModel->SetFreeVariable(mpStepper->GetCurrentOutputPoint());
     while (!mpStepper->AtEnd())
     {
-        LoopBodyStartHook(pResults);
+        LoopBodyStartHook();
         // Compute outputs here, so we get the initial state
         AddOutputData(pResults, mpModel, this);
-        LoopBodyEndHook(pResults);
+        LoopBodyEndHook();
         // Simulate until the next output point, if there is one
         const double next_time = mpStepper->Step();
         if (!mpStepper->AtEnd())
@@ -173,5 +173,5 @@ void TimecourseSimulation::Run(EnvironmentPtr pResults)
             mpModel->SolveModel(next_time);
         }
     }
-    LoopEndHook(pResults);
+    LoopEndHook();
 }

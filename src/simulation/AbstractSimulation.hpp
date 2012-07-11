@@ -80,8 +80,9 @@ public:
     virtual ~AbstractSimulation();
 
     /**
-     * Run a simulation, returning an Environment containing the results.  This is the method
-     * external callers should use to run an entire simulation.
+     * Run a simulation, returning an Environment containing the results (the same Environment
+     * given by GetResultsEnvironment).  This is the method external callers should use to run
+     * an entire simulation.
      */
     EnvironmentPtr Run();
 
@@ -117,20 +118,25 @@ public:
     }
 
     /**
-     * Set method for #mpModel used by the initial parser implementation.
+     * Set the model being simulated, and add its wrapper environments as delegatees from our
+     * environments.
      *
      * @param pModel  the model the protocol is being run on
      */
-    virtual void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
-    {
-        mpModel = pModel;
-    }
+    virtual void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
 
     /** Call Initialise on all the steppers in this simulation. */
     void InitialiseSteppers();
 
     /** Get the environment in which this simulation is run. */
     Environment& rGetEnvironment();
+
+    /**
+     * Get the environment that will contain this simulation's results (when it has been run).
+     * This environment is still useful prior to running the simulation, as it delegates by prefix
+     * to the model this simulation runs, and thus can be used to look up model variables.
+     */
+    EnvironmentPtr GetResultsEnvironment();
 
     /**
      * Set the namespace prefix to use for outputs from this simulation.
@@ -158,52 +164,45 @@ public:
 protected:
     /**
      * This method must be called by subclasses as the first thing within their simulation loop.
-     *
-     * @param pResults  the results Environment
      */
-    void LoopBodyStartHook(EnvironmentPtr pResults);
+    void LoopBodyStartHook();
 
     /**
      * This method must be called by subclasses as the last thing within their simulation loop,
      * just before their stepper is incremented.
-     *
-     * @param pResults  the results Environment
      */
-    void LoopBodyEndHook(EnvironmentPtr pResults);
+    void LoopBodyEndHook();
 
     /**
      * This method must be called by subclasses after their simulation loop has completed.
-     *
-     * @param pResults  the results Environment
      */
-    void LoopEndHook(EnvironmentPtr pResults);
+    void LoopEndHook();
 
     /**
-     * Initialise a simulation results environment, creating all the output arrays
+     * Initialise our results environment, creating all the output arrays
      * defined from the model.
-     *
-     * @param pResults  the results Environment
      */
-    void CreateOutputArrays(EnvironmentPtr pResults);
+    void CreateOutputArrays();
 
     /**
      * If this simulation is controlled by a while loop, then we might need to resize the
      * output arrays whenever they exceed the current allocation, and shrink them to the
      * final extent of the loop at the end of the simulation.
-     *
-     * @param pResults  the results Environment
      */
-    void ResizeOutputs(EnvironmentPtr pResults);
+    void ResizeOutputs();
 
     /**
-     * Create a delegatee of our environment containing views of the simulation results
-     * thus far.
-     * Should only be called if this simulation is controlled by a while loop and has a
-     * results prefix.
+     * Create a delegatee of #mpEnvironment containing views of the simulation results thus far.
+     * Should only be called if this simulation is controlled by a while loop and has a results prefix.
      *
-     * @param pResults  the Environment containing the full simulation results
+     * Implementation note: #mpResultsEnvironment contains the full-size (as far as is known at present)
+     * results arrays, only partially filled in.  Hence these are not suitable for access in the while
+     * loop condition, which needs to see the results up to this point as complete arrays.  Creating a
+     * delegatee of #mpEnvironment with our results prefix will mean that that new environment is used in
+     * preference to #mpResultsEnvironment (which is a delegatee of the protocol library environment)
+     * when looking up names with our prefix.
      */
-    void CreateResultViews(EnvironmentPtr pResults);
+    void CreateResultViews();
 
     /**
      * The model the protocol is being run on.
@@ -236,6 +235,9 @@ protected:
 private:
     /** The namespace prefix to use for outputs from this simulation. */
     std::string mOutputsPrefix;
+
+    /** The environment in which to store this simulation's results. */
+    EnvironmentPtr mpResultsEnvironment;
 };
 
 #endif /*ABSTRACTSIMULATION_HPP_*/

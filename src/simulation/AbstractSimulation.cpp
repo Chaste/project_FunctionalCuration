@@ -50,6 +50,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TupleExpression.hpp"
 
 
+// For use with BOOST_FOREACH and std::map
+typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
+
+
 AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
                                        boost::shared_ptr<AbstractStepper> pStepper,
                                        boost::shared_ptr<ModifierCollection> pModifiers,
@@ -58,7 +62,8 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSyst
       mpStepper(pStepper),
       mpModifiers(pModifiers),
       mpSteppers(pSteppers),
-      mpEnvironment(new Environment)
+      mpEnvironment(new Environment),
+      mpResultsEnvironment(new Environment)
 {
     if (!mpSteppers)
     {
@@ -75,6 +80,18 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSyst
 
 AbstractSimulation::~AbstractSimulation()
 {
+}
+
+
+void AbstractSimulation::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
+{
+    mpModel = pModel;
+    const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
+    BOOST_FOREACH(StringEnvPair binding, r_model_envs)
+    {
+        mpEnvironment->SetDelegateeEnvironment(binding.second, binding.first);
+        mpResultsEnvironment->SetDelegateeEnvironment(binding.second, binding.first);
+    }
 }
 
 
@@ -97,6 +114,12 @@ void AbstractSimulation::InitialiseSteppers()
 Environment& AbstractSimulation::rGetEnvironment()
 {
     return *mpEnvironment;
+}
+
+
+EnvironmentPtr AbstractSimulation::GetResultsEnvironment()
+{
+    return mpResultsEnvironment;
 }
 
 
@@ -138,51 +161,52 @@ EnvironmentPtr AbstractSimulation::Run()
     bool store_results = !GetOutputsPrefix().empty();
     if (store_results)
     {
-        p_results.reset(new Environment);
+        p_results = mpResultsEnvironment;
         if (mpSteppers->back()->GetNumberOfOutputPoints() > 0u) // Not a nested protocol
         {
-            CreateOutputArrays(p_results);
+            CreateOutputArrays();
         }
     }
     Run(p_results);
     if (store_results)
     {
-        ResizeOutputs(p_results);
+        ResizeOutputs();
     }
-    return p_results;
+    return mpResultsEnvironment;
 }
 
 
-void AbstractSimulation::LoopBodyStartHook(EnvironmentPtr pResults)
+void AbstractSimulation::LoopBodyStartHook()
 {
     if (mpModifiers)
     {
         (*mpModifiers)(mpModel, mpStepper);
     }
     // If this is a while loop, we may need to allocate more memory for the results arrays
-    if (pResults && !mpStepper->IsEndFixed() && pResults->GetNumberOfDefinitions() > 0u)
+    if (mpResultsEnvironment && !mpStepper->IsEndFixed()
+        && mpResultsEnvironment->GetNumberOfDefinitions() > 0u)
     {
-        const std::string any_name = pResults->GetDefinedNames().front();
-        NdArray<double> array = GET_ARRAY(pResults->Lookup(any_name, GetLocationInfo()));
+        const std::string any_name = mpResultsEnvironment->GetDefinedNames().front();
+        NdArray<double> array = GET_ARRAY(mpResultsEnvironment->Lookup(any_name, GetLocationInfo()));
         if (mpStepper->GetNumberOfOutputPoints() >= array.GetShape()[0])
         {
-            ResizeOutputs(pResults);
+            ResizeOutputs();
         }
     }
 }
 
 
-void AbstractSimulation::LoopBodyEndHook(EnvironmentPtr pResults)
+void AbstractSimulation::LoopBodyEndHook()
 {
     // If this is a while loop, update the views of the results thus far
     if (!mpStepper->IsEndFixed())
     {
-        CreateResultViews(pResults);
+        CreateResultViews();
     }
 }
 
 
-void AbstractSimulation::LoopEndHook(EnvironmentPtr pResults)
+void AbstractSimulation::LoopEndHook()
 {
     if (mpModifiers)
     {
@@ -191,11 +215,11 @@ void AbstractSimulation::LoopEndHook(EnvironmentPtr pResults)
 }
 
 
-void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
+void AbstractSimulation::CreateOutputArrays()
 {
     // Ensure there's an environment to put results in
     assert(!GetOutputsPrefix().empty());
-    assert(pResults);
+    assert(mpResultsEnvironment);
 
     // Get the system being simulated
     const std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = rGetSteppers();
@@ -218,7 +242,7 @@ void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
         NdArray<double> array(outputs_shape);
         AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
         p_value->SetUnits(output_units[i]);
-        pResults->DefineName(output_names[i], p_value, GetLocationInfo());
+        mpResultsEnvironment->DefineName(output_names[i], p_value, GetLocationInfo());
     }
 
     // Create arrays for vector outputs
@@ -232,20 +256,20 @@ void AbstractSimulation::CreateOutputArrays(EnvironmentPtr pResults)
         shape.push_back(vector_output_lengths[i]);
         NdArray<double> array(shape);
         AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
-        pResults->DefineName(r_vector_output_names[i], p_value, GetLocationInfo());
+        mpResultsEnvironment->DefineName(r_vector_output_names[i], p_value, GetLocationInfo());
     }
 }
 
-void AbstractSimulation::ResizeOutputs(EnvironmentPtr pResults)
+void AbstractSimulation::ResizeOutputs()
 {
     assert(!GetOutputsPrefix().empty());
 
     if (!mpStepper->IsEndFixed())
     {
-        const std::vector<std::string> output_names = pResults->GetDefinedNames();
+        const std::vector<std::string> output_names = mpResultsEnvironment->GetDefinedNames();
         BOOST_FOREACH(const std::string& r_name, output_names)
         {
-            NdArray<double> array = GET_ARRAY(pResults->Lookup(r_name, GetLocationInfo()));
+            NdArray<double> array = GET_ARRAY(mpResultsEnvironment->Lookup(r_name, GetLocationInfo()));
             NdArray<double>::Extents shape = array.GetShape();
             shape[0] = mpStepper->GetNumberOfOutputPoints();
             array.Resize(shape);
@@ -253,7 +277,7 @@ void AbstractSimulation::ResizeOutputs(EnvironmentPtr pResults)
     }
 }
 
-void AbstractSimulation::CreateResultViews(EnvironmentPtr pResults)
+void AbstractSimulation::CreateResultViews()
 {
     assert(!mpStepper->IsEndFixed());
     const std::string prefix = GetOutputsPrefix();
@@ -261,7 +285,7 @@ void AbstractSimulation::CreateResultViews(EnvironmentPtr pResults)
     if (!prefix.empty())
     {
         const unsigned view_size = mpStepper->GetCurrentOutputNumber() + 1;
-        const std::vector<std::string> output_names = pResults->GetDefinedNames();
+        const std::vector<std::string> output_names = mpResultsEnvironment->GetDefinedNames();
         EnvironmentPtr p_view_env = boost::const_pointer_cast<Environment>(rGetEnvironment().GetDelegateeEnvironment(prefix));
         DEFINE_TUPLE(dim_default, EXPR_LIST(NULL_EXPR)(NULL_EXPR)(CONST(1))(NULL_EXPR));
         DEFINE_TUPLE(dim0, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(view_size)));
@@ -271,11 +295,11 @@ void AbstractSimulation::CreateResultViews(EnvironmentPtr pResults)
             DEFINE(view, boost::make_shared<View>(LOOKUP(r_name), view_args));
             if (view_size == 1)
             {
-                p_view_env->DefineName(r_name, (*view)(*pResults), mpStepper->GetLocationInfo());
+                p_view_env->DefineName(r_name, (*view)(*mpResultsEnvironment), mpStepper->GetLocationInfo());
             }
             else
             {
-                p_view_env->OverwriteDefinition(r_name, (*view)(*pResults), mpStepper->GetLocationInfo());
+                p_view_env->OverwriteDefinition(r_name, (*view)(*mpResultsEnvironment), mpStepper->GetLocationInfo());
             }
         }
    }

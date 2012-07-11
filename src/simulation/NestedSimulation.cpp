@@ -53,12 +53,12 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
         std::cout << "Nested simulation " << mpStepper->GetIndexName() << " step "
                   << mpStepper->GetCurrentOutputNumber() << " value " << mpStepper->GetCurrentOutputPoint()
                   << "..." << std::endl;
-        LoopBodyStartHook(pResults);
+        LoopBodyStartHook();
         // Run the nested simulation, which will add any outputs produced
         mpNestedSimulation->Run(pResults);
-        LoopBodyEndHook(pResults);
+        LoopBodyEndHook();
     }
-    LoopEndHook(pResults);
+    LoopEndHook();
 }
 
 void NestedSimulation::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)

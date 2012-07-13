@@ -37,7 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <iostream>
-#include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
+#include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/assign/list_of.hpp>
 

@@ -45,6 +45,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cxxtest/TestSuite.h>
 
 #include "AbstractSystemWithOutputs.hpp"
+#include "AbstractTemplatedSystemWithOutputs.hpp"
 #include "ProtoHelperMacros.hpp"
 #include "Environment.hpp"
 

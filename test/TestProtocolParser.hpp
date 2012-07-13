@@ -42,6 +42,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolLanguage.hpp"
 #include "ProtocolParser.hpp"
 #include "Protocol.hpp"
+#include "AbstractTemplatedSystemWithOutputs.hpp"
 
 #include "OutputFileHandler.hpp"
 #include "FileFinder.hpp"

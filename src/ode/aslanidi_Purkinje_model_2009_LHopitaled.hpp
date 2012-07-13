@@ -16,7 +16,7 @@
 
 #include "AbstractCvodeCell.hpp"
 #include "AbstractDynamicallyLoadableEntity.hpp"
-#include "AbstractSystemWithOutputs.hpp"
+#include "AbstractTemplatedSystemWithOutputs.hpp"
 #include "AbstractStimulusFunction.hpp"
 
 class Aslanidi_Purkinje_model_2009FromCellMLCvodeLHopitaled : public AbstractCvodeCell, public AbstractDynamicallyLoadableEntity, public AbstractTemplatedSystemWithOutputs<N_Vector >

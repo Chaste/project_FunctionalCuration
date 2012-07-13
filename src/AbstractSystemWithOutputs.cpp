@@ -35,26 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractSystemWithOutputs.hpp"
 
-#include <algorithm>
-#include <boost/foreach.hpp>
-
-#include "ModelWrapperEnvironment.hpp"
-#include "NullDeleter.hpp"
-#include "ValueTypes.hpp"
-#include "NdArray.hpp"
-
-#include "AbstractParameterisedSystem.hpp"
-#include "AbstractCardiacCell.hpp"
-#include "AbstractCvodeCell.hpp"
-#include "VectorHelperFunctions.hpp"
 #include "Exception.hpp"
-#include "Warnings.hpp"
-
-#ifdef CHASTE_CVODE
-// CVODE headers
-#include <nvector/nvector_serial.h>
-#endif
-
 
 unsigned AbstractSystemWithOutputs::GetNumberOfOutputs() const
 {
@@ -114,11 +95,34 @@ AbstractSystemWithOutputs::~AbstractSystemWithOutputs()
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// The templated sub-class with compute method
+// The templated sub-class with compute method.
 //
-////////////////////////////////////////////////////////////////////////////////////
+// For some reason putting this in a separate file breaks the use of dynamically loaded cell models!
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#include "AbstractTemplatedSystemWithOutputs.hpp"
+
+#include <algorithm>
+#include <boost/foreach.hpp>
+
+#include "ModelWrapperEnvironment.hpp"
+#include "NullDeleter.hpp"
+#include "ValueTypes.hpp"
+#include "NdArray.hpp"
+
+#include "AbstractParameterisedSystem.hpp"
+#include "VectorHelperFunctions.hpp"
+#include "Warnings.hpp"
+#include "Exception.hpp"
+
+#ifdef CHASTE_CVODE
+// CVODE headers
+#include <nvector/nvector_serial.h>
+#endif
 
 
 template<typename VECTOR>
@@ -275,6 +279,7 @@ void AbstractTemplatedSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std:
         mEnvironmentMap[binding.first] = p_model_env;
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Explicit instantiation

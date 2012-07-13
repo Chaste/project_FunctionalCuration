@@ -35,10 +35,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractSystemWithOutputs.hpp"
 
+#include <algorithm>
 #include <boost/foreach.hpp>
 
 #include "ModelWrapperEnvironment.hpp"
 #include "NullDeleter.hpp"
+#include "ValueTypes.hpp"
+#include "NdArray.hpp"
 
 #include "AbstractParameterisedSystem.hpp"
 #include "AbstractCardiacCell.hpp"
@@ -53,154 +56,43 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 
-unsigned AbstractUntemplatedSystemWithOutputs::GetNumberOfOutputs() const
+unsigned AbstractSystemWithOutputs::GetNumberOfOutputs() const
 {
-    return mOutputsInfo.size();
+    return mOutputNames.size();
 }
 
 
-std::vector<unsigned> AbstractUntemplatedSystemWithOutputs::GetVectorOutputLengths() const
+const std::vector<std::string>& AbstractSystemWithOutputs::rGetOutputNames() const
 {
-    std::vector<unsigned> lengths(mVectorOutputsInfo.size());
-    for (unsigned i=0; i<lengths.size(); ++i)
-    {
-        lengths[i] = mVectorOutputsInfo[i].size();
-    }
-    return lengths;
+    return mOutputNames;
 }
 
 
-const std::vector<std::string>& AbstractUntemplatedSystemWithOutputs::rGetVectorOutputNames() const
+const std::vector<std::string>& AbstractSystemWithOutputs::rGetOutputUnits() const
 {
-    return mVectorOutputNames;
+    return mOutputUnits;
 }
 
 
-std::vector<std::string> AbstractUntemplatedSystemWithOutputs::GetOutputNames() const
-{
-    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
-    assert(p_this);
-
-    std::vector<std::string> names;
-    names.reserve(GetNumberOfOutputs());
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
-    {
-        switch (mOutputsInfo[i].second)
-        {
-        case FREE:
-            names.push_back(p_this->GetSystemInformation()->GetFreeVariableName());
-            break;
-        case STATE:
-            names.push_back(p_this->rGetStateVariableNames()[mOutputsInfo[i].first]);
-            break;
-        case PARAMETER:
-            names.push_back(p_this->rGetParameterNames()[mOutputsInfo[i].first]);
-            break;
-        case DERIVED:
-            names.push_back(p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first]);
-            break;
-        }
-    }
-    return names;
-}
-
-
-std::vector<std::string> AbstractUntemplatedSystemWithOutputs::GetOutputUnits() const
-{
-    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
-
-    std::vector<std::string> units;
-    units.reserve(GetNumberOfOutputs());
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
-    {
-        switch (mOutputsInfo[i].second)
-        {
-        case FREE:
-            units.push_back(p_this->GetSystemInformation()->GetFreeVariableUnits());
-            break;
-        case STATE:
-            units.push_back(p_this->rGetStateVariableUnits()[mOutputsInfo[i].first]);
-            break;
-        case PARAMETER:
-            units.push_back(p_this->rGetParameterUnits()[mOutputsInfo[i].first]);
-            break;
-        case DERIVED:
-            units.push_back(p_this->rGetDerivedQuantityUnits()[mOutputsInfo[i].first]);
-            break;
-        }
-    }
-    return units;
-}
-
-
-unsigned AbstractUntemplatedSystemWithOutputs::GetOutputIndex(const std::string& rName) const
-{
-    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
-
-    unsigned index = UNSIGNED_UNSET;
-
-    // Check each output in turn
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
-    {
-        switch (mOutputsInfo[i].second)
-        {
-        case FREE:
-            if (rName == p_this->GetSystemInformation()->GetFreeVariableName())
-            {
-                index = i;
-            }
-            break;
-        case STATE:
-            if (p_this->rGetStateVariableNames()[mOutputsInfo[i].first] == rName)
-            {
-                index = i;
-            }
-            break;
-        case PARAMETER:
-            if (p_this->rGetParameterNames()[mOutputsInfo[i].first] == rName)
-            {
-                index = i;
-            }
-            break;
-        case DERIVED:
-            if (p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first] == rName)
-            {
-                index = i;
-            }
-            break;
-        }
-        if (index != UNSIGNED_UNSET)
-        {
-            break; // Found it, so stop searching
-        }
-    }
-
-    if (index == UNSIGNED_UNSET)
-    {
-        EXCEPTION("No output named '" + rName + "'.");
-    }
-    return index;
-}
-
-
-void AbstractUntemplatedSystemWithOutputs::SetFreeVariable(double freeVariable)
+void AbstractSystemWithOutputs::SetFreeVariable(double freeVariable)
 {
     mFreeVariable = freeVariable;
 }
 
 
-double AbstractUntemplatedSystemWithOutputs::GetFreeVariable() const
+double AbstractSystemWithOutputs::GetFreeVariable() const
 {
     return mFreeVariable;
 }
 
-const std::map<std::string, EnvironmentPtr>& AbstractUntemplatedSystemWithOutputs::rGetEnvironmentMap() const
+
+const std::map<std::string, EnvironmentPtr>& AbstractSystemWithOutputs::rGetEnvironmentMap() const
 {
     return mEnvironmentMap;
 }
 
 
-const std::string& AbstractUntemplatedSystemWithOutputs::rGetShortName(const std::string& rVariableReference) const
+const std::string& AbstractSystemWithOutputs::rGetShortName(const std::string& rVariableReference) const
 {
     std::map<std::string, std::string>::const_iterator it = mNameMap.find(rVariableReference);
     if (it == mNameMap.end())
@@ -211,146 +103,93 @@ const std::string& AbstractUntemplatedSystemWithOutputs::rGetShortName(const std
 }
 
 
-AbstractUntemplatedSystemWithOutputs::AbstractUntemplatedSystemWithOutputs()
+AbstractSystemWithOutputs::AbstractSystemWithOutputs()
     : mFreeVariable(DOUBLE_UNSET)
 {
 }
 
 
-AbstractUntemplatedSystemWithOutputs::~AbstractUntemplatedSystemWithOutputs()
+AbstractSystemWithOutputs::~AbstractSystemWithOutputs()
 {
 }
 
 
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 //
-// The templated sub-class with compute methods, and helper functions
+// The templated sub-class with compute method
 //
-//////////////////////////////////////////////////////////////////////
-
-
-/**
- * Helper function to create a new vector with given size.  All entries
- * will be initialised to zero.
- *
- * This isn't a member so that we can specialise it without having to
- * specialise the whole class.
- *
- * @param rVec  the vector to create
- * @param size  the size of the vector
- */
-template<typename VECTOR>
-inline void CreateNewVector(VECTOR& rVec, unsigned size);
-
-
-/**
- * Specialisation for std::vector<double>.
- * @param rVec
- * @param size
- */
-template<>
-inline void CreateNewVector(std::vector<double>& rVec, unsigned size)
-{
-    rVec.resize(size);
-}
-
-
-#ifdef CHASTE_CVODE
-/**
- * Specialisation for N_Vector.
- * @param rVec
- * @param size
- */
-template<>
-inline void CreateNewVector(N_Vector& rVec, unsigned size)
-{
-    rVec = N_VNew_Serial(size);
-    for (unsigned i=0; i<size; i++)
-    {
-        NV_Ith_S(rVec, i) = 0.0;
-    }
-}
-#endif // CHASTE_CVODE
+////////////////////////////////////////////////////////////////////////////////////
 
 
 template<typename VECTOR>
-VECTOR AbstractSystemWithOutputs<VECTOR>::ComputeOutputs()
+void AbstractTemplatedSystemWithOutputs<VECTOR>::ProcessOutputsInfo()
 {
-    AbstractParameterisedSystem<VECTOR>* p_this = dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this);
+    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
     assert(p_this);
 
-    VECTOR outputs;
-    CreateNewVector(outputs, GetNumberOfOutputs());
+    this->mOutputNames.reserve(mOutputsInfo.size() + mVectorOutputsInfo.size());
+    this->mOutputUnits.reserve(mOutputsInfo.size() + mVectorOutputsInfo.size());
 
-    bool computed_derived_quantities = false;
-    VECTOR derived_quantities;
-
-    for (unsigned i=0; i<GetNumberOfOutputs(); i++)
+    // Fill in info for 'normal' outputs (single values per output step)
+    for (unsigned i=0; i<mOutputsInfo.size(); i++)
     {
         switch (mOutputsInfo[i].second)
         {
         case FREE:
-            // Special-case for the free variable
-            SetVectorComponent(outputs, i, this->mFreeVariable);
+            this->mOutputNames.push_back(p_this->GetSystemInformation()->GetFreeVariableName());
+            this->mOutputUnits.push_back(p_this->GetSystemInformation()->GetFreeVariableUnits());
             break;
         case STATE:
-            SetVectorComponent(outputs, i, GetVectorComponent(p_this->rGetStateVariables(),
-                                                              mOutputsInfo[i].first));
+            this->mOutputNames.push_back(p_this->rGetStateVariableNames()[mOutputsInfo[i].first]);
+            this->mOutputUnits.push_back(p_this->rGetStateVariableUnits()[mOutputsInfo[i].first]);
             break;
         case PARAMETER:
-            SetVectorComponent(outputs, i, p_this->GetParameter(mOutputsInfo[i].first));
+            this->mOutputNames.push_back(p_this->rGetParameterNames()[mOutputsInfo[i].first]);
+            this->mOutputUnits.push_back(p_this->rGetParameterUnits()[mOutputsInfo[i].first]);
             break;
         case DERIVED:
-            if (!computed_derived_quantities)
-            {
-                derived_quantities = p_this->ComputeDerivedQuantities(this->mFreeVariable,
-                                                                      p_this->rGetStateVariables());
-                computed_derived_quantities = true;
-            }
-            SetVectorComponent(outputs, i, GetVectorComponent(derived_quantities, mOutputsInfo[i].first));
+            this->mOutputNames.push_back(p_this->rGetDerivedQuantityNames()[mOutputsInfo[i].first]);
+            this->mOutputUnits.push_back(p_this->rGetDerivedQuantityUnits()[mOutputsInfo[i].first]);
             break;
         }
     }
 
-    if (computed_derived_quantities)
-    {
-        DeleteVector(derived_quantities);
-    }
-
-    return outputs;
+    // Fill in info for vector outputs (vector of variables per output step)
+    this->mOutputNames.resize(mOutputsInfo.size() + mVectorOutputsInfo.size());
+    this->mOutputUnits.resize(mOutputsInfo.size() + mVectorOutputsInfo.size());
+    std::copy(mVectorOutputNames.begin(), mVectorOutputNames.end(),
+              this->mOutputNames.begin() + mOutputsInfo.size());
+    std::fill_n(this->mOutputUnits.begin() + mOutputsInfo.size(), mVectorOutputsInfo.size(), "unspecified");
 }
 
 
 template<typename VECTOR>
-std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs()
+EnvironmentCPtr AbstractTemplatedSystemWithOutputs<VECTOR>::GetOutputs()
 {
     AbstractParameterisedSystem<VECTOR>* p_this = dynamic_cast<AbstractParameterisedSystem<VECTOR>*>(this);
     assert(p_this);
 
+    EnvironmentPtr p_outputs(new Environment);
+
     bool computed_derived_quantities = false;
     VECTOR derived_quantities;
+    const std::string loc_info("Model " + p_this->GetSystemName());
+    const unsigned num_normal_outputs = mOutputsInfo.size();
 
-    const unsigned num_vector_outputs = mVectorOutputsInfo.size();
-    std::vector<VECTOR> outputs(num_vector_outputs);
-    for (unsigned i=0; i<num_vector_outputs; i++)
+    // Add 'normal' outputs to the environment (single values per output step)
+    for (unsigned i=0; i<num_normal_outputs; i++)
     {
-        const unsigned output_length = mVectorOutputsInfo[i].size();
-        VECTOR& r_output = outputs[i];
-        CreateNewVector(r_output, output_length);
-        for (unsigned j=0; j<output_length; j++)
+        double value;
+        switch (mOutputsInfo[i].second)
         {
-            switch (mVectorOutputsInfo[i][j].second)
-            {
             case FREE:
-                // Special-case for the free variable
-                SetVectorComponent(r_output, j, this->mFreeVariable);
+                value = this->mFreeVariable;
                 break;
             case STATE:
-                SetVectorComponent(r_output, j, GetVectorComponent(p_this->rGetStateVariables(),
-                                                                   mVectorOutputsInfo[i][j].first));
+                value = GetVectorComponent(p_this->rGetStateVariables(), mOutputsInfo[i].first);
                 break;
             case PARAMETER:
-                SetVectorComponent(r_output, j, p_this->GetParameter(mVectorOutputsInfo[i][j].first));
+                value = p_this->GetParameter(mOutputsInfo[i].first);
                 break;
             case DERIVED:
                 if (!computed_derived_quantities)
@@ -359,10 +198,49 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs()
                                                                           p_this->rGetStateVariables());
                     computed_derived_quantities = true;
                 }
-                SetVectorComponent(r_output, j, GetVectorComponent(derived_quantities, mVectorOutputsInfo[i][j].first));
+                value = GetVectorComponent(derived_quantities, mOutputsInfo[i].first);
+                break;
+        }
+        AbstractValuePtr p_value(new SimpleValue(value));
+        p_value->SetUnits(this->mOutputUnits[i]);
+        p_outputs->DefineName(this->mOutputNames[i], p_value, loc_info);
+    }
+
+    // Add vector outputs to the environment (vector of variables per output step)
+    const unsigned num_vector_outputs = mVectorOutputsInfo.size();
+    for (unsigned i=0; i<num_vector_outputs; i++)
+    {
+        const unsigned output_length = mVectorOutputsInfo[i].size();
+        const NdArray<double>::Extents shape(1u, output_length);
+        NdArray<double> value(shape);
+        for (NdArray<double>::Iterator iter = value.Begin(); iter != value.End(); ++iter)
+        {
+            const unsigned j = iter.rGetIndices()[0];
+            switch (mVectorOutputsInfo[i][j].second)
+            {
+            case FREE:
+                *iter = this->mFreeVariable;
+                break;
+            case STATE:
+                *iter = GetVectorComponent(p_this->rGetStateVariables(), mVectorOutputsInfo[i][j].first);
+                break;
+            case PARAMETER:
+                *iter = p_this->GetParameter(mVectorOutputsInfo[i][j].first);
+                break;
+            case DERIVED:
+                if (!computed_derived_quantities)
+                {
+                    derived_quantities = p_this->ComputeDerivedQuantities(this->mFreeVariable,
+                                                                          p_this->rGetStateVariables());
+                    computed_derived_quantities = true;
+                }
+                *iter = GetVectorComponent(derived_quantities, mVectorOutputsInfo[i][j].first);
                 break;
             }
         }
+        AbstractValuePtr p_value(new ArrayValue(value));
+        p_value->SetUnits(this->mOutputUnits[num_normal_outputs + i]);
+        p_outputs->DefineName(this->mOutputNames[num_normal_outputs + i], p_value, loc_info);
     }
 
     if (computed_derived_quantities)
@@ -370,12 +248,12 @@ std::vector<VECTOR> AbstractSystemWithOutputs<VECTOR>::ComputeVectorOutputs()
         DeleteVector(derived_quantities);
     }
 
-    return outputs;
+    return p_outputs;
 }
 
 
 template<typename VECTOR>
-void AbstractSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings)
+void AbstractTemplatedSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings)
 {
     ///\todo Go back to the assert when nested protocols are done properly
 //    assert(mEnvironmentMap.empty());
@@ -402,7 +280,7 @@ void AbstractSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std::map<std:
 // Explicit instantiation
 ////////////////////////////////////////////////////////////////////////////////////
 
-template class AbstractSystemWithOutputs<std::vector<double> >;
+template class AbstractTemplatedSystemWithOutputs<std::vector<double> >;
 #ifdef CHASTE_CVODE
-template class AbstractSystemWithOutputs<N_Vector>;
+template class AbstractTemplatedSystemWithOutputs<N_Vector>;
 #endif

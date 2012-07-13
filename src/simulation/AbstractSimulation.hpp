@@ -38,6 +38,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 #include <vector>
+#include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 
@@ -46,6 +47,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ModifierCollection.hpp"
 #include "Environment.hpp"
 #include "LocatableConstruct.hpp"
+#include "NdArray.hpp"
+
 #include "OutputFileHandler.hpp"
 #include "FileFinder.hpp"
 
@@ -71,7 +74,7 @@ public:
      * @param pSteppers  if this is part of a nested simulation, the shared
      *     collection of steppers.  pStepper will be added by this constructor.
      */
-    AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+    AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                        AbstractStepperPtr pStepper,
                        boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>(),
                        StepperCollection pSteppers=StepperCollection());
@@ -100,7 +103,7 @@ public:
     virtual void Run(EnvironmentPtr pResults)=0;
 
     /** Get method for #mpModel. */
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> GetModel()
+    boost::shared_ptr<AbstractSystemWithOutputs> GetModel()
     {
         return mpModel;
     }
@@ -123,7 +126,7 @@ public:
      *
      * @param pModel  the model the protocol is being run on
      */
-    virtual void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
+    virtual void SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel);
 
     /** Call Initialise on all the steppers in this simulation. */
     void InitialiseSteppers();
@@ -179,10 +182,15 @@ protected:
     void LoopEndHook();
 
     /**
-     * Initialise our results environment, creating all the output arrays
-     * defined from the model.
+     * This method adds model outputs from the current iteration to the overall simulation outputs.
+     * It should be called by the innermost loop of the simulation at each iteration, prior to
+     * calling LoopBodyEndHook.
+     *
+     * @param pResults  the environment in which to record the whole simulation's results
+     *     (or an empty pointer if not recording)
+     * @param pModelOutputs  the model outputs from the current iteration
      */
-    void CreateOutputArrays();
+    void AddModelOutputs(EnvironmentPtr pResults, EnvironmentCPtr pModelOutputs);
 
     /**
      * If this simulation is controlled by a while loop, then we might need to resize the
@@ -207,7 +215,7 @@ protected:
     /**
      * The model the protocol is being run on.
      */
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> mpModel;
+    boost::shared_ptr<AbstractSystemWithOutputs> mpModel;
 
     /**
      * The stepper controlling this simulation's loop.
@@ -238,6 +246,9 @@ private:
 
     /** The environment in which to store this simulation's results. */
     EnvironmentPtr mpResultsEnvironment;
+
+    /** The shapes of the model outputs on the first iteration. */
+    std::map<std::string, NdArray<double>::Extents> mModelOutputShapes;
 };
 
 #endif /*ABSTRACTSIMULATION_HPP_*/

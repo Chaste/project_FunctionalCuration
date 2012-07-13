@@ -81,7 +81,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     boost::shared_ptr<AbstractCvodeCell> p_cell(dynamic_cast<AbstractCvodeCell*>(p_loader->CreateCell(p_solver, p_stimulus)));
     // Check we have the right bases
     assert(dynamic_cast<AbstractDynamicallyLoadableEntity*>(p_cell.get()));
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_model = boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(p_cell);
+    boost::shared_ptr<AbstractSystemWithOutputs> p_model = boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(p_cell);
     assert(p_model);
 
     // Load the XML protocol

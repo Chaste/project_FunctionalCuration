@@ -78,7 +78,7 @@ private:
     ProtocolPtr mpProtocol;
 
     /** The models used by the SED-ML file. */
-    std::map<std::string, boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> > mModels;
+    std::map<std::string, boost::shared_ptr<AbstractSystemWithOutputs> > mModels;
 
     /** The simulation definitions present. */
     std::map<std::string, const xercesc::DOMElement*> mSimulationDefinitions;
@@ -118,7 +118,7 @@ private:
      * @param pModel  the model on which the simulation should be run
      */
     AbstractSimulationPtr ParseSimulation(const xercesc::DOMElement* pSimElt,
-                                          boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
+                                          boost::shared_ptr<AbstractSystemWithOutputs> pModel);
 
     /**
      * Parse the task definitions and create corresponding simulation objects
@@ -211,7 +211,7 @@ private:
      * @param rModelSource  the file that the model is ultimately derived from
      * @param rHandler  where to put the generated model code
      */
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> CreateModel(const std::string& rModel,
+    boost::shared_ptr<AbstractSystemWithOutputs> CreateModel(const std::string& rModel,
                                                                         const std::string& rModelSource,
                                                                         OutputFileHandler& rHandler);
 };

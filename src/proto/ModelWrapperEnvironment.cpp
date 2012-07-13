@@ -59,7 +59,7 @@ AbstractValuePtr ModelWrapperEnvironment<VECTOR>::Lookup(const std::string& rNam
     AbstractValuePtr p_result;
     try
     {
-        double free_var = boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(mpModel)->GetFreeVariable();
+        double free_var = boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(mpModel)->GetFreeVariable();
         double value = DOUBLE_UNSET;
         std::string units;
         if (rName == mpModel->GetSystemInformation()->GetFreeVariableName())
@@ -107,7 +107,7 @@ void ModelWrapperEnvironment<VECTOR>::OverwriteDefinition(const std::string& rNa
     {
         if (rName == mpModel->GetSystemInformation()->GetFreeVariableName())
         {
-            boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(mpModel)->SetFreeVariable(value);
+            boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(mpModel)->SetFreeVariable(value);
         }
         else
         {

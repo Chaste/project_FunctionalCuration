@@ -19,7 +19,7 @@
 #include "AbstractSystemWithOutputs.hpp"
 #include "AbstractStimulusFunction.hpp"
 
-class Aslanidi_Purkinje_model_2009FromCellMLCvodeLHopitaled : public AbstractCvodeCell, public AbstractDynamicallyLoadableEntity, public AbstractSystemWithOutputs<N_Vector >
+class Aslanidi_Purkinje_model_2009FromCellMLCvodeLHopitaled : public AbstractCvodeCell, public AbstractDynamicallyLoadableEntity, public AbstractTemplatedSystemWithOutputs<N_Vector >
 {
     //
     // Settable parameters and readable variables

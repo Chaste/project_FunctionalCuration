@@ -44,13 +44,16 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cxxtest/TestSuite.h>
 
+#include "AbstractSystemWithOutputs.hpp"
+#include "ProtoHelperMacros.hpp"
+#include "Environment.hpp"
+
 #include "OutputFileHandler.hpp"
 #include "FileFinder.hpp"
 #include "CellMLToSharedLibraryConverter.hpp"
 #include "DynamicCellModelLoader.hpp"
 #include "AbstractCardiacCell.hpp"
 #include "AbstractDynamicallyLoadableEntity.hpp"
-#include "AbstractSystemWithOutputs.hpp"
 #include "EulerIvpOdeSolver.hpp"
 #include "SimpleStimulus.hpp"
 #include "VectorHelperFunctions.hpp"
@@ -75,57 +78,49 @@ class TestSimpleProtocol : public CxxTest::TestSuite
         TS_ASSERT_EQUALS(pCell->rGetParameterNames()[0], "membrane_fast_sodium_current_conductance");
 
         // Check protocol outputs specification
-        typedef AbstractSystemWithOutputs<VECTOR> ASWO;
+        typedef AbstractTemplatedSystemWithOutputs<VECTOR> ASWO;
         boost::shared_ptr<ASWO> p_cell_op = boost::dynamic_pointer_cast<ASWO>(pCell);
         TS_ASSERT(p_cell_op);
         TS_ASSERT_EQUALS(p_cell_op->GetNumberOfOutputs(), 5u);
-        std::vector<std::string> names = p_cell_op->GetOutputNames();
-        TS_ASSERT_EQUALS(names.size(), 5u);
+        const std::vector<std::string>& r_names = p_cell_op->rGetOutputNames();
+        TS_ASSERT_EQUALS(r_names.size(), 5u);
         // Should be sorted alphabetically
-        TS_ASSERT_EQUALS(names[0], "FonRT");
-        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("FonRT"), 0u);
-        TS_ASSERT_EQUALS(names[1], "environment_time");
-        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("environment_time"), 1u);
-        TS_ASSERT_EQUALS(names[2], "fast_sodium_current__V");
-        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("fast_sodium_current__V"), 2u);
-        TS_ASSERT_EQUALS(names[3], "membrane_fast_sodium_current_conductance");
-        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("membrane_fast_sodium_current_conductance"), 3u);
-        TS_ASSERT_EQUALS(names[4], "membrane_voltage");
-        TS_ASSERT_EQUALS(p_cell_op->GetOutputIndex("membrane_voltage"), 4u);
-        std::vector<std::string> units = p_cell_op->GetOutputUnits();
-        TS_ASSERT_EQUALS(units.size(), 5u);
-        TS_ASSERT_EQUALS(units[0], "per_millivolt");
-        TS_ASSERT_EQUALS(units[1], "millisecond");
-        TS_ASSERT_EQUALS(units[2], "millivolt");
-        TS_ASSERT_EQUALS(units[3], "milliS_per_cm2");
-        TS_ASSERT_EQUALS(units[4], "millivolt");
-        TS_ASSERT_THROWS_THIS(p_cell_op->GetOutputIndex("no_var"), "No output named 'no_var'.");
+        TS_ASSERT_EQUALS(r_names[0], "FonRT");
+        TS_ASSERT_EQUALS(r_names[1], "environment_time");
+        TS_ASSERT_EQUALS(r_names[2], "fast_sodium_current__V");
+        TS_ASSERT_EQUALS(r_names[3], "membrane_fast_sodium_current_conductance");
+        TS_ASSERT_EQUALS(r_names[4], "membrane_voltage");
+        const std::vector<std::string>& r_units = p_cell_op->rGetOutputUnits();
+        TS_ASSERT_EQUALS(r_units.size(), 5u);
+        TS_ASSERT_EQUALS(r_units[0], "per_millivolt");
+        TS_ASSERT_EQUALS(r_units[1], "millisecond");
+        TS_ASSERT_EQUALS(r_units[2], "millivolt");
+        TS_ASSERT_EQUALS(r_units[3], "milliS_per_cm2");
+        TS_ASSERT_EQUALS(r_units[4], "millivolt");
 
         // Check output values
-        boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(pCell)->SetFreeVariable(1000.0);
+        boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(pCell)->SetFreeVariable(1000.0);
         // The above line is needed because we haven't simulated the system using a TimecourseSimulation
-        VECTOR fini_outputs = p_cell_op->ComputeOutputs();
-        TS_ASSERT_EQUALS(GetVectorSize(fini_outputs), 5u);
-        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 0), 0.037435728309031795, 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 1), 1000.0, 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 2), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 3), pCell->GetParameter(0u), 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(fini_outputs, 4), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
+        EnvironmentCPtr p_fini_outputs = p_cell_op->GetOutputs();
+        TS_ASSERT_EQUALS(p_fini_outputs->GetNumberOfDefinitions(), 5u);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_fini_outputs->Lookup("FonRT", "Test")), 0.037435728309031795, 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_fini_outputs->Lookup("environment_time", "Test")), 1000.0, 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_fini_outputs->Lookup("fast_sodium_current__V", "Test")), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_fini_outputs->Lookup("membrane_fast_sodium_current_conductance", "Test")), pCell->GetParameter(0u), 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_fini_outputs->Lookup("membrane_voltage", "Test")), pCell->rGetStateVariables()[pCell->GetVoltageIndex()], 1e-12);
 
         pCell->ResetToInitialConditions();
-        boost::dynamic_pointer_cast<AbstractUntemplatedSystemWithOutputs>(pCell)->SetFreeVariable(0.0);
+        boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(pCell)->SetFreeVariable(0.0);
         VECTOR inits = pCell->GetInitialConditions();
-        VECTOR init_outputs = p_cell_op->ComputeOutputs();
-        TS_ASSERT_EQUALS(GetVectorSize(init_outputs), 5u);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 0), 0.037435728309031795, 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 1), 0.0, 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 2), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 3), pCell->GetParameter(0u), 1e-12);
-        TS_ASSERT_DELTA(GetVectorComponent(init_outputs, 4), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
+        EnvironmentCPtr p_init_outputs = p_cell_op->GetOutputs();
+        TS_ASSERT_EQUALS(p_init_outputs->GetNumberOfDefinitions(), 5u);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_init_outputs->Lookup("FonRT", "Test")), 0.037435728309031795, 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_init_outputs->Lookup("environment_time", "Test")), 0.0, 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_init_outputs->Lookup("fast_sodium_current__V", "Test")), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_init_outputs->Lookup("membrane_fast_sodium_current_conductance", "Test")), pCell->GetParameter(0u), 1e-12);
+        TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_init_outputs->Lookup("membrane_voltage", "Test")), GetVectorComponent(inits, pCell->GetVoltageIndex()), 1e-12);
 
         DeleteVector(inits);
-        DeleteVector(init_outputs);
-        DeleteVector(fini_outputs);
     }
 
 public:

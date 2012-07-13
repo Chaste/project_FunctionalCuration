@@ -51,7 +51,7 @@ SetVariableModifier::SetVariableModifier(ApplyWhen when,
 }
 
 
-void SetVariableModifier::ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+void SetVariableModifier::ReallyApply(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                       boost::shared_ptr<AbstractStepper> pStepper)
 {
     AbstractValuePtr p_value = (*mpValueExpression)(pStepper->rGetEnvironment());

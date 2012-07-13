@@ -48,7 +48,7 @@ StateSaverModifier<VECTOR>::StateSaverModifier(ApplyWhen when,
 
 
 template<typename VECTOR>
-void StateSaverModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+void StateSaverModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                              boost::shared_ptr<AbstractStepper> pStepper)
 {
     boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pModel);

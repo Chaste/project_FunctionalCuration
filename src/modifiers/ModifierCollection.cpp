@@ -53,7 +53,7 @@ boost::shared_ptr<AbstractSimulationModifier>& ModifierCollection::operator[](un
 }
 
 
-void ModifierCollection::operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+void ModifierCollection::operator()(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                     boost::shared_ptr<AbstractStepper> pStepper)
 {
     for (Collection::iterator it = mModifiers.begin(); it != mModifiers.end(); ++it)
@@ -63,7 +63,7 @@ void ModifierCollection::operator()(boost::shared_ptr<AbstractUntemplatedSystemW
 }
 
 
-void ModifierCollection::ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+void ModifierCollection::ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                     boost::shared_ptr<AbstractStepper> pStepper)
 {
     for (Collection::iterator it = mModifiers.begin(); it != mModifiers.end(); ++it)

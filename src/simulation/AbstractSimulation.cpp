@@ -48,13 +48,14 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "View.hpp"
 #include "NameLookup.hpp"
 #include "TupleExpression.hpp"
+#include "VectorStreaming.hpp"
 
 
 // For use with BOOST_FOREACH and std::map
 typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
 
 
-AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                        boost::shared_ptr<AbstractStepper> pStepper,
                                        boost::shared_ptr<ModifierCollection> pModifiers,
                                        boost::shared_ptr<std::vector<boost::shared_ptr<AbstractStepper> > > pSteppers)
@@ -83,7 +84,7 @@ AbstractSimulation::~AbstractSimulation()
 }
 
 
-void AbstractSimulation::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
+void AbstractSimulation::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 {
     mpModel = pModel;
     const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
@@ -162,10 +163,6 @@ EnvironmentPtr AbstractSimulation::Run()
     if (store_results)
     {
         p_results = mpResultsEnvironment;
-        if (mpSteppers->back()->GetNumberOfOutputPoints() > 0u) // Not a nested protocol
-        {
-            CreateOutputArrays();
-        }
     }
     Run(p_results);
     if (store_results)
@@ -215,50 +212,65 @@ void AbstractSimulation::LoopEndHook()
 }
 
 
-void AbstractSimulation::CreateOutputArrays()
+void AbstractSimulation::AddModelOutputs(EnvironmentPtr pResults, EnvironmentCPtr pModelOutputs)
 {
-    // Ensure there's an environment to put results in
-    assert(!GetOutputsPrefix().empty());
-    assert(mpResultsEnvironment);
-
-    // Get the system being simulated
-    const std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = rGetSteppers();
-
-    // Figure out the (initial) sizes
-    const unsigned nesting_depth = r_steppers.size();
-    NdArray<double>::Extents outputs_shape(nesting_depth);
-    for (unsigned dim=0; dim<nesting_depth; ++dim)
+    if (pResults)
     {
-        outputs_shape[dim] = r_steppers[dim]->GetNumberOfOutputPoints();
-    }
+        bool first_run = (pResults->GetNumberOfDefinitions() == 0u);
+        unsigned num_local_dims = this->rGetSteppers().size();
+        if (rGetSteppers().back()->GetNumberOfOutputPoints() == 0u)
+        {
+            // Hack for nested protocols
+            num_local_dims--;
+        }
 
-    // Create output arrays
-    const std::vector<std::string> output_names = mpModel->GetOutputNames();
-    const std::vector<std::string> output_units = mpModel->GetOutputUnits();
-    const unsigned num_outputs = output_names.size();
-    assert(num_outputs == output_units.size());
-    for (unsigned i=0; i<num_outputs; ++i)
-    {
-        NdArray<double> array(outputs_shape);
-        AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
-        p_value->SetUnits(output_units[i]);
-        mpResultsEnvironment->DefineName(output_names[i], p_value, GetLocationInfo());
-    }
+        BOOST_FOREACH(const std::string& r_output_name, mpModel->rGetOutputNames())
+        {
+            AbstractValuePtr p_output = pModelOutputs->Lookup(r_output_name, GetLocationInfo());
+            PROTO_ASSERT(p_output->IsArray(),
+                         "Model produced non-array output " << r_output_name << ".");
+            const NdArray<double> output_array = GET_ARRAY(p_output);
+            const NdArray<double>::Extents output_shape = output_array.GetShape();
+            NdArray<double> result_array;
 
-    // Create arrays for vector outputs
-    const std::vector<std::string>& r_vector_output_names = mpModel->rGetVectorOutputNames();
-    const unsigned num_vector_outputs = r_vector_output_names.size();
-    const std::vector<unsigned> vector_output_lengths = mpModel->GetVectorOutputLengths();
-    for (unsigned i=0; i<num_vector_outputs; ++i)
-    {
-        NdArray<double>::Extents shape(outputs_shape);
-        // Last dimension varies over the vector elements
-        shape.push_back(vector_output_lengths[i]);
-        NdArray<double> array(shape);
-        AbstractValuePtr p_value = boost::make_shared<ArrayValue>(array);
-        mpResultsEnvironment->DefineName(r_vector_output_names[i], p_value, GetLocationInfo());
+            // Create output array, if not already done
+            if (first_run)
+            {
+                mModelOutputShapes[r_output_name] = output_shape;
+                NdArray<double>::Extents shape(num_local_dims + output_shape.size());
+                for (unsigned i=0; i<num_local_dims; i++)
+                {
+                    shape[i] = rGetSteppers()[i]->GetNumberOfOutputPoints();
+                }
+                std::copy(output_shape.begin(), output_shape.end(), shape.begin() + num_local_dims);
+                NdArray<double> result(shape);
+                result_array = result;
+                AbstractValuePtr p_result = boost::make_shared<ArrayValue>(result);
+                p_result->SetUnits(p_output->GetUnits());
+                pResults->DefineName(r_output_name, p_result, GetLocationInfo());
+            }
+            else
+            {
+                // Check the sub array shape matches the original run
+                PROTO_ASSERT(output_shape == mModelOutputShapes[r_output_name],
+                             "The outputs of a model must not change shape during a simulation; output "
+                             << r_output_name << " with shape now " << output_shape
+                             << " does not match the original shape " << mModelOutputShapes[r_output_name] << ".");
+                result_array = GET_ARRAY(pResults->Lookup(r_output_name, GetLocationInfo()));
+            }
+
+            // Add model output into result array
+            NdArray<double>::Indices idxs = result_array.GetIndices();
+            for (unsigned i=0; i<num_local_dims; i++)
+            {
+                idxs[i] = rGetSteppers()[i]->GetCurrentOutputNumber();
+            }
+            NdArray<double>::Iterator result_it(idxs, result_array);
+            std::copy(output_array.Begin(), output_array.End(), result_it);
+        }
     }
 }
+
 
 void AbstractSimulation::ResizeOutputs()
 {

@@ -948,13 +948,13 @@ void Protocol::AddDefaultPlots(const std::vector<boost::shared_ptr<PlotSpecifica
 // Associating a protocol with a model
 //
 
-void Protocol::CheckModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel) const
+void Protocol::CheckModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel) const
 {
     if (!pModel)
     {
         EXCEPTION("Given model doesn't have any protocol outputs.");
     }
-    if (pModel->GetNumberOfOutputs() == 0 && pModel->rGetVectorOutputNames().size() == 0)
+    if (pModel->GetNumberOfOutputs() == 0)
     {
         EXCEPTION("Number of model outputs is zero.");
     }
@@ -965,7 +965,7 @@ void Protocol::CheckModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs
 }
 
 
-void Protocol::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
+void Protocol::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 {
     CheckModel(pModel);
     mpModel = pModel;

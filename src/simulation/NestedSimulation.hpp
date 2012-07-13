@@ -61,7 +61,7 @@ public:
      * Set method for #mpModel used by the initial parser implementation.
      * @param pModel  the model the protocol is being run on
      */
-    virtual void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
+    virtual void SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel);
 
     /**
      * Set where to write any debug tracing to, if desired.

@@ -35,12 +35,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "NestedProtocol.hpp"
 
-#include <algorithm>
 #include <boost/foreach.hpp>
-#include <boost/make_shared.hpp>
+#include "OutputFileHandler.hpp"
 #include "BacktraceException.hpp"
-#include "ProtoHelperMacros.hpp"
-#include "VectorStreaming.hpp"
 
 /**
  * A fake stepper that takes no steps.
@@ -103,7 +100,7 @@ public:
 NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
                                const std::map<std::string, AbstractExpressionPtr>& rInputSpecifications,
                                const std::vector<std::string>& rOutputSpecifications)
-    : AbstractSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs>(),
+    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(),
                          AbstractStepperPtr(new FakeStepper)),
       mpProtocol(pProtocol),
       mInputSpecifications(rInputSpecifications),
@@ -113,7 +110,7 @@ NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
 }
 
 
-void NestedProtocol::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
+void NestedProtocol::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 {
     PROTO_ASSERT(!mOutputSpecifications.empty(), "No results are being retained from the nested protocol.");
     AbstractSimulation::SetModel(pModel);
@@ -124,7 +121,7 @@ void NestedProtocol::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOut
 void NestedProtocol::Run(EnvironmentPtr pResults)
 {
     // Set protocol inputs, temporarily making the environment in which they are evaluated
-    // delegate to our environment
+    // delegate to our environment (bit of a hack really!)
     typedef std::pair<const std::string, AbstractExpressionPtr> StringExprPair;
     mpProtocol->rGetInputsEnvironment().SetDelegateeEnvironment(rGetEnvironment().GetAsDelegatee());
     BOOST_FOREACH(StringExprPair& r_input, mInputSpecifications)
@@ -155,52 +152,5 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
     {
         mpProtocol->WriteToFile("outputs");
     }
-    if (pResults)
-    {
-        bool first_run = (pResults->GetNumberOfDefinitions() == 0u);
-        const Environment& r_outputs = mpProtocol->rGetOutputsCollection();
-        BOOST_FOREACH(const std::string& r_output_name, mOutputSpecifications)
-        {
-            AbstractValuePtr p_output = r_outputs.Lookup(r_output_name, GetLocationInfo());
-            PROTO_ASSERT(p_output->IsArray(),
-                         "Nested protocol produced non-array output " << r_output_name << ".");
-            const NdArray<double> output_array = GET_ARRAY(p_output);
-            const NdArray<double>::Extents output_shape = output_array.GetShape();
-            const unsigned num_local_dims = this->rGetSteppers().size() - 1u;
-            NdArray<double> result_array;
-            // Create output array, if not already done
-            if (first_run)
-            {
-                mOutputShapes[r_output_name] = output_shape;
-                NdArray<double>::Extents shape(num_local_dims + output_shape.size());
-                for (unsigned i=0; i<num_local_dims; i++)
-                {
-                    shape[i] = this->rGetSteppers()[i]->GetNumberOfOutputPoints();
-                }
-                std::copy(output_shape.begin(), output_shape.end(), shape.begin() + num_local_dims);
-                NdArray<double> result(shape);
-                result_array = result;
-                AbstractValuePtr p_result = boost::make_shared<ArrayValue>(result);
-                p_result->SetUnits(p_output->GetUnits());
-                pResults->DefineName(r_output_name, p_result, GetLocationInfo());
-            }
-            else
-            {
-                // Check the sub array shape matches the original run
-                PROTO_ASSERT(output_shape == mOutputShapes[r_output_name],
-                             "All runs of a nested protocol must produce outputs with the same shape; output "
-                             << r_output_name << " with shape now " << output_shape
-                             << " does not match the original run of shape " << mOutputShapes[r_output_name] << ".");
-                result_array = GET_ARRAY(pResults->Lookup(r_output_name, GetLocationInfo()));
-            }
-            // Add protocol output into result array
-            NdArray<double>::Indices idxs = result_array.GetIndices();
-            for (unsigned i=0; i<num_local_dims; i++)
-            {
-                idxs[i] = rGetSteppers()[i]->GetCurrentOutputNumber();
-            }
-            NdArray<double>::Iterator result_it(idxs, result_array);
-            std::copy(output_array.Begin(), output_array.End(), result_it);
-        }
-    }
+    AddModelOutputs(pResults, mpProtocol->rGetOutputsCollection().GetAsDelegatee());
 }

@@ -287,7 +287,7 @@ public:
      *
      * @param pModel  the model being simulated
      */
-    void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
+    void SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel);
 
 private:
     /** Where the protocol was loaded from, for resolving relative imports. */
@@ -337,7 +337,7 @@ private:
     std::vector<boost::shared_ptr<PlotSpecification> > mPlotSpecifications;
 
     /** The model being simulated by this protocol. */
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> mpModel;
+    boost::shared_ptr<AbstractSystemWithOutputs> mpModel;
 
     /** Handler for writing results, debug & tracing information to file. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
@@ -350,7 +350,7 @@ private:
      *
      * @param pModel  the model
      */
-    void CheckModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel) const;
+    void CheckModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel) const;
 
     /**
      * Ensure that this protocol, and any it imports, can access model variables through the

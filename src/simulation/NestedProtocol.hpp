@@ -44,7 +44,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Protocol.hpp"
 #include "AbstractExpression.hpp"
-#include "NdArray.hpp"
 
 /**
  * A "simulation" class that wraps an entire protocol definition.
@@ -83,7 +82,7 @@ public:
      *
      * @param pModel  the model the protocol is being run on
      */
-    void SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel);
+    void SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel);
 
 private:
     /** The nested protocol itself. */
@@ -94,9 +93,6 @@ private:
 
     /** Which protocol outputs are of interest. */
     std::vector<std::string> mOutputSpecifications;
-
-    /** The shapes of the results of the nested protocol. */
-    std::map<std::string, NdArray<double>::Extents> mOutputShapes;
 };
 
 #endif // NESTEDPROTOCOL_HPP_

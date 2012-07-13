@@ -183,7 +183,7 @@ void SedmlParser::ParseSimulations(const DOMElement* pRootElt)
 
 
 AbstractSimulationPtr SedmlParser::ParseSimulation(const DOMElement* pSimElt,
-                                                   boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
+                                                   boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 {
     AbstractSimulationPtr p_main_sim;
     SetContext(pSimElt);
@@ -268,7 +268,7 @@ void SedmlParser::ParseTasks(const DOMElement* pRootElt)
         PROTO_ASSERT(mSimulationDefinitions.find(sim_ref) != mSimulationDefinitions.end(),
                      "Referenced simulation " << sim_ref << " does not exist.");
 
-        boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_model = mModels[model_ref];
+        boost::shared_ptr<AbstractSystemWithOutputs> p_model = mModels[model_ref];
         AbstractSimulationPtr p_sim = ParseSimulation(mSimulationDefinitions[sim_ref], p_model);
         TransferContext(p_task, p_sim);
         p_sim->SetOutputsPrefix(id);
@@ -314,7 +314,7 @@ void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
             PROTO_ASSERT(mTasks.find(task_ref) != mTasks.end(),
                          "Referenced task " << task_ref << " does not exist.");
 
-            boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_model = mTasks[task_ref]->GetModel();
+            boost::shared_ptr<AbstractSystemWithOutputs> p_model = mTasks[task_ref]->GetModel();
             std::string varname = p_model->rGetShortName(target);
             var_name_map[var_id] = task_ref + ":" + varname;
             fps.push_back(var_id);
@@ -509,7 +509,7 @@ std::string SedmlParser::GetRequiredAttr(const DOMElement* pElt, const std::stri
 }
 
 
-boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> SedmlParser::CreateModel(const std::string& rModel,
+boost::shared_ptr<AbstractSystemWithOutputs> SedmlParser::CreateModel(const std::string& rModel,
                                                                                  const std::string& rModelSource,
                                                                                  OutputFileHandler& rHandler)
 {
@@ -540,7 +540,7 @@ boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> SedmlParser::CreateModel
     DynamicCellModelLoaderPtr p_loader = converter.Convert(copied_model);
     boost::shared_ptr<AbstractStimulusFunction> p_stimulus;
     boost::shared_ptr<AbstractIvpOdeSolver> p_solver;
-    boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_cell(dynamic_cast<AbstractUntemplatedSystemWithOutputs*>(p_loader->CreateCell(p_solver, p_stimulus)));
+    boost::shared_ptr<AbstractSystemWithOutputs> p_cell(dynamic_cast<AbstractSystemWithOutputs*>(p_loader->CreateCell(p_solver, p_stimulus)));
     // Check we have the right bases
     assert(dynamic_cast<AbstractDynamicallyLoadableEntity*>(p_cell.get()));
     assert(dynamic_cast<AbstractCvodeCell*>(p_cell.get()));

@@ -52,7 +52,7 @@ public:
      * @param pModifiers  details any modifications to be made to the cell or
      *     simulation parameters as the simulation progresses
      */
-    TimecourseSimulation(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+    TimecourseSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                          boost::shared_ptr<AbstractStepper> pStepper,
                          boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
 

@@ -61,7 +61,7 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
     LoopEndHook();
 }
 
-void NestedSimulation::SetModel(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel)
+void NestedSimulation::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 {
     AbstractSimulation::SetModel(pModel);
     mpNestedSimulation->SetModel(pModel);

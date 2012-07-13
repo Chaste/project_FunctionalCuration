@@ -458,14 +458,14 @@ public:
         boost::shared_ptr<CELL_TYPE> p_cell = boost::dynamic_pointer_cast<CELL_TYPE>(p_abs_cell);
         assert(p_cell);
         // Check it has the right base classes
-        TS_ASSERT(boost::dynamic_pointer_cast<AbstractSystemWithOutputs<VECTOR> >(p_cell));
+        TS_ASSERT(boost::dynamic_pointer_cast<AbstractTemplatedSystemWithOutputs<VECTOR> >(p_cell));
         TS_ASSERT(boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(p_cell));
 
         // Test with simulation & post-processing loaded from file
         ProtocolParser parser;
         FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
-        p_proto->SetModel(boost::dynamic_pointer_cast<AbstractSystemWithOutputs<VECTOR> >(p_cell));
+        p_proto->SetModel(boost::dynamic_pointer_cast<AbstractTemplatedSystemWithOutputs<VECTOR> >(p_cell));
         p_proto->Run();
         p_proto->WriteToFile(handler, "TestBasicSimulationAndApd");
 

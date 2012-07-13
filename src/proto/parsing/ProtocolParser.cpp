@@ -780,7 +780,7 @@ public:
                                                                     boost::shared_ptr<ModifierCollection> pModifiers)
     {
         SetContext(pDefnElt);
-        boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> p_no_model; ///\todo specify model in XML?
+        boost::shared_ptr<AbstractSystemWithOutputs> p_no_model; ///\todo specify model in XML?
         return boost::make_shared<TimecourseSimulation>(p_no_model, pStepper, pModifiers);
     }
 

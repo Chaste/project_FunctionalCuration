@@ -66,7 +66,7 @@ private:
      * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    void ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+    void ReallyApply(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                      boost::shared_ptr<AbstractStepper> pStepper);
 
     /** The collection in which to store the saved state. */

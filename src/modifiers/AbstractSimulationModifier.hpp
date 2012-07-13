@@ -83,7 +83,7 @@ public:
      * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    virtual void operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+    virtual void operator()(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                             boost::shared_ptr<AbstractStepper> pStepper);
 
     /**
@@ -92,7 +92,7 @@ public:
      * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    virtual void ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+    virtual void ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                             boost::shared_ptr<AbstractStepper> pStepper);
 
 protected:
@@ -102,7 +102,7 @@ protected:
      * @param pModel  the cell to modify
      * @param pStepper  controls the current loop of the simulation
      */
-    virtual void ReallyApply(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+    virtual void ReallyApply(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                              boost::shared_ptr<AbstractStepper> pStepper) =0;
 
     /** When to apply this modification. */

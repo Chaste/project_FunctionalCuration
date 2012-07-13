@@ -47,7 +47,7 @@ AbstractSimulationModifier::~AbstractSimulationModifier()
 }
 
 
-void AbstractSimulationModifier::operator()(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+void AbstractSimulationModifier::operator()(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                             boost::shared_ptr<AbstractStepper> pStepper)
 {
     if (mWhen == EVERY_LOOP ||
@@ -59,7 +59,7 @@ void AbstractSimulationModifier::operator()(boost::shared_ptr<AbstractUntemplate
 
 
 
-void AbstractSimulationModifier::ApplyAtEnd(boost::shared_ptr<AbstractUntemplatedSystemWithOutputs> pModel,
+void AbstractSimulationModifier::ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                             boost::shared_ptr<AbstractStepper> pStepper)
 {
     if (mWhen == AT_END)

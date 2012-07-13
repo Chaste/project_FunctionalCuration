@@ -152,5 +152,13 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
     {
         mpProtocol->WriteToFile("outputs");
     }
-    AddModelOutputs(pResults, mpProtocol->rGetOutputsCollection().GetAsDelegatee());
+    // Add only the selected protocol outputs
+    EnvironmentPtr p_selected_outputs(new Environment);
+    const Environment& r_proto_outputs = mpProtocol->rGetOutputsCollection();
+    BOOST_FOREACH(const std::string& r_output_name, mOutputSpecifications)
+    {
+        AbstractValuePtr p_value = r_proto_outputs.Lookup(r_output_name, GetLocationInfo());
+        p_selected_outputs->DefineName(r_output_name, p_value, GetLocationInfo());
+    }
+    AddIterationOutputs(pResults, p_selected_outputs);
 }

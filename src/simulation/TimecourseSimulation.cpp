@@ -52,7 +52,7 @@ void TimecourseSimulation::Run(EnvironmentPtr pResults)
     {
         LoopBodyStartHook();
         // Compute outputs here, so we get the initial state
-        AddModelOutputs(pResults, mpModel->GetOutputs());
+        AddIterationOutputs(pResults, mpModel->GetOutputs());
         LoopBodyEndHook();
         // Simulate until the next output point, if there is one
         const double next_time = mpStepper->Step();

@@ -182,15 +182,15 @@ protected:
     void LoopEndHook();
 
     /**
-     * This method adds model outputs from the current iteration to the overall simulation outputs.
+     * This method adds outputs from the current iteration to the overall simulation outputs.
      * It should be called by the innermost loop of the simulation at each iteration, prior to
      * calling LoopBodyEndHook.
      *
      * @param pResults  the environment in which to record the whole simulation's results
      *     (or an empty pointer if not recording)
-     * @param pModelOutputs  the model outputs from the current iteration
+     * @param pIterationOutputs  the outputs from the current iteration
      */
-    void AddModelOutputs(EnvironmentPtr pResults, EnvironmentCPtr pModelOutputs);
+    void AddIterationOutputs(EnvironmentPtr pResults, EnvironmentCPtr pIterationOutputs);
 
     /**
      * If this simulation is controlled by a while loop, then we might need to resize the

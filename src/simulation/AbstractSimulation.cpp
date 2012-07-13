@@ -212,7 +212,7 @@ void AbstractSimulation::LoopEndHook()
 }
 
 
-void AbstractSimulation::AddModelOutputs(EnvironmentPtr pResults, EnvironmentCPtr pModelOutputs)
+void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, EnvironmentCPtr pIterationOutputs)
 {
     if (pResults)
     {
@@ -224,9 +224,9 @@ void AbstractSimulation::AddModelOutputs(EnvironmentPtr pResults, EnvironmentCPt
             num_local_dims--;
         }
 
-        BOOST_FOREACH(const std::string& r_output_name, mpModel->rGetOutputNames())
+        BOOST_FOREACH(const std::string& r_output_name, pIterationOutputs->GetDefinedNames())
         {
-            AbstractValuePtr p_output = pModelOutputs->Lookup(r_output_name, GetLocationInfo());
+            AbstractValuePtr p_output = pIterationOutputs->Lookup(r_output_name, GetLocationInfo());
             PROTO_ASSERT(p_output->IsArray(),
                          "Model produced non-array output " << r_output_name << ".");
             const NdArray<double> output_array = GET_ARRAY(p_output);

@@ -39,74 +39,15 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OutputFileHandler.hpp"
 #include "BacktraceException.hpp"
 
-/**
- * A fake stepper that takes no steps.
- */
-class FakeStepper : public AbstractStepper
-{
-public:
-    /**
-     * Default constructor.
-     */
-    FakeStepper()
-        : AbstractStepper("", "")
-    {
-        this->mCurrentStep = 0u;
-        SetCurrentOutputPoint(0.0);
-    }
-
-    /**
-     * This stepper always has size 0.
-     */
-    unsigned GetNumberOfOutputPoints() const
-    {
-        return 0u;
-    }
-
-    /**
-     * The end point is fixed.
-     */
-    bool IsEndFixed() const
-    {
-        return true;
-    }
-
-    /**
-     * No-op.
-     */
-    void Initialise()
-    {}
-
-    /**
-     * Reset this stepper to its starting point.
-     */
-    virtual void Reset()
-    {
-        this->mCurrentStep = 0u;
-    }
-
-    /**
-     * Does nothing and returns zero.
-     */
-    double Step()
-    {
-//        this->mCurrentStep++;
-        return 0.0;
-    }
-
-};
-
 
 NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
                                const std::map<std::string, AbstractExpressionPtr>& rInputSpecifications,
                                const std::vector<std::string>& rOutputSpecifications)
-    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(),
-                         AbstractStepperPtr(new FakeStepper)),
+    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr()),
       mpProtocol(pProtocol),
       mInputSpecifications(rInputSpecifications),
       mOutputSpecifications(rOutputSpecifications)
 {
-    this->mpStepper->SetLocationInfo(GetLocationInfo());
 }
 
 
@@ -135,7 +76,7 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
     {
         // Make the nested protocol save all its results each run
         unsigned run_number = 1u;
-        const unsigned num_local_dims = this->rGetSteppers().size() - 1u;
+        const unsigned num_local_dims = this->rGetSteppers().size();
         for (unsigned i=0; i<num_local_dims; ++i)
         {
             run_number *= (rGetSteppers()[i]->GetCurrentOutputNumber() + 1u);

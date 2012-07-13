@@ -73,9 +73,12 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutpu
     }
     PROTO_ASSERT(mpSteppers->empty() || mpSteppers->front()->IsEndFixed(),
                  "A while loop may only be the outermost loop for a simulation.");
-    // Add our stepper to the front of the shared collection (innermost is last)
-    mpSteppers->insert(mpSteppers->begin(), mpStepper);
-    mpStepper->SetEnvironment(mpEnvironment);
+    // Add our stepper (if present) to the front of the shared collection (innermost is last)
+    if (mpStepper)
+    {
+        mpSteppers->insert(mpSteppers->begin(), mpStepper);
+        mpStepper->SetEnvironment(mpEnvironment);
+    }
 }
 
 
@@ -102,7 +105,7 @@ void AbstractSimulation::InitialiseSteppers()
     {
         p_stepper->Initialise();
     }
-    if (!mpStepper->IsEndFixed() && !mOutputsPrefix.empty())
+    if (!mOutputsPrefix.empty() && mpStepper && !mpStepper->IsEndFixed())
     {
         // Create an environment to contain views of the simulation outputs thus far, for
         // use in the loop condition test if needed.
@@ -175,6 +178,7 @@ EnvironmentPtr AbstractSimulation::Run()
 
 void AbstractSimulation::LoopBodyStartHook()
 {
+    assert(mpStepper);
     if (mpModifiers)
     {
         (*mpModifiers)(mpModel, mpStepper);
@@ -195,6 +199,7 @@ void AbstractSimulation::LoopBodyStartHook()
 
 void AbstractSimulation::LoopBodyEndHook()
 {
+    assert(mpStepper);
     // If this is a while loop, update the views of the results thus far
     if (!mpStepper->IsEndFixed())
     {
@@ -205,6 +210,7 @@ void AbstractSimulation::LoopBodyEndHook()
 
 void AbstractSimulation::LoopEndHook()
 {
+    assert(mpStepper);
     if (mpModifiers)
     {
         mpModifiers->ApplyAtEnd(mpModel, mpStepper);
@@ -217,12 +223,7 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, Environmen
     if (pResults)
     {
         bool first_run = (pResults->GetNumberOfDefinitions() == 0u);
-        unsigned num_local_dims = this->rGetSteppers().size();
-        if (rGetSteppers().back()->GetNumberOfOutputPoints() == 0u)
-        {
-            // Hack for nested protocols
-            num_local_dims--;
-        }
+        const unsigned num_local_dims = this->rGetSteppers().size();
 
         BOOST_FOREACH(const std::string& r_output_name, pIterationOutputs->GetDefinedNames())
         {
@@ -274,6 +275,7 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, Environmen
 
 void AbstractSimulation::ResizeOutputs()
 {
+    assert(mpStepper);
     assert(!GetOutputsPrefix().empty());
 
     if (!mpStepper->IsEndFixed())
@@ -291,6 +293,7 @@ void AbstractSimulation::ResizeOutputs()
 
 void AbstractSimulation::CreateResultViews()
 {
+    assert(mpStepper);
     assert(!mpStepper->IsEndFixed());
     const std::string prefix = GetOutputsPrefix();
 

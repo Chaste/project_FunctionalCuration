@@ -51,7 +51,7 @@ void AbstractSimulationModifier::operator()(boost::shared_ptr<AbstractSystemWith
                                             boost::shared_ptr<AbstractStepper> pStepper)
 {
     if (mWhen == EVERY_LOOP ||
-        (mWhen == AT_START_ONLY && pStepper->GetCurrentOutputPoint() == 0))
+        (mWhen == AT_START_ONLY && pStepper->GetCurrentOutputNumber() == 0u))
     {
         ReallyApply(pModel, pStepper);
     }

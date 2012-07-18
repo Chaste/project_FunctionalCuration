@@ -51,10 +51,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VectorStreaming.hpp"
 
 
-// For use with BOOST_FOREACH and std::map
-typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
-
-
 AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                        boost::shared_ptr<AbstractStepper> pStepper,
                                        boost::shared_ptr<ModifierCollection> pModifiers,
@@ -275,10 +271,9 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, Environmen
 
 void AbstractSimulation::ResizeOutputs()
 {
-    assert(mpStepper);
     assert(!GetOutputsPrefix().empty());
 
-    if (!mpStepper->IsEndFixed())
+    if (mpStepper && !mpStepper->IsEndFixed())
     {
         const std::vector<std::string> output_names = mpResultsEnvironment->GetDefinedNames();
         BOOST_FOREACH(const std::string& r_name, output_names)

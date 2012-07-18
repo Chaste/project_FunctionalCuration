@@ -54,7 +54,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Typedefs for use with BOOST_FOREACH and std::maps
 typedef std::pair<std::string, std::string> StringPair;
-typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
 typedef std::pair<std::string, ProtocolPtr> StringProtoPair;
 
 

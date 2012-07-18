@@ -33,36 +33,71 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef TIMECOURSESIMULATION_HPP_
-#define TIMECOURSESIMULATION_HPP_
+#ifndef COMBINEDSIMULATION_HPP_
+#define COMBINEDSIMULATION_HPP_
 
 #include "AbstractSimulation.hpp"
 
+#include <vector>
+
 /**
- * Simulate the cell against time.
+ * This simulation type combines multiple other simulations into a single unit which may be executed
+ * as a whole.
+ *
+ * \todo #2190 Make this work when it's in a NestedSimulation.
  */
-class TimecourseSimulation : public AbstractSimulation
+class CombinedSimulation : public AbstractSimulation
 {
 public:
     /**
-     * Constructor.
-     *
-     * @param pModel  the model the protocol is being run on
-     * @param pStepper  controls the iteration around this simulation's loop
-     * @param pModifiers  details any modifications to be made to the cell or
-     *     simulation parameters as the simulation progresses
+     * This type is used to specify whether the ordering of child simulations matters, and
+     * hence whether their execution may be parallelised trivially or not.
      */
-    TimecourseSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                         boost::shared_ptr<AbstractStepper> pStepper,
-                         boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
+    enum Scheduling
+    {
+        SEQUENTIAL, /**< Child simulations will be executed in order */
+        PARALLEL    /**< The ordering of child simulations does not matter */
+    };
+
+    /**
+     * Create a new combined simulation.
+     *
+     * @param rChildSims  the child simulations comprising this collection
+     * @param scheduling  how the execution of child simulations should be scheduled
+     */
+    CombinedSimulation(const std::vector<AbstractSimulationPtr>& rChildSims,
+                       Scheduling scheduling);
+
+    /**
+     * Set method for #mpModel used by the initial parser implementation.
+     * @param pModel  the model the protocol is being run on
+     */
+    virtual void SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel);
+
+    /**
+     * Set where to write any debug tracing to, if desired.
+     *
+     * @param pHandler  handler for the output folder
+     */
+    void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
 
 protected:
     /**
-     * Run a simulation, filling in the results.
+     * Run a simulation, filling in the results if requested.
      *
-     * @param pResults  an Environment to be filled in with results
+     * If the supplied pointer is empty then no results are being stored for this simulation,
+     * and we just run the simulation.
+     *
+     * @param pResults  an Environment to be filled in with results, or an empty pointer
      */
     void Run(EnvironmentPtr pResults);
+
+private:
+    /** The child simulations comprising this collection */
+    std::vector<AbstractSimulationPtr> mChildSims;
+
+    /** How the execution of child simulations should be scheduled */
+    Scheduling mScheduling;
 };
 
-#endif /*TIMECOURSESIMULATION_HPP_*/
+#endif // COMBINEDSIMULATION_HPP_

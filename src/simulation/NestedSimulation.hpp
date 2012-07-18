@@ -74,7 +74,7 @@ protected:
     /**
      * Run a simulation, filling in the results.
      *
-     * @param pResults  an Environment containing results arrays to fill in
+     * @param pResults  an Environment to be filled in with results
      */
     void Run(EnvironmentPtr pResults);
 

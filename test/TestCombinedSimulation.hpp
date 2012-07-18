@@ -33,36 +33,34 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef TIMECOURSESIMULATION_HPP_
-#define TIMECOURSESIMULATION_HPP_
+#ifndef TESTCOMBINEDSIMULATION_HPP_
+#define TESTCOMBINEDSIMULATION_HPP_
 
-#include "AbstractSimulation.hpp"
+#include <cxxtest/TestSuite.h>
 
-/**
- * Simulate the cell against time.
- */
-class TimecourseSimulation : public AbstractSimulation
+#include "ProtocolRunner.hpp"
+
+#include "FileFinder.hpp"
+
+class TestCombinedSimulation : public CxxTest::TestSuite
 {
 public:
     /**
-     * Constructor.
-     *
-     * @param pModel  the model the protocol is being run on
-     * @param pStepper  controls the iteration around this simulation's loop
-     * @param pModifiers  details any modifications to be made to the cell or
-     *     simulation parameters as the simulation progresses
+     * We put all the tests in one protocol for efficiency - generating the model code is the long bit!
      */
-    TimecourseSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                         boost::shared_ptr<AbstractStepper> pStepper,
-                         boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
+    void TestOrderedAndUnordered() throw (Exception)
+    {
+        std::string dirname = "TestCombinedSimulation";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_combined_sim.xml", RelativeTo::ChasteSourceRoot);
 
-protected:
-    /**
-     * Run a simulation, filling in the results.
-     *
-     * @param pResults  an Environment to be filled in with results
-     */
-    void Run(EnvironmentPtr pResults);
+        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+
+        // Run
+        runner.RunProtocol();
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+    }
 };
 
-#endif /*TIMECOURSESIMULATION_HPP_*/
+#endif // TESTCOMBINEDSIMULATION_HPP_

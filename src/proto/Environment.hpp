@@ -50,6 +50,9 @@ class Environment;
 typedef boost::shared_ptr<const Environment> EnvironmentCPtr;
 typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
+// For use with BOOST_FOREACH and std::map
+typedef std::pair<std::string, EnvironmentPtr> StringEnvPair;
+
 /**
  * A mapping of names to values in the protocol language.
  *

@@ -510,8 +510,8 @@ std::string SedmlParser::GetRequiredAttr(const DOMElement* pElt, const std::stri
 
 
 boost::shared_ptr<AbstractSystemWithOutputs> SedmlParser::CreateModel(const std::string& rModel,
-                                                                                 const std::string& rModelSource,
-                                                                                 OutputFileHandler& rHandler)
+                                                                      const std::string& rModelSource,
+                                                                      OutputFileHandler& rHandler)
 {
     // Copy CellML file into output dir and create conf file
     std::cout << "Generating code for model " << rModel << std::endl;

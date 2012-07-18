@@ -68,21 +68,19 @@ public:
                    const std::vector<std::string>& rOutputSpecifications);
 
     /**
-     * Run a simulation, filling in the results if requested.
-     *
-     * We create the results arrays at the end of the first time this is called, since their
-     * sizes won't be known until then.
-     *
-     * @param pResults  an Environment containing results arrays to fill in, or an empty pointer
-     */
-    void Run(EnvironmentPtr pResults);
-
-    /**
      * Set the model being simulated by the nested protocol.
      *
      * @param pModel  the model the protocol is being run on
      */
     void SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel);
+
+protected:
+    /**
+     * Run a simulation, filling in the results if requested.
+     *
+     * @param pResults  an Environment to be filled in with results, which must be non-empty
+     */
+    void Run(EnvironmentPtr pResults);
 
 private:
     /** The nested protocol itself. */

@@ -89,19 +89,6 @@ public:
      */
     EnvironmentPtr Run();
 
-    /**
-     * Run a simulation, filling in the results if requested.
-     *
-     * This method must be provided by concrete subclasses.  If the supplied pointer is
-     * NULL then no results are being stored for this simulation, and the subclass should
-     * just run the simulation.  Otherwise, the supplied Environment will have arrays
-     * defined for each simulation output, but their contents will be undefined and must
-     * be filled in.
-     *
-     * @param pResults  an Environment containing results arrays to fill in, or an empty pointer
-     */
-    virtual void Run(EnvironmentPtr pResults)=0;
-
     /** Get method for #mpModel. */
     boost::shared_ptr<AbstractSystemWithOutputs> GetModel()
     {
@@ -163,6 +150,18 @@ public:
      * (If not, an unset FileFinder will be returned.)
      */
     FileFinder GetOutputFolder() const;
+
+    /**
+     * Run a simulation, filling in the results if requested.
+     *
+     * This method must be provided by concrete subclasses.  If the supplied pointer is
+     * NULL then no results are being stored for this simulation, and the subclass should
+     * just run the simulation.  Otherwise, the AddIterationOutputs method should be called
+     * by the innermost simulation object to fill in the results.
+     *
+     * @param pResults  an Environment to be filled in with results, or an empty pointer
+     */
+    virtual void Run(EnvironmentPtr pResults)=0;
 
 protected:
     /**

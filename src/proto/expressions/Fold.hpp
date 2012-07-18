@@ -65,8 +65,8 @@ public:
      *
      * @param pFunc  the function to be folded
      * @param pArray  the operand array
-     * @param pInit  the initial value for the fold; defaults to the first element of the input
-     * @param pDim  the dimension along which to perform the fold
+     * @param pInit  the initial value for the fold (defaults to the first element of the input)
+     * @param pDim  the dimension along which to perform the fold (defaults to last)
      */
     Fold(const AbstractExpressionPtr pFunc,
          const AbstractExpressionPtr pArray,

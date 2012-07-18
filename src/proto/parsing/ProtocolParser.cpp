@@ -50,6 +50,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractSimulation.hpp"
 #include "NestedSimulation.hpp"
 #include "TimecourseSimulation.hpp"
+#include "CombinedSimulation.hpp"
 #include "NestedProtocol.hpp"
 #include "AbstractModifier.hpp"
 #include "ModelResetModifier.hpp"
@@ -803,6 +804,46 @@ public:
     }
 
     /**
+     * Parse a combinedSimulation element.
+     *
+     * @param pDefnElt  the element
+     */
+    boost::shared_ptr<AbstractSimulation> ParseCombinedSimulation(DOMElement* pDefnElt)
+    {
+        SetContext(pDefnElt);
+        std::vector<AbstractSimulationPtr> child_sims;
+        std::vector<DOMElement*> simulations = XmlTools::FindElements(pDefnElt, "simulations");
+        if (!simulations.empty())
+        {
+            std::vector<DOMElement*> children = XmlTools::GetChildElements(simulations.front());
+            BOOST_FOREACH(DOMElement* p_sim_elt, children)
+            {
+                child_sims.push_back(ParseSimulationDefinition(p_sim_elt));
+            }
+        }
+        CombinedSimulation::Scheduling scheduling;
+        PROTO_ASSERT(pDefnElt->hasAttribute(X("scheduling")),
+                     "A combinedSimulation must have a scheduling attribute.");
+        {
+            std::string sched = X2C(pDefnElt->getAttribute(X("scheduling")));
+            if (sched == "sequential")
+            {
+                scheduling = CombinedSimulation::SEQUENTIAL;
+            }
+            else if (sched == "parallel")
+            {
+                scheduling = CombinedSimulation::PARALLEL;
+            }
+            else
+            {
+                PROTO_EXCEPTION("The scheduling attribute must contain 'parallel' or 'sequential'; not "
+                                << sched << '.');
+            }
+        }
+        return boost::make_shared<CombinedSimulation>(child_sims, scheduling);
+    }
+
+    /**
      * Parse a (potentially nested) simulation definition, incorporating the simulation itself
      * along with all steppers and modifiers.
      *
@@ -816,6 +857,10 @@ public:
         if (sim_type == "nestedProtocol")
         {
             p_sim = ParseNestedProtocol(pDefnElt);
+        }
+        else if (sim_type == "combinedSimulation")
+        {
+            p_sim = ParseCombinedSimulation(pDefnElt);
         }
         else
         {

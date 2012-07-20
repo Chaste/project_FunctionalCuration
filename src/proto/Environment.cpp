@@ -66,7 +66,27 @@ EnvironmentCPtr Environment::GetAsDelegatee() const
 void Environment::SetDelegateeEnvironment(const EnvironmentCPtr pDelegateeEnv,
                                           std::string prefix)
 {
+    // This should normally be caught at a higher level, but just in case...
+    PROTO_ASSERT2(prefix.empty() || !mpDelegateeEnvs[prefix] || mpDelegateeEnvs[prefix] == pDelegateeEnv,
+                  "Delegatee environment prefix '" << prefix << "' is already in use.",
+                  "Environment::SetDelegateeEnvironment");
     mpDelegateeEnvs[prefix] = pDelegateeEnv;
+}
+
+
+void Environment::AddSubEnvironment(const EnvironmentCPtr pSubEnv, std::string prefix)
+{
+    PROTO_ASSERT2(!prefix.empty(),
+                  "A sub-environment must be given a prefix.",
+                  "Environment::AddSubEnvironment");
+    SetDelegateeEnvironment(pSubEnv, prefix);
+    mSubEnvironmentNames.push_back(prefix);
+}
+
+
+const std::vector<std::string>& Environment::rGetSubEnvironmentNames() const
+{
+    return mSubEnvironmentNames;
 }
 
 

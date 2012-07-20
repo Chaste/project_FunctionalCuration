@@ -108,6 +108,21 @@ public:
     EnvironmentCPtr GetAsDelegatee() const;
 
     /**
+     * Add a new sub-environment.  This is just a delegatee environment, but its
+     * prefix (which must be non-empty) is recorded in a separate list, which may
+     * be retrieved using rGetSubEnvironmentNames().
+     *
+     * @param pSubEnv  the delegatee environment
+     * @param prefix  the non-empty prefix to use
+     */
+    void AddSubEnvironment(const EnvironmentCPtr pSubEnv, std::string prefix);
+
+    /**
+     * Get the prefixes of our sub-environments, if any.
+     */
+    const std::vector<std::string>& rGetSubEnvironmentNames() const;
+
+    /**
      * Remove all definitions from this environment.
      */
     void Clear();
@@ -206,6 +221,9 @@ private:
      * Environments to delegate to if we are asked to look up a name that isn't defined here.
      */
     std::map<std::string, EnvironmentCPtr> mpDelegateeEnvs;
+
+    /** Names of our sub-environments. */
+    std::vector<std::string> mSubEnvironmentNames;
 
     /** Whether to allow OverwriteDefinition to be called. */
     bool mAllowOverwrite;

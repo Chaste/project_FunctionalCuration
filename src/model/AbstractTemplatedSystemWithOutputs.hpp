@@ -69,6 +69,11 @@ public:
      */
     void SetNamespaceBindings(const std::map<std::string, std::string>& rNamespaceBindings);
 
+    /**
+     * Solve the system from the current state up to the given end point.
+     */
+    void SolveModel(double endPoint);
+
 protected:
     /**
      * Must be called by subclasses after they have set up #mOutputsInfo, #mVectorOutputsInfo

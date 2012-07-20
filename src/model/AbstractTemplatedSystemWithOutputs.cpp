@@ -44,6 +44,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NdArray.hpp"
 
 #include "AbstractParameterisedSystem.hpp"
+#include "AbstractCardiacCellInterface.hpp"
 #include "VectorHelperFunctions.hpp"
 #include "Warnings.hpp"
 #include "Exception.hpp"
@@ -52,6 +53,14 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // CVODE headers
 #include <nvector/nvector_serial.h>
 #endif
+
+
+template<typename VECTOR>
+void AbstractTemplatedSystemWithOutputs<VECTOR>::SolveModel(double endPoint)
+{
+    dynamic_cast<AbstractCardiacCellInterface*>(this)->SolveAndUpdateState(this->mFreeVariable, endPoint);
+    this->mFreeVariable = endPoint;
+}
 
 
 template<typename VECTOR>

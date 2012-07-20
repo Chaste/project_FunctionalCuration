@@ -139,6 +139,12 @@ EnvironmentCPtr FindDelegatee(const Environment& rEnv, std::string& rName, const
 void Environment::Clear()
 {
     mBindings.clear();
+    BOOST_FOREACH(const std::string& r_prefix, rGetSubEnvironmentNames())
+    {
+        EnvironmentPtr p_sub_env
+            = boost::const_pointer_cast<Environment>(mpDelegateeEnvs[r_prefix]);
+        p_sub_env->Clear();
+    }
 }
 
 

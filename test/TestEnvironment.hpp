@@ -229,20 +229,31 @@ public:
 
     void TestSubEnvironments() throw (Exception)
     {
-        NEW_ENV(root_env);
+        NEW_ENV(env);
         NEW_ENV(env_a);
         NEW_ENV(env_b);
         NEW_ENV(env_c);
-        root_env.SetDelegateeEnvironment(env_a.GetAsDelegatee(), "a");
-        root_env.AddSubEnvironment(env_b.GetAsDelegatee(), "b");
-        root_env.AddSubEnvironment(env_c.GetAsDelegatee(), "c");
+        env.SetDelegateeEnvironment(env_a.GetAsDelegatee(), "a");
+        env.AddSubEnvironment(env_b.GetAsDelegatee(), "b");
+        env.AddSubEnvironment(env_c.GetAsDelegatee(), "c");
 
-        TS_ASSERT(root_env.GetDelegateeEnvironment("a").get() == env_a.GetAsDelegatee().get());
-        TS_ASSERT(root_env.GetDelegateeEnvironment("b").get() == env_b.GetAsDelegatee().get());
-        TS_ASSERT(root_env.GetDelegateeEnvironment("c").get() == env_c.GetAsDelegatee().get());
+        TS_ASSERT(env.GetDelegateeEnvironment("a").get() == env_a.GetAsDelegatee().get());
+        TS_ASSERT(env.GetDelegateeEnvironment("b").get() == env_b.GetAsDelegatee().get());
+        TS_ASSERT(env.GetDelegateeEnvironment("c").get() == env_c.GetAsDelegatee().get());
 
         std::vector<std::string> sub_env_names = boost::assign::list_of("b")("c");
-        TS_ASSERT_EQUALS(root_env.rGetSubEnvironmentNames(), sub_env_names);
+        TS_ASSERT_EQUALS(env.rGetSubEnvironmentNames(), sub_env_names);
+
+        // Clear should also clear sub-envs
+        AbstractValuePtr p_one = CV(1);
+        env_a.DefineName("a", p_one, "");
+        AbstractValuePtr p_two = CV(2);
+        env_b.DefineName("b", p_two, "");
+        env_c.DefineName("c", p_one, "");
+        env.Clear();
+        TS_ASSERT_EQUALS(env_a.GetDefinedNames(), boost::assign::list_of("a"));
+        TS_ASSERT_EQUALS(env_b.GetNumberOfDefinitions(), 0u);
+        TS_ASSERT_EQUALS(env_c.GetNumberOfDefinitions(), 0u);
     }
 };
 

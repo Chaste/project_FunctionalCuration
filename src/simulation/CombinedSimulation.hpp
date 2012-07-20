@@ -43,8 +43,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * This simulation type combines multiple other simulations into a single unit which may be executed
  * as a whole.
- *
- * \todo #2190 Make this work when it's in a NestedSimulation.
  */
 class CombinedSimulation : public AbstractSimulation
 {

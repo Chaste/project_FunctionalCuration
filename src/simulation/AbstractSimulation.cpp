@@ -52,7 +52,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                                       boost::shared_ptr<AbstractStepper> pStepper,
+                                       AbstractStepperPtr pStepper,
                                        boost::shared_ptr<ModifierCollection> pModifiers,
                                        boost::shared_ptr<std::vector<boost::shared_ptr<AbstractStepper> > > pSteppers)
     : mpModel(pModel),
@@ -214,12 +214,21 @@ void AbstractSimulation::LoopEndHook()
 }
 
 
-void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, EnvironmentCPtr pIterationOutputs)
+void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults,
+                                             EnvironmentCPtr pIterationOutputs,
+                                             std::string outputNamePrefix)
 {
     if (pResults)
     {
+        const unsigned num_local_dims = rGetSteppers().size();
+        if (pResults == pIterationOutputs)
+        {
+            // Special case for CombinedSimulation at the top level;
+            // will apply also to other non-looped simulation types in the future.
+            assert(num_local_dims == 0u);
+            return;
+        }
         bool first_run = (pResults->GetNumberOfDefinitions() == 0u);
-        const unsigned num_local_dims = this->rGetSteppers().size();
 
         BOOST_FOREACH(const std::string& r_output_name, pIterationOutputs->GetDefinedNames())
         {
@@ -233,7 +242,7 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, Environmen
             // Create output array, if not already done
             if (first_run)
             {
-                mModelOutputShapes[r_output_name] = output_shape;
+                mModelOutputShapes[outputNamePrefix + r_output_name] = output_shape;
                 NdArray<double>::Extents shape(num_local_dims + output_shape.size());
                 for (unsigned i=0; i<num_local_dims; i++)
                 {
@@ -249,10 +258,11 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, Environmen
             else
             {
                 // Check the sub array shape matches the original run
-                PROTO_ASSERT(output_shape == mModelOutputShapes[r_output_name],
+                PROTO_ASSERT(output_shape == mModelOutputShapes[outputNamePrefix + r_output_name],
                              "The outputs of a model must not change shape during a simulation; output "
-                             << r_output_name << " with shape now " << output_shape
-                             << " does not match the original shape " << mModelOutputShapes[r_output_name] << ".");
+                             << outputNamePrefix + r_output_name << " with shape now " << output_shape
+                             << " does not match the original shape "
+                             << mModelOutputShapes[outputNamePrefix + r_output_name] << ".");
                 result_array = GET_ARRAY(pResults->Lookup(r_output_name, GetLocationInfo()));
             }
 
@@ -264,6 +274,22 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults, Environmen
             }
             NdArray<double>::Iterator result_it(idxs, result_array);
             std::copy(output_array.Begin(), output_array.End(), result_it);
+        }
+
+        // Check for any results sub-environments, and add them too, recursively.
+        BOOST_FOREACH(const std::string& r_sub_prefix, pIterationOutputs->rGetSubEnvironmentNames())
+        {
+            EnvironmentPtr p_sub_results
+                = boost::const_pointer_cast<Environment>(pResults->GetDelegateeEnvironment(r_sub_prefix));
+            if (!p_sub_results)
+            {
+                // Set up a new delegatee in the overall results for these sub-results
+                p_sub_results.reset(new Environment);
+                pResults->SetDelegateeEnvironment(p_sub_results, r_sub_prefix);
+            }
+            // Add the sub-results for this iteration
+            AddIterationOutputs(p_sub_results, pIterationOutputs->GetDelegateeEnvironment(r_sub_prefix),
+                                outputNamePrefix + r_sub_prefix + ":");
         }
     }
 }

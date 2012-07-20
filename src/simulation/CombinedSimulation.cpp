@@ -46,14 +46,14 @@ CombinedSimulation::CombinedSimulation(const std::vector<AbstractSimulationPtr>&
 {
     BOOST_FOREACH(AbstractSimulationPtr p_child_sim, mChildSims)
     {
-        const std::string prefix = p_child_sim->GetOutputsPrefix();
-        if (!prefix.empty())
-        {
-            // Set up delegation from our results to the child's results
-            GetResultsEnvironment()->SetDelegateeEnvironment(p_child_sim->GetResultsEnvironment(), prefix);
-        }
         // Make the child's main environment delegate to ours
         p_child_sim->rGetEnvironment().SetDelegateeEnvironment(this->mpEnvironment, "");
+        // Add child's results as a sub-environment of ours
+        std::string child_prefix = p_child_sim->GetOutputsPrefix();
+        if (!child_prefix.empty())
+        {
+            GetResultsEnvironment()->AddSubEnvironment(p_child_sim->GetResultsEnvironment(), child_prefix);
+        }
     }
 }
 
@@ -66,6 +66,8 @@ void CombinedSimulation::Run(EnvironmentPtr pResults)
     {
         BOOST_FOREACH(AbstractSimulationPtr p_child_sim, mChildSims)
         {
+            std::cout << "Running child simulation " << p_child_sim->GetOutputsPrefix() << "..." << std::endl;
+            p_child_sim->GetResultsEnvironment()->Clear();
             p_child_sim->InitialiseSteppers();
             p_child_sim->Run();
         }
@@ -74,10 +76,13 @@ void CombinedSimulation::Run(EnvironmentPtr pResults)
     {
         BOOST_REVERSE_FOREACH(AbstractSimulationPtr p_child_sim, mChildSims)
         {
+            std::cout << "Running child simulation " << p_child_sim->GetOutputsPrefix() << "..." << std::endl;
+            p_child_sim->GetResultsEnvironment()->Clear();
             p_child_sim->InitialiseSteppers();
             p_child_sim->Run();
         }
     }
+    AddIterationOutputs(pResults, GetResultsEnvironment());
 }
 
 

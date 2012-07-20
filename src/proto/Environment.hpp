@@ -123,7 +123,7 @@ public:
     const std::vector<std::string>& rGetSubEnvironmentNames() const;
 
     /**
-     * Remove all definitions from this environment.
+     * Remove all definitions from this environment, and from any sub-environments (but not other delegatees).
      */
     void Clear();
 

@@ -151,6 +151,7 @@ public:
      */
     FileFinder GetOutputFolder() const;
 
+protected:
     /**
      * Run a simulation, filling in the results if requested.
      *
@@ -163,7 +164,6 @@ public:
      */
     virtual void Run(EnvironmentPtr pResults)=0;
 
-protected:
     /**
      * This method must be called by subclasses as the first thing within their simulation loop.
      */
@@ -188,8 +188,11 @@ protected:
      * @param pResults  the environment in which to record the whole simulation's results
      *     (or an empty pointer if not recording)
      * @param pIterationOutputs  the outputs from the current iteration
+     * @param outputNamePrefix  prefix to use when recording initial output shapes; only used
+     *     on recursive calls, and should not be supplied by external callers
      */
-    void AddIterationOutputs(EnvironmentPtr pResults, EnvironmentCPtr pIterationOutputs);
+    void AddIterationOutputs(EnvironmentPtr pResults, EnvironmentCPtr pIterationOutputs,
+                             std::string outputNamePrefix="");
 
     /**
      * If this simulation is controlled by a while loop, then we might need to resize the
@@ -248,6 +251,9 @@ private:
 
     /** The shapes of the model outputs on the first iteration. */
     std::map<std::string, NdArray<double>::Extents> mModelOutputShapes;
+
+    /** Allow NestedSimulation to call Run(EnvironmentPtr) */
+    friend class NestedSimulation;
 };
 
 #endif /*ABSTRACTSIMULATION_HPP_*/

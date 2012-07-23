@@ -33,23 +33,16 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "ExceptionSet.hpp"
+#include "OneStepSimulation.hpp"
 
-#include <boost/foreach.hpp>
 
-ExceptionSet::ExceptionSet(const std::vector<Exception>& rComponentErrors,
-                           const std::string& rFileName,
-                           unsigned lineNumber)
-    : Exception("", rFileName, lineNumber)
+OneStepSimulation::OneStepSimulation()
+    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr())
+{}
+
+
+void OneStepSimulation::Run(EnvironmentPtr pResults)
 {
-    std::string message;
-    if (rComponentErrors.size() > 1u)
-    {
-        message += "Multiple errors occurred:";
-    }
-    BOOST_FOREACH(const Exception& rErr, rComponentErrors)
-    {
-        message += rErr.GetMessage();
-    }
-    SetMessage(message, rFileName, lineNumber);
+    mpModel->SolveModel(DOUBLE_UNSET);
+    AddIterationOutputs(pResults, mpModel->GetOutputs());
 }

@@ -957,10 +957,6 @@ void Protocol::CheckModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel) c
     {
         EXCEPTION("Number of model outputs is zero.");
     }
-    if (!boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pModel))
-    {
-        EXCEPTION("Model has an incorrect base class!");
-    }
 }
 
 
@@ -981,10 +977,8 @@ void Protocol::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 }
 
 
-boost::shared_ptr<AbstractUntemplatedParameterisedSystem> Protocol::GetModel()
+boost::shared_ptr<AbstractSystemWithOutputs> Protocol::GetModel()
 {
     EXCEPT_IF_NOT(mpModel);
-    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> p_system = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(mpModel);
-    assert(p_system);
-    return p_system;
+    return mpModel;
 }

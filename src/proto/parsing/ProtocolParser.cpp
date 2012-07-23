@@ -51,6 +51,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NestedSimulation.hpp"
 #include "TimecourseSimulation.hpp"
 #include "CombinedSimulation.hpp"
+#include "OneStepSimulation.hpp"
 #include "NestedProtocol.hpp"
 #include "AbstractModifier.hpp"
 #include "ModelResetModifier.hpp"
@@ -803,6 +804,11 @@ public:
         return boost::make_shared<NestedSimulation>(p_nested_sim, pStepper, pModifiers);
     }
 
+    AbstractSimulationPtr ParseOneStepSimulation(DOMElement* pDefnElt)
+    {
+        return boost::make_shared<OneStepSimulation>();
+    }
+
     /**
      * Parse a combinedSimulation element.
      *
@@ -861,6 +867,10 @@ public:
         else if (sim_type == "combinedSimulation")
         {
             p_sim = ParseCombinedSimulation(pDefnElt);
+        }
+        else if (sim_type == "oneStep")
+        {
+            p_sim = ParseOneStepSimulation(pDefnElt);
         }
         else
         {

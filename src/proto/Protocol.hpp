@@ -193,7 +193,7 @@ public:
     std::vector<boost::shared_ptr<PlotSpecification> >& rGetPlotSpecifications();
 
     /** Get the model being simulated in this protocol. */
-    boost::shared_ptr<AbstractUntemplatedParameterisedSystem> GetModel();
+    boost::shared_ptr<AbstractSystemWithOutputs> GetModel();
 
     //
     // Methods for setting up a protocol, used by the parser

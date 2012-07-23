@@ -89,6 +89,7 @@ void AbstractSimulation::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> p
     const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
     BOOST_FOREACH(StringEnvPair binding, r_model_envs)
     {
+        PROTO_ASSERT(!binding.first.empty(), "Model environment wrappers must be bound to a prefix.");
         mpEnvironment->SetDelegateeEnvironment(binding.second, binding.first);
         mpResultsEnvironment->SetDelegateeEnvironment(binding.second, binding.first);
     }

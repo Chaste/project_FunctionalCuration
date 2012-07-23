@@ -33,23 +33,29 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "ExceptionSet.hpp"
+#ifndef ONESTEPSIMULATION_HPP_
+#define ONESTEPSIMULATION_HPP_
 
-#include <boost/foreach.hpp>
+#include "AbstractSimulation.hpp"
 
-ExceptionSet::ExceptionSet(const std::vector<Exception>& rComponentErrors,
-                           const std::string& rFileName,
-                           unsigned lineNumber)
-    : Exception("", rFileName, lineNumber)
+/**
+ * This simulation class just runs one step of whatever algorithm is built in to the model.
+ */
+class OneStepSimulation : public AbstractSimulation
 {
-    std::string message;
-    if (rComponentErrors.size() > 1u)
-    {
-        message += "Multiple errors occurred:";
-    }
-    BOOST_FOREACH(const Exception& rErr, rComponentErrors)
-    {
-        message += rErr.GetMessage();
-    }
-    SetMessage(message, rFileName, lineNumber);
-}
+public:
+    /**
+     * Create a new simulation instance.
+     */
+    OneStepSimulation();
+
+protected:
+    /**
+     * Run a simulation, filling in the results if requested.
+     *
+     * @param pResults  an Environment to be filled in with results, which must be non-empty
+     */
+    void Run(EnvironmentPtr pResults);
+};
+
+#endif // ONESTEPSIMULATION_HPP_

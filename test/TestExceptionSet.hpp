@@ -68,6 +68,11 @@ public:
         TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Error 0\n");
         TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Error 1\n");
         TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Error 2");
+
+        // Don't say there are multiple errors when there aren't
+        errors.resize(1u, errors.front());
+        ExceptionSet single_error(errors, __FILE__, __LINE__);
+        TS_ASSERT_EQUALS(single_error.GetShortMessage().find("Multiple errors occurred"), std::string::npos);
     }
 };
 

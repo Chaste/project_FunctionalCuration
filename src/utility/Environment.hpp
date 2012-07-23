@@ -182,7 +182,7 @@ public:
      * @param rName
      * @param rCallerLocation  location information to use in error backtrace if name is not already defined
      */
-    void RemoveDefinition(const std::string& rName, const std::string& rCallerLocation);
+    virtual void RemoveDefinition(const std::string& rName, const std::string& rCallerLocation);
 
     /** Get the number of definitions in this environment. */
     virtual unsigned GetNumberOfDefinitions() const;
@@ -213,10 +213,11 @@ public:
      */
     static std::string FreshIdent();
 
-private:
+protected:
     /** The actual name-value bindings. */
     std::map<std::string, AbstractValuePtr> mBindings;
 
+private:
     /**
      * Environments to delegate to if we are asked to look up a name that isn't defined here.
      */

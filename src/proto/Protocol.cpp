@@ -694,6 +694,16 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
         points_or_lines = "linespoints pointtype 7";
     }
 
+    // Escape double-quote characters in the plot title
+    std::string display_title = pPlotSpec->rGetTitle();
+    for (std::string::iterator it = display_title.begin(); it != display_title.end(); ++it)
+    {
+        if (*it == '"')
+        {
+            it = display_title.insert(it, '\\') + 1;
+        }
+    }
+
     // Write out a Gnuplot script
     out_stream p_gnuplot_script = mpOutputHandler->OpenOutputFile(script_name);
     std::string output_dir = mpOutputHandler->GetOutputDirectoryFullPath();
@@ -713,7 +723,7 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     }
     *p_gnuplot_script << std::endl;
     *p_gnuplot_script << "set output \"" << output_dir << fig_file_name << "\"" << std::endl;
-    *p_gnuplot_script << "set title \"" << pPlotSpec->rGetTitle() << "\"" << std::endl;
+    *p_gnuplot_script << "set title \"" << display_title << "\"" << std::endl;
     *p_gnuplot_script << "set xlabel \"" << xLabel << "\"" << std::endl;
     *p_gnuplot_script << "set ylabel \"" << yLabel << "\"" << std::endl;
     //*p_gnuplot_script << "set xtics 400" << std::endl;

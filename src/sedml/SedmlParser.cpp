@@ -438,6 +438,9 @@ void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
         std::map<std::string, std::string> var_name_map;
         BOOST_FOREACH(const DOMElement* p_var, XmlTools::FindElements(p_data_gen, "listOfVariables/variable"))
         {
+            ///\todo In order to support chaining data generators, we need to make taskReference optional,
+            /// and add a new attribute (or extend target) to specify the dataGenerator id, which we can
+            /// look up in var_name_map.
             SetContext(p_var);
             const std::string var_id(GetRequiredAttr(p_var, "id"));
             PROTO_ASSERT(var_name_map[var_id].empty(),
@@ -460,6 +463,7 @@ void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
             PROTO_ASSERT(mTasks.find(model_task_ref) != mTasks.end(),
                          "Referenced task " << model_task_ref << " does not exist.");
 
+            ///\todo Consider also using GetShortName (or similar) for generic ontology terms?
             boost::shared_ptr<AbstractSystemWithOutputs> p_model = mTasks[model_task_ref]->GetModel();
             std::string varname = p_model->rGetShortName(target);
             var_name_map[var_id] = full_task_ref + ":" + varname;
@@ -482,9 +486,9 @@ void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
         AbstractExpressionPtr p_anon_lambda = boost::make_shared<LambdaExpression>(fps, body);
         TransferContext(p_data_gen, p_anon_lambda);
         std::vector<AbstractExpressionPtr> call_args;
-        BOOST_FOREACH(const std::string& rVarId, fps)
+        BOOST_FOREACH(const std::string& r_var_id, fps)
         {
-            call_args.push_back(boost::make_shared<NameLookup>(var_name_map[rVarId]));
+            call_args.push_back(boost::make_shared<NameLookup>(var_name_map[r_var_id]));
             TransferContext(p_data_gen, call_args.back());
         }
         AbstractExpressionPtr p_call = boost::make_shared<FunctionCall>(p_anon_lambda, call_args);

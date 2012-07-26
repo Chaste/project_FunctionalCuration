@@ -38,8 +38,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cxxtest/TestSuite.h>
 
+#include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
+
 #include "SedmlParser.hpp"
 #include "Protocol.hpp"
+#include "ProtoHelperMacros.hpp"
+#include "NdArray.hpp"
 
 #include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
@@ -61,6 +66,78 @@ public:
         p_proto->Run();
         p_proto->WriteToFile(handler, "outputs");
 
+        // Test the results
+        std::cout << "Checking results..." << std::endl;
+        const Environment& r_outputs = p_proto->rGetOutputsCollection();
+        std::vector<std::string> time1_names = boost::assign::list_of("time1")("time1p")("time1c")("time1n");
+        BOOST_FOREACH(std::string name, time1_names)
+        {
+            NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
+            const unsigned num_dims = (*name.rbegin() == 'n' ? 2 : 1);
+            const unsigned num_runs = (*name.rbegin() == 'n' ? 3 : 1);
+            TS_ASSERT_EQUALS(result.GetNumDimensions(), num_dims);
+            NdArray<double>::Iterator iter = result.Begin();
+            for (unsigned d=0; d<num_runs; ++d)
+            {
+                for (unsigned t=0; t<=10; ++t)
+                {
+                    TS_ASSERT_DELTA(*iter, (double)t, 1e-10);
+                    iter++;
+                }
+            }
+        }
+        std::vector<std::string> time2_names = boost::assign::list_of("time2")("time2p")("time2c")("time2n");
+        BOOST_FOREACH(std::string name, time2_names)
+        {
+            NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
+            const unsigned num_dims = (*name.rbegin() == 'n' ? 2 : 1);
+            const unsigned num_runs = (*name.rbegin() == 'n' ? 3 : 1);
+            TS_ASSERT_EQUALS(result.GetNumDimensions(), num_dims);
+            NdArray<double>::Iterator iter = result.Begin();
+            for (unsigned d=0; d<num_runs; ++d)
+            {
+                for (unsigned t=10; t<=20; ++t)
+                {
+                    TS_ASSERT_DELTA(*iter, (double)t, 1e-10);
+                    iter++;
+                }
+            }
+        }
+        std::vector<std::string> V1_names = boost::assign::list_of("V1")("V1p")("V1c")("V1n");
+        BOOST_FOREACH(std::string name, V1_names)
+        {
+            NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
+            const unsigned num_dims = (*name.rbegin() == 'n' ? 2 : 1);
+            const unsigned num_runs = (*name.rbegin() == 'n' ? 3 : 1);
+            TS_ASSERT_EQUALS(result.GetNumDimensions(), num_dims);
+            NdArray<double>::Iterator iter = result.Begin();
+            for (unsigned d=0; d<num_runs; ++d)
+            {
+                for (unsigned t=0; t<=10; ++t)
+                {
+                    TS_ASSERT_DELTA(*iter, (double)(t + d*20), 1e-10);
+                    iter++;
+                }
+            }
+        }
+        std::vector<std::string> V2_names = boost::assign::list_of("V2")("V2p")("V2c")("V2n");
+        BOOST_FOREACH(std::string name, V2_names)
+        {
+            NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
+            const unsigned num_dims = (*name.rbegin() == 'n' ? 2 : 1);
+            const unsigned num_runs = (*name.rbegin() == 'n' ? 3 : 1);
+            const unsigned reset_factor = (*name.rbegin() != 'p');
+            TS_ASSERT_EQUALS(result.GetNumDimensions(), num_dims);
+            NdArray<double>::Iterator iter = result.Begin();
+            for (unsigned d=0; d<num_runs; ++d)
+            {
+                for (unsigned t=0; t<=10; ++t)
+                {
+                    TS_ASSERT_DELTA(*iter, (double)(t + (10+d*20)*reset_factor), 1e-10);
+                    iter++;
+                }
+            }
+        }
     }
 };
 

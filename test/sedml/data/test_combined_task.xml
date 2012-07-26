@@ -215,8 +215,8 @@
         </plot2D>
         <plot2D id="plot3" name="Test plots - nested">
             <listOfCurves>
-                <curve id="c31" logX="false" logY="false" xDataReference="time1n" yDataReference="V1n"/>
-                <curve id="c32" logX="false" logY="false" xDataReference="time2n" yDataReference="V2n"/>
+                <curve id="c31" logX="false" logY="false" xDataReference="time1" yDataReference="V1n"/>
+                <curve id="c32" logX="false" logY="false" xDataReference="time2" yDataReference="V2n"/>
             </listOfCurves>
         </plot2D>
         <plot2D id="plot4" name="Test plots - combined inside combined">

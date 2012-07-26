@@ -46,6 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractExpression.hpp"
 #include "AbstractSimulation.hpp"
+#include "AbstractStepper.hpp"
 #include "AbstractSystemWithOutputs.hpp"
 #include "MathmlParser.hpp"
 #include "Protocol.hpp"
@@ -83,6 +84,9 @@ private:
     /** The simulation definitions present. */
     std::map<std::string, const xercesc::DOMElement*> mSimulationDefinitions;
 
+    /** The task definitions present. */
+    std::map<std::string, const xercesc::DOMElement*> mTaskDefinitions;
+
     /** The simulation tasks to perform, for which results are recorded for use in data generators. */
     std::map<std::string, AbstractSimulationPtr> mTasks;
 
@@ -116,9 +120,21 @@ private:
      *
      * @param pSimElt  the SED-ML simulation definition
      * @param pModel  the model on which the simulation should be run
+     * @param resetModel  whether the model should be reset prior to running the simulation
      */
     AbstractSimulationPtr ParseSimulation(const xercesc::DOMElement* pSimElt,
-                                          boost::shared_ptr<AbstractSystemWithOutputs> pModel);
+                                          boost::shared_ptr<AbstractSystemWithOutputs> pModel,
+                                          bool resetModel=true);
+
+    /**
+     * Parse a single task definition and create our corresponding simulation object
+     * (since our "simulations" correspond to SED-ML "tasks").
+     *
+     * @param pDefnElt  the SED-ML task definition
+     * @param resetModel  whether the model should be reset prior to running the simulation
+     */
+    AbstractSimulationPtr ParseTask(const xercesc::DOMElement* pDefnElt,
+                                    bool resetModel=true);
 
     /**
      * Parse the task definitions and create corresponding simulation objects
@@ -212,8 +228,19 @@ private:
      * @param rHandler  where to put the generated model code
      */
     boost::shared_ptr<AbstractSystemWithOutputs> CreateModel(const std::string& rModel,
-                                                                        const std::string& rModelSource,
-                                                                        OutputFileHandler& rHandler);
+                                                             const std::string& rModelSource,
+                                                             OutputFileHandler& rHandler);
+
+    //
+    // Parsing explicitly of our extensions
+    //
+
+    /**
+     * Parse the range specifications of a nestedTask.
+     *
+     * @param pTaskDefn  the task definition element
+     */
+    std::map<std::string, AbstractStepperPtr> ParseRanges(const xercesc::DOMElement* pTaskDefn);
 };
 
 #endif // SEDMLPARSER_HPP_

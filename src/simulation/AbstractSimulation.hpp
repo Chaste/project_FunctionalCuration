@@ -108,6 +108,13 @@ public:
     }
 
     /**
+     * Add an extra modifier to this simulation's collection.
+     *
+     * @param pModifier  the modifier to add
+     */
+    void AddModifier(AbstractSimulationModifierPtr pModifier);
+
+    /**
      * Set the model being simulated, and add its wrapper environments as delegatees from our
      * environments.
      *

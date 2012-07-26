@@ -33,48 +33,35 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "ModifierCollection.hpp"
+#ifndef TESTSEDMLEXTENSIONS_HPP_
+#define TESTSEDMLEXTENSIONS_HPP_
 
-ModifierCollection::ModifierCollection(const std::vector<AbstractSimulationModifierPtr>& rModifiers)
-    : mModifiers(rModifiers)
+#include <cxxtest/TestSuite.h>
+
+#include "SedmlParser.hpp"
+#include "Protocol.hpp"
+
+#include "FileFinder.hpp"
+#include "OutputFileHandler.hpp"
+
+class TestSedmlExtensions : public CxxTest::TestSuite
 {
-}
-
-
-ModifierCollection::ModifierCollection(unsigned numModifiers)
-    : mModifiers(numModifiers)
-{
-}
-
-
-AbstractSimulationModifierPtr& ModifierCollection::operator[](unsigned i)
-{
-    return mModifiers[i];
-}
-
-
-void ModifierCollection::AddModifier(AbstractSimulationModifierPtr pModifier)
-{
-    mModifiers.push_back(pModifier);
-}
-
-
-void ModifierCollection::operator()(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                                    AbstractStepperPtr pStepper)
-{
-    for (Collection::iterator it = mModifiers.begin(); it != mModifiers.end(); ++it)
+public:
+    void TestCombinedTask() throw (Exception)
     {
-        (**it)(pModel, pStepper);
+        OutputFileHandler handler("TestSedmlExtensions_CombinedTask");
+        FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
+        FileFinder sedml_file("data/test_combined_task.xml", this_test);
+
+        // Parse the SED-ML
+        SedmlParser sedml_parser;
+        ProtocolPtr p_proto = sedml_parser.ParseSedml(sedml_file, handler);
+
+        // Run the protocol
+        p_proto->Run();
+        p_proto->WriteToFile(handler, "outputs");
+
     }
-}
+};
 
-
-void ModifierCollection::ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                                    AbstractStepperPtr pStepper)
-{
-    for (Collection::iterator it = mModifiers.begin(); it != mModifiers.end(); ++it)
-    {
-        (*it)->ApplyAtEnd(pModel, pStepper);
-    }
-}
-
+#endif // TESTSEDMLEXTENSIONS_HPP_

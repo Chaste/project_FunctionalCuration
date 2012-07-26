@@ -75,11 +75,22 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutpu
         mpSteppers->insert(mpSteppers->begin(), mpStepper);
         mpStepper->SetEnvironment(mpEnvironment);
     }
+    if (!mpModifiers)
+    {
+        // Create an empty collection
+        mpModifiers.reset(new ModifierCollection(0u));
+    }
 }
 
 
 AbstractSimulation::~AbstractSimulation()
 {
+}
+
+
+void AbstractSimulation::AddModifier(AbstractSimulationModifierPtr pModifier)
+{
+    mpModifiers->AddModifier(pModifier);
 }
 
 
@@ -176,10 +187,7 @@ EnvironmentPtr AbstractSimulation::Run()
 void AbstractSimulation::LoopBodyStartHook()
 {
     assert(mpStepper);
-    if (mpModifiers)
-    {
-        (*mpModifiers)(mpModel, mpStepper);
-    }
+    (*mpModifiers)(mpModel, mpStepper);
     // If this is a while loop, we may need to allocate more memory for the results arrays
     if (mpResultsEnvironment && !mpStepper->IsEndFixed()
         && mpResultsEnvironment->GetNumberOfDefinitions() > 0u)
@@ -208,10 +216,7 @@ void AbstractSimulation::LoopBodyEndHook()
 void AbstractSimulation::LoopEndHook()
 {
     assert(mpStepper);
-    if (mpModifiers)
-    {
-        mpModifiers->ApplyAtEnd(mpModel, mpStepper);
-    }
+    mpModifiers->ApplyAtEnd(mpModel, mpStepper);
 }
 
 

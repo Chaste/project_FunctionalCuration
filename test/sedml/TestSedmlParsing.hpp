@@ -57,7 +57,7 @@ public:
     void TestBasicSedmlSupport() throw (Exception)
     {
         OutputFileHandler handler("TestSedml");
-        FileFinder this_test(__FILE__, RelativeTo::AbsoluteOrCwd);
+        FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
         FileFinder sedml_file("data/sedMLleloup_gonze_goldbeter_1999_version01.xml", this_test);
 
         // Parse the SED-ML

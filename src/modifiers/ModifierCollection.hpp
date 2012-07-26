@@ -58,7 +58,7 @@ public:
      * 
      * @param rModifiers  the objects making up the collection
      */
-    ModifierCollection(const std::vector<boost::shared_ptr<AbstractSimulationModifier> >& rModifiers);
+    ModifierCollection(const std::vector<AbstractSimulationModifierPtr>& rModifiers);
 
     /**
      * Create an empty collection with room for numModifiers objects.
@@ -73,7 +73,14 @@ public:
      * 
      * @param i  the index of the modifier to access.
      */
-    boost::shared_ptr<AbstractSimulationModifier>& operator[](unsigned i);
+    AbstractSimulationModifierPtr& operator[](unsigned i);
+
+    /**
+     * Add another modifier to this collection.
+     *
+     * @param pModifier  the modifier to add
+     */
+    void AddModifier(AbstractSimulationModifierPtr pModifier);
 
     /**
      * Apply each modifier in this collection in turn, starting with the first.
@@ -82,7 +89,7 @@ public:
      * @param pStepper  controls the current loop of the simulation
      */
     void operator()(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                    boost::shared_ptr<AbstractStepper> pStepper);
+                    AbstractStepperPtr pStepper);
 
     /**
      * Apply each modifier in this collection that takes effect AT_END in turn, starting with the first.
@@ -91,11 +98,11 @@ public:
      * @param pStepper  controls the current loop of the simulation
      */
     void ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                    boost::shared_ptr<AbstractStepper> pStepper);
+                    AbstractStepperPtr pStepper);
 
 private:
     /** To reduce typing. */
-    typedef std::vector<boost::shared_ptr<AbstractSimulationModifier> > Collection;
+    typedef std::vector<AbstractSimulationModifierPtr> Collection;
     
     /** The underlying collection of modifiers. */
     Collection mModifiers;

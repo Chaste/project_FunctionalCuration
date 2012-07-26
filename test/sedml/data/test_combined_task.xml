@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sedML  level="1" version="1" xmlns="http://sed-ml.org/"
+    xmlns:m="http://www.w3.org/1998/Math/MathML"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
+    <notes>
+        <p xmlns="http://www.w3.org/1999/xhtml">Test proposed SED-ML extensions</p>
+    </notes>
+    
+    <listOfSimulations>
+        <uniformTimeCourse id="timecourse1"
+            initialTime="0" outputStartTime="0" outputEndTime="10" numberOfPoints="10" >
+            <algorithm kisaoID="KISAO:0000019"/> <!-- CVODE -->
+        </uniformTimeCourse>
+        <uniformTimeCourse id="timecourse2"
+            initialTime="10" outputStartTime="10" outputEndTime="20" numberOfPoints="10" >
+            <algorithm kisaoID="KISAO:0000019"/> <!-- CVODE -->
+        </uniformTimeCourse>
+    </listOfSimulations>
+    
+    <listOfModels>
+        <model id="model" name="Simple ODE" language="urn:sedml:language:cellml" source="simple_ode.cellml"/>
+    </listOfModels>
+    
+    <listOfTasks>
+        <task id="task1" name="First run" modelReference="model" simulationReference="timecourse1"/>
+        <task id="task2" name="Second run" modelReference="model" simulationReference="timecourse2"/>
+        
+        <!-- Test when order matters -->
+        <combinedTask id="seq" scheduling="sequential">
+            <listOfSubTasks>
+                <subTask task="task1" resetModel="false"/>
+                <subTask task="task2" resetModel="false"/>
+            </listOfSubTasks>
+        </combinedTask>
+
+        <!-- Test when order doesn't matter -->
+        <combinedTask id="para" scheduling="parallel">
+            <listOfSubTasks>
+                <subTask task="task1" resetModel="true"/>
+                <subTask task="task2" resetModel="true"/>
+            </listOfSubTasks>
+        </combinedTask>
+        
+        <!-- Test nesting a combined task -->
+        <nestedTask id="nested" resetModel="false" range="loop_counter">
+            <listOfRanges>
+                <vectorRange id="loop_counter">
+                    <value>0</value>
+                    <value>1</value>
+                    <value>2</value>
+                </vectorRange>
+            </listOfRanges>
+            <subTask task="seq"/>
+        </nestedTask>
+        
+        <!-- Test combined inside combined -->
+        <combinedTask id="c_in_c" scheduling="sequential">
+            <listOfSubTasks>
+                <subTask task="seq" resetModel="false"/>
+            </listOfSubTasks>
+        </combinedTask>
+    </listOfTasks>
+    
+    <listOfDataGenerators>
+        <dataGenerator id="time1" name="time1">
+            <listOfVariables>
+                <variable id="time1_t" taskReference="seq:task1" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time1_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="time2" name="time2">
+            <listOfVariables>
+                <variable id="time2_t" taskReference="seq:task2" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time2_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="V1" name="V1">
+            <listOfVariables>
+                <variable id="V1_V" taskReference="seq:task1" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V1_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="V2" name="V2">
+            <listOfVariables>
+                <variable id="V2_V" taskReference="seq:task2" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V2_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="time1p" name="time1p">
+            <listOfVariables>
+                <variable id="time1p_t" taskReference="para:task1" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time1p_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="time2p" name="time2p">
+            <listOfVariables>
+                <variable id="time2p_t" taskReference="para:task2" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time2p_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="V1p" name="V1p">
+            <listOfVariables>
+                <variable id="V1p_V" taskReference="para:task1" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V1p_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="V2p" name="V2p">
+            <listOfVariables>
+                <variable id="V2p_V" taskReference="para:task2" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V2p_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="time1n" name="time1n">
+            <listOfVariables>
+                <variable id="time1n_t" taskReference="nested:task1" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time1n_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="time2n" name="time2n">
+            <listOfVariables>
+                <variable id="time2n_t" taskReference="nested:task2" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time2n_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="V1n" name="V1n">
+            <listOfVariables>
+                <variable id="V1n_V" taskReference="nested:task1" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V1n_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="V2n" name="V2n">
+            <listOfVariables>
+                <variable id="V2n_V" taskReference="nested:task2" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V2n_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="time1c" name="time1c">
+            <listOfVariables>
+                <variable id="time1c_t" taskReference="c_in_c:seq:task1" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time1c_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="time2c" name="time2c">
+            <listOfVariables>
+                <variable id="time2c_t" taskReference="c_in_c:seq:task2" target="/cellml:model/cellml:component/cellml:variable[@name='time']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>time2c_t</m:ci>
+            </m:math>
+        </dataGenerator>
+        
+        <dataGenerator id="V1c" name="V1c">
+            <listOfVariables>
+                <variable id="V1c_V" taskReference="c_in_c:seq:task1" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V1c_V</m:ci>
+            </m:math>
+        </dataGenerator>
+        <dataGenerator id="V2c" name="V2c">
+            <listOfVariables>
+                <variable id="V2c_V" taskReference="c_in_c:seq:task2" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
+            </listOfVariables>
+            <m:math>
+                <m:ci>V2c_V</m:ci>
+            </m:math>
+        </dataGenerator>
+    </listOfDataGenerators>
+    
+    <listOfOutputs>
+        <plot2D id="plot1" name="Test plots - sequential">
+            <listOfCurves>
+                <curve id="c11" logX="false" logY="false" xDataReference="time1" yDataReference="V1"/>
+                <curve id="c12" logX="false" logY="false" xDataReference="time2" yDataReference="V2"/>
+            </listOfCurves>
+        </plot2D>
+        <plot2D id="plot2" name="Test plots - 'parallel'">
+            <listOfCurves>
+                <curve id="c21" logX="false" logY="false" xDataReference="time1p" yDataReference="V1p"/>
+                <curve id="c22" logX="false" logY="false" xDataReference="time2p" yDataReference="V2p"/>
+            </listOfCurves>
+        </plot2D>
+        <plot2D id="plot3" name="Test plots - nested">
+            <listOfCurves>
+                <curve id="c31" logX="false" logY="false" xDataReference="time1n" yDataReference="V1n"/>
+                <curve id="c32" logX="false" logY="false" xDataReference="time2n" yDataReference="V2n"/>
+            </listOfCurves>
+        </plot2D>
+        <plot2D id="plot4" name="Test plots - combined inside combined">
+            <listOfCurves>
+                <curve id="c41" logX="false" logY="false" xDataReference="time1c" yDataReference="V1c"/>
+                <curve id="c42" logX="false" logY="false" xDataReference="time2c" yDataReference="V2c"/>
+            </listOfCurves>
+        </plot2D>
+    </listOfOutputs>
+</sedML>

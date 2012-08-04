@@ -53,6 +53,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RegularStimulus.hpp"
 
 #include "UsefulFunctionsForProtocolTesting.hpp"
+#include "FileComparison.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
 using boost::assign::list_of;
@@ -476,7 +477,8 @@ public:
         {
             FileFinder ref_file("projects/FunctionalCuration/test/data/test_basic_simulation/TestBasicSimulationAndApd" + filename, RelativeTo::ChasteSourceRoot);
             FileFinder test_file = handler.FindFile("TestBasicSimulationAndApd" + filename);
-            TS_ASSERT_THROWS_NOTHING(EXPECT0(system, "diff -u " + test_file.GetAbsolutePath() + " " + ref_file.GetAbsolutePath()));
+            FileComparison comparer(test_file,ref_file);
+            TS_ASSERT( comparer.CompareFiles() );
         }
 
         // Check base outputs

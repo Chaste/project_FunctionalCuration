@@ -44,6 +44,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OutputFileHandler.hpp"
 
 #include "ProtoHelperMacros.hpp"
+#include "FileComparison.hpp"
 #include "NumericFileComparison.hpp"
 
 class TestAccessingStateVector : public CxxTest::TestSuite
@@ -82,7 +83,8 @@ public:
         {
             FileFinder ref_file("outputs" + filename, ref_dir);
             FileFinder test_file("outputs" + filename, out_dir);
-            TS_ASSERT_THROWS_NOTHING(EXPECT0(system, "diff -u " + test_file.GetAbsolutePath() + " " + ref_file.GetAbsolutePath()));
+            FileComparison comparer(test_file,ref_file);
+            TS_ASSERT( comparer.CompareFiles() );
         }
 
         filenames = boost::assign::list_of("outputs_raw_state")("outputs_state");

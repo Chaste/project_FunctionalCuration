@@ -91,9 +91,16 @@ private:
         BOOST_FOREACH(std::string output_name, rOutputNames)
         {
             std::cout << "Comparing results of " << rProtocolName << " protocol on " << rModelName << ": " << output_name << "...";
-            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + rModelName + "/" +
-                                  rProtocolName + "/" + output_name + ".dat",
-                                  RelativeTo::ChasteSourceRoot);
+
+            std::string base_name = "projects/FunctionalCuration/test/data/historic/" + rModelName + "/" +
+                    rProtocolName + "/" + output_name;
+            FileFinder ref_output(base_name + ".dat", RelativeTo::ChasteSourceRoot);
+
+            if (!ref_output.Exists()) // New output is in .csv format so if missing look for that instead...
+            {
+                ref_output.SetPath(base_name + ".csv", RelativeTo::ChasteSourceRoot);
+            }
+
             FileFinder test_output = mpHandler->FindFile(output_name + ".csv");
             if (!ref_output.Exists() && test_output.Exists())
             {

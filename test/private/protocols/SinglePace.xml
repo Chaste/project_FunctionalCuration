@@ -177,18 +177,12 @@
                 </apply>
             </apply>
             
-            <!-- AbsMinus x y [dim] = map (|-|) (x dim) (y dim) -->
+            <!-- AbsMinus x y = map (|-|) x y -->
             <apply><eq/>
                 <ci>AbsMinus</ci>
                 <lambda>
                     <bvar><ci>x</ci></bvar>
                     <bvar><ci>y</ci></bvar>
-                    <semantics>
-                        <bvar><ci>dim</ci></bvar>
-                        <annotation-xml>
-                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>
-                        </annotation-xml>
-                    </semantics>
                     <apply>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/map"/>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/wrap/1">abs</csymbol>
@@ -209,7 +203,6 @@
                     <ci>AbsMinus</ci>
                     <ci>final_state_variables</ci>
                     <ci>initial_state_variables</ci>
-                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/defaultParameter"/>        
                 </apply>
             </apply>
             

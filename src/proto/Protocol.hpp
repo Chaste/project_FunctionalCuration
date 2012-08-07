@@ -382,8 +382,8 @@ private:
                          const std::string& rDataFileName,
                          const unsigned numTraces,
                          const unsigned numPointsInTrace,
-                         const std::string& xLabel,
-                         const std::string& yLabel,
+                         std::string xLabel,
+                         std::string yLabel,
                          bool writePng) const;
 
     /**

@@ -277,7 +277,7 @@ std::string SanitiseFileName(const std::string& rFileName)
     // Strip quote characters
     for (std::string::iterator it = name.begin(); it != name.end(); ++it)
     {
-        while (*it == '\'' || *it == '"' || *it == '(' || *it == ')')
+        while (*it == '\'' || *it == '"' || *it == '`'  || *it == '(' || *it == ')')
         {
             it = name.erase(it);
         }
@@ -540,14 +540,8 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                             {
                                 // Create a new array containing the stepper data
                                 boost::shared_ptr<AbstractStepper> p_stepper = r_steppers.back();
-                                if (p_stepper->GetNumberOfOutputPoints() == 0u)
-                                {
-                                    ///\todo Avoid nested protocols having a fake stepper!
-                                    assert(r_steppers.size() > 1u);
-                                    p_stepper = r_steppers[r_steppers.size()-2];
-                                }
                                 PROTO_ASSERT2(p_stepper->IsEndFixed(),
-                                              "Unable to plot against inner while loop at present.",
+                                              "Unable to plot against a while loop at present.",
                                               p_plot_spec->GetLocationInfo());
                                 label_x = p_stepper->GetIndexName() + " (" + p_stepper->GetUnits() + ")";
                                 NdArray<double>::Extents x_shape(1u);
@@ -626,6 +620,12 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
             num_traces.push_back(my_num_traces);
         }
 
+        if (total_num_traces == 0u)
+        {
+            std::cerr << "No valid traces found." << std::endl;
+            continue;
+        }
+
         // Write data for plotting
         std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_title + "_gnuplot_data.csv");
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
@@ -666,16 +666,32 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
 }
 
 
+/**
+ * Escape single quotes in the given string, by doubling.
+ *
+ * @param rString
+ */
+void EscapeQuotes(std::string& rString)
+{
+    for (std::string::iterator it = rString.begin(); it != rString.end(); ++it)
+    {
+        if (*it == '\'')
+        {
+            it = rString.insert(it, '\'') + 1;
+        }
+    }
+}
+
+
 void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
                                const std::string& rDataFileName,
                                const unsigned numTraces,
                                const unsigned numPointsInTrace,
-                               const std::string& xLabel,
-                               const std::string& yLabel,
+                               std::string xLabel,
+                               std::string yLabel,
                                bool writePng) const
 {
-    // At present this is hardcoded to 2 columns of data x,y points.
-    /// \todo #1999 generalise to other situations
+    /// \todo #1999 generalise further
     /// \todo #1999 make the plot title include the model as well as protocol name
 
     // Find the csv file name, and remove .csv to make the .gp file name
@@ -694,15 +710,11 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
         points_or_lines = "linespoints pointtype 7";
     }
 
-    // Escape double-quote characters in the plot title
+    // Escape single-quote characters in the plot title & axis labels
     std::string display_title = pPlotSpec->rGetTitle();
-    for (std::string::iterator it = display_title.begin(); it != display_title.end(); ++it)
-    {
-        if (*it == '"')
-        {
-            it = display_title.insert(it, '\\') + 1;
-        }
-    }
+    EscapeQuotes(display_title);
+    EscapeQuotes(xLabel);
+    EscapeQuotes(yLabel);
 
     // Write out a Gnuplot script
     out_stream p_gnuplot_script = mpOutputHandler->OpenOutputFile(script_name);
@@ -723,9 +735,9 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     }
     *p_gnuplot_script << std::endl;
     *p_gnuplot_script << "set output \"" << output_dir << fig_file_name << "\"" << std::endl;
-    *p_gnuplot_script << "set title \"" << display_title << "\"" << std::endl;
-    *p_gnuplot_script << "set xlabel \"" << xLabel << "\"" << std::endl;
-    *p_gnuplot_script << "set ylabel \"" << yLabel << "\"" << std::endl;
+    *p_gnuplot_script << "set title '" << display_title << "'" << std::endl;
+    *p_gnuplot_script << "set xlabel '" << xLabel << "'" << std::endl;
+    *p_gnuplot_script << "set ylabel '" << yLabel << "'" << std::endl;
     //*p_gnuplot_script << "set xtics 400" << std::endl;
     *p_gnuplot_script << "set grid" << std::endl;
     *p_gnuplot_script << "set autoscale" << std::endl;

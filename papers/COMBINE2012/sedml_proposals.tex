@@ -2,7 +2,7 @@
 
 \mode<presentation>
 {
-\usetheme{Frankfurt}%{Warsaw}
+\usetheme{Frankfurt}
 %\setbeamercovered{transparent}
 %\setbeamercolor{background canvas}{bg=white}
 }
@@ -41,13 +41,23 @@
 \usepackage{epstopdf}
 \DeclareGraphicsExtensions{.eps,.png,.jpg,.pdf}
 
+% Code
+\usepackage{listings}
+\lstloadlanguages{XML}
+\lstset{language=XML}
+\lstnewenvironment{blksedml}[1][]
+	{\lstset{basicstyle=\footnotesize,
+		 #1
+		}}
+	{}
+\newcommand{\sedml}[1]{\lstinline[basicstyle=\color{blue}]!#1!}
+
 % Shortcuts
 \newcommand{\myhref}[2]{\href{#1}{\textcolor{Blue}{#2}}}
 \newcommand{\subitem}[1]{\begin{itemize}[<.->]\item #1 \end{itemize}}
 \newcommand{\ghead}[1]{{\tiny #1\\}}
 \newcommand{\doi}[1]{\myhref{http://dx.doi.org/#1}{doi:#1}}
 \newcommand{\csym}[1]{\textcolor{Blue}{\texttt{#1}}}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Possibilities for SED-ML}
@@ -121,8 +131,23 @@ We have been working on defining and using virtual experiments within a variety 
 \item Functional curation of cardiac cell models
 \item Parameter sweeping models of multi-cellular tissue dynamics
 \item Experiments in immunology and synthetic biology
- % Won't talk about this in detail, just mention
+ % Won't talk about this in detail, just mention, along with text syntax
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Functional curation of cardiac models}
+This use case was also described last year.
+Focus on a protocol that demonstrates some features we've added since --- finding a ``steady state'' for a given pacing rate.
+\end{frame}
+
+
+\begin{frame}{Intestinal crypt --- cell-based Chaste}
+Show movie (get from Ozzy), and talk around it.
+Refer back to Ozzy's talk.
+Look at distribution of cell division events in space, cell ages at division.
+Look at effects of parameter variation on whether mutant invades or is swept out.
+Look at how these results vary across models.
 \end{frame}
 
 
@@ -131,11 +156,141 @@ We have been working on defining and using virtual experiments within a variety 
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{frame}{Overview}
+\begin{itemize}
+\item Applying a protocol to any model
+\item Extending variable references
+\item Chaining post-processing
+\item New task hierarchy
+\item Handling n-dimensional data
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Applying a protocol to any model}
+
+\begin{frame}{Applying a protocol to any model}
+\alert{Problem}:
+ In order to compare models under a given protocol, we require that
+ the protocol does not hardcode the model to use.
+
+\alert{Proposal}:
+ Allow the \sedml{source} attribute on \sedml{model} to hold a special
+ SED-ML URN, \sedml{urn:sedml:anymodel} say, that signals to
+ processing software that the specific model must be supplied by some
+ external mechanism.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Extending variable references}
+
+\begin{frame}{Extending variable references (1)}
+\alert{Problem}:
+ Different models may use different names for the same concept.  How
+ can a single protocol be applied to both?
+
+ \alert{Ontological annotation} can provide a consistent nomenclature.
+
+ Model and protocol need to agree on ontology to use.
+
+\alert{Proposal}:
+ Allow the \sedml{variable} element to use an ontology term instead of
+ an XPath expression.
+
+ Either in the \sedml{target} attribute itself, or a new
+ \sedml{annotatedTarget} attribute.
+\end{frame}
+
+
+\begin{frame}{Extending variable references (2)}
+\alert{Problem}:
+ Sometimes we want to refer to variables defined in the
+ \emph{protocol}, not the model.
+
+ TODO: examples.
+
+\alert{Proposal}:
+ Most SED-ML elements already have an \sedml{id} attribute.
+
+ Allow the \sedml{variable} element to reference these, either with
+ \sedml{target="\#id"}, or a new attribute \sedml{idref}.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Chaining post-processing}
+
+\begin{frame}{Chaining post-processing}
+\alert{Problem}:
+ Data generators cannot currently take the outputs of other data
+ generators as inputs.
+
+\alert{Proposal}:
+ The second extension to variable referencing shown previously
+ resolves this.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{New task hierarchy}
+
+\begin{frame}{New task hierarchy}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Handling n-dimensional data}
+
+\begin{frame}{Handling n-dimensional data}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Ideas for future proposals}
+\subsection*{Main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Looking further ahead}
+\begin{itemize}[<+->]
+\item Units conversions
+  \subitem{Requires a units standard across modelling languages}
+\item Protocol libraries
+\item Dealing with irregular data
+  \subitem{e.g.\ arising from cell birth and death}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+\subsection*{Main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Current threads of work}
+\begin{itemize}
+\item Improving implementation
+  \subitem{Including a simple graphical interface for running experiments and querying results}
+\item Developing new protocol concepts as needed by applications
+\item Textual syntax for protocol language
+\item Developing SED-ML extensions
+\item Encoding protocols for cardiac electrophysiology, cell-based Chaste, immunology, synthetic biology, \ldots
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Acknowledgments}
+Chaste team\\
+Alan Garny, Steven Niederer, Mark Slaymaker
+
+Reference publication: \doi{10.1016/j.pbiomolbio.2011.06.003}\\
+Web site: \url{https://chaste.cs.ox.ac.uk/cgi-bin/trac.cgi/wiki/FunctionalCuration}
+
+\begin{center}
+\includegraphics[scale=.9]{chaste-266x60}\\ \vspace{.4cm}
+\includegraphics[height=.42cm]{EPSRC1RGBLO} \hspace{.05cm}
+\includegraphics[height=.42cm]{logo_msr} \hspace{.05cm}
+\includegraphics[height=.42cm]{logo2020science}\\ \vspace{.2cm}
+\includegraphics[height=1.1cm]{FP7-gen-rgb}
+\end{center}
+\end{frame}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{End matter}
-\url{https://chaste.cs.ox.ac.uk/cgi-bin/trac.cgi/wiki/FunctionalCuration}
 \end{frame}
 
 \end{document}

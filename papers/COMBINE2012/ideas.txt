@@ -8,22 +8,30 @@ We have been working on defining and using virtual experiments within a variety 
      * Emphasise same proto on diff model etc.
      * st-st and/or dynamic restitution
    * Cell-based Chaste parameter sweeping
-   * BME?  (Maybe just side mention)
+   * BME?  (Maybe just side mention, along with textual syntax)
  * Extension proposals (make clear which I've implemented)
+   * Model declaration that isn't tied to a particular file
+     * source attribute holds a special sedml URN, e.g. urn:sedml:anymodel
+   * Enhance target attr on variable: #id and onto terms
+     * Or use additional optional attrs
+   * Chaining data generators using #id variable targets
    * New task hierarchy: task, nestedTask, combinedTask
    * Challenges of handling n-d data
      * Enhance taskReference on variable: task:subtask
      * Require views/slices for useful post-processing & display, and helpful to be able to create arrays too
      * Also need maps & folds
      * Find & index is the other helpful pair
-   * Enhance target attr on variable: #id and onto terms
-     * Or use additional optional attrs
-   * Model declaration that isn't tied to a particular file
-   * Units conversions? - hard to do without cross-lang units support
-   * Chaining data generators using #id variable targets
+   * Being able to represent a timecourse as nested/oneStep
+     (Put as minor point under enhanced target attr?  Needs new hierarchy before it)
+     * Requires specifying and setting task/simulation/algorithm parameters
+     * Setting parameters could be done using the #id syntax
+     * Declare using a <parameter id="..."> element?
+     * Could add an optional id to algorithmParameter also
+ * Future ideas for extensions
+   (Note that we've done some in our system; others we're still thinking about)
+   * Units conversions - hard to do without cross-lang units support
    * Equivalents of our libraries & imports?
      * Maybe just a simple merge for the latter, initially
-   * Being able to represent a timecourse as nested/oneStep
-     * Requires specifying and setting task/simulation/algorithm parameters
    * Some mention of the challenge of outputs that vary in size each iteration
      (from the cell-based Chaste work)
+ * Maybe mention related work, Slay, etc.

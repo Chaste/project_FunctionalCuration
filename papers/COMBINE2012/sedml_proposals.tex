@@ -31,6 +31,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{comment}
 \usepackage{ifthen}
+\usepackage{multimedia}
 
 % Author-date citations
 \usepackage[authoryear,round]{natbib}
@@ -138,6 +139,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 \begin{frame}{Functional curation of cardiac models}
+TODO.
 This use case was also described last year.
 Focus on a protocol that demonstrates some features we've added since
 --- finding a ``steady state'' for a given pacing rate.
@@ -145,11 +147,13 @@ Focus on a protocol that demonstrates some features we've added since
 
 
 \begin{frame}{Intestinal crypt --- cell-based Chaste}
-Show 3d node-based crypt movie, and talk around it.
-Refer back to Ozzy's talk.
-Look at distribution of cell division events in space, cell ages at division.
-Look at effects of parameter variation on whether mutant invades or is swept out.
-Look at how these results vary across models.
+\begin{center}
+\movie[poster,autostart,loop,showcontrols,height=6.44cm,width=6.64cm]{}{figs/NodeBased3DCrypt.mpeg}
+\end{center}
+% Refer back to Ozzy's talk.
+% Look at distribution of cell division events in space, cell ages at division.
+% Look at effects of parameter variation on whether mutant invades or is swept out.
+% Look at how these results vary across models.
 \end{frame}
 
 
@@ -173,7 +177,7 @@ Look at how these results vary across models.
   \subitem{Split up \sedml{repeatedTask}}
 \item \hyperlink{prop:varref}{Extending variable references}
   \subitem{Chaining post-processing}
-\item \hyperlink{prop:nd}{Handling n-dimensional data}
+\item (\hyperlink{prop:nd}{Handling n-dimensional data})
 \end{itemize}
 \end{frame}
 
@@ -214,7 +218,7 @@ Look at how these results vary across models.
 
 \begin{frame}<1>[label=prop:tasks]{New task hierarchy}
 \alert{Problem}:
- Frank's proposed \sedml{repeatedTask} conflates multiple concepts:
+ Frank's proposed \sedml{repeatedTask} conflates concepts:
 \begin{itemize}
 \item Associating a model with a simulation
 \item Repeating a task (potentially with changes)
@@ -222,10 +226,10 @@ Look at how these results vary across models.
 \end{itemize}
 
 \alert{Proposal}:
- Separate them into 3 task classes, inheriting from a common abstract
- class.
-
-TODO: Simple UML-like diagram
+ Separate them into separate classes:
+\begin{center}
+\includegraphics[width=\textwidth]{task_uml}
+\end{center}
 \end{frame}
 
 
@@ -283,7 +287,8 @@ TODO: Simple UML-like diagram
  structures than the 2d arrays in SED-ML L1V1.
 
 \begin{itemize}
-\item Repeated tasks yield n-dimensional arrays --- see next section
+\item Repeated tasks yield n-dimensional arrays
+      --- see \hyperlink{prop:nd}{later}
 \item Combined tasks yield ``sub-results''
 \end{itemize}
 
@@ -336,17 +341,34 @@ Example: a timecourse simulation implemented using a repeated task.
 (TODO)
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}<1>[label=prop:nd]{Handling n-dimensional data}
-TODO
-\end{frame}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Ideas for future proposals}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}<1>[label=prop:nd]{Handling n-dimensional data}
+\begin{itemize}
+\item
+  In SED-ML at present, the data generators implicitly map MathML
+  operators element-wise over result vectors
+\item
+  With nesting of tasks, results may have arbitrary dimensionality
+\item
+  Standard MathML has no facilities for dealing with such data types
+\item
+  We can define new \texttt{csymbol}s for operations such as explicit
+  maps, extracting sub-arrays, creating new arrays, and `folds'
+  (c.f.\ last year's talk)
+% Find & index is the other helpful pair
+\item
+  This should be done in concert with NuML
+\end{itemize}
+\end{frame}
+% Solicit opinions on how important these operations are, and where
+% more complex post-processing should really go - is it better to use
+% another language?
+
 
 \begin{frame}{Looking further ahead}
 \begin{itemize}[<+->]

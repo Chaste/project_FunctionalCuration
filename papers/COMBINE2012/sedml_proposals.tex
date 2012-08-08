@@ -328,7 +328,7 @@ Continuing the earlier example:
 \end{frame}
 
 
-\begin{frame}{Extending variable references (3)}
+\begin{frame}[fragile=singleslide]{Extending variable references (3)}
 % This needs to be after the new task hierarchy
 \alert{Problem}:
  We might want to vary algorithm parameters over a repeated task.
@@ -338,7 +338,16 @@ Continuing the earlier example:
  referencing scheme proposed earlier suffices.
 
 Example: a timecourse simulation implemented using a repeated task.
-(TODO)
+\begin{blksedml}
+modelTask id="singlestep"
+  simulationReference to
+    oneStep with algorithmParameter id="solveTo"
+
+repeatedTask id="timecourse" resetModel="false"
+  uniformRange id="time" start="0.0" end="10.0"
+  setValue target="#solveTo" range="time"
+  subTask task="singlestep"
+\end{blksedml}
 \end{frame}
 
 

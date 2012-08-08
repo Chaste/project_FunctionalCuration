@@ -1,7 +1,16 @@
 Title: Possibilities for SED-ML
 Authors: Jonathan Cooper, Gary Mirams, James Osborne
 Abstract:
-We have been working on defining and using virtual experiments within a variety of contexts, including cardiac electrophysiology, multi-cellular tissue dynamics, immunology, and synthetic biology.  In doing so we have found that extensions are required if SED-ML is to address our needs.  This talk will introduce some of our use cases, highlight our functional curation framework (https://chaste.cs.ox.ac.uk/cgi-bin/trac.cgi/wiki/FunctionalCuration) for running experiments on a range of models, and outline our proposals for SED-ML.
+
+We have been working on defining and using virtual experiments within
+a variety of contexts, including cardiac electrophysiology,
+multi-cellular tissue dynamics, immunology, and synthetic biology.  In
+doing so we have found that extensions are required if SED-ML is to
+address our needs.  This talk will introduce some of our use cases,
+highlight our functional curation framework
+(https://chaste.cs.ox.ac.uk/cgi-bin/trac.cgi/wiki/FunctionalCuration)
+for running experiments on a range of models, and outline our
+proposals for SED-ML.
 
  * Use cases
    * Cardiac model curation
@@ -18,7 +27,8 @@ We have been working on defining and using virtual experiments within a variety 
    * New task hierarchy: task, nestedTask, combinedTask
    * Challenges of handling n-d data
      * Enhance taskReference on variable: task:subtask
-     * Require views/slices for useful post-processing & display, and helpful to be able to create arrays too
+     * Require views/slices for useful post-processing & display,
+       and helpful to be able to create arrays too
      * Also need maps & folds
      * Find & index is the other helpful pair
    * Being able to represent a timecourse as nested/oneStep

@@ -91,7 +91,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section[Introduction]{Introduction}
+\section{Introduction}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -124,7 +124,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section[Use cases]{Use cases}
+\section[Use cases]{Main use cases}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -139,10 +139,21 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 \begin{frame}{Functional curation of cardiac models}
-TODO.
-This use case was also described last year.
-Focus on a protocol that demonstrates some features we've added since
---- finding a ``steady state'' for a given pacing rate.
+\begin{itemize}
+\item Our original application; see also \doi[last year's talk]{10.1038/npre.2011.6327.1}
+\item Aim to create a comprehensive library of electrophysiology
+  protocols, and screen the models in the CellML model repository
+\item One protocol that demonstrates new features since last year is
+  finding a ``steady state'' for a given pacing rate
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Pacing to ``steady state''}
+\begin{center}
+\includegraphics<1>[width=\textwidth]{matsuoka_pace_all_state_variables}
+\includegraphics<2>[width=\textwidth]{st_st_diag}
+\end{center}
 \end{frame}
 
 
@@ -368,7 +379,9 @@ repeatedTask id="timecourse" resetModel="false"
 \item
   We can define new \texttt{csymbol}s for operations such as explicit
   maps, extracting sub-arrays, creating new arrays, and `folds'
-  (c.f.\ last year's talk)
+  (c.f.\ \doi[last year's talk]{10.1038/npre.2011.6327.1})
+% Mention that array creation makes it easy to define vectors like in
+% Stuart Moodie's email.
 % Find & index is the other helpful pair
 \item
   This should be done in concert with NuML
@@ -395,15 +408,20 @@ repeatedTask id="timecourse" resetModel="false"
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}{Current threads of work}
-TODO: some wrapping up text
+\begin{frame}{Conclusions}
 \begin{itemize}
-\item Improving implementation
-  \subitem{Including a simple graphical interface for running experiments and querying results}
-\item Developing new protocol concepts as needed by applications
-\item Textual syntax for protocol language
-\item Developing SED-ML extensions
-\item Encoding protocols for cardiac electrophysiology, cell-based Chaste, immunology, synthetic biology, \ldots
+\item We believe the concepts described above from our protocol
+  language would contribute more widely useful functionality to SED-ML
+\item Please discuss!
+\item Various strands of ongoing work
+  \begin{itemize}
+  \item Encoding protocols for cardiac electrophysiology, cell-based Chaste, immunology, synthetic biology, \ldots
+  \item Developing new protocol concepts as needed by applications
+  \item Developing SED-ML extension proposals
+  \item Improving implementation
+    \subitem{Including a simple graphical interface for running experiments and querying results}
+  \item Textual syntax for protocol language
+  \end{itemize}
 \end{itemize}
 \end{frame}
 

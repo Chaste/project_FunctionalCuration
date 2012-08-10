@@ -96,11 +96,11 @@ We have been working on defining and using virtual experiments within a variety 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{What problem are we trying to solve?}
+% Big picture context of our research.
 \begin{itemize}[<+->]
 \item How can the whole modelling process be improved?
 \item How can models be reused and composed reliably?
 \item Especially as models increase in size and complexity
-% Introduce cardiac application.  Make point that even cardiac cell model composed of many units at multiple levels: cell, ion channel, protein subunit.  Reaction networks also build complexity from small repeated concepts.
 \end{itemize}
 \begin{itemize}[<+->]
 \item We want \ldots
@@ -113,7 +113,7 @@ We have been working on defining and using virtual experiments within a variety 
 \end{frame}
 
 
-\begin{frame}{Models, experiments and protocols}
+\begin{frame}{Definitions}
 \begin{itemize}
 \item A \alert{model} is a purposeful simplification of reality
 \item An \alert{experiment} is the process of stimulating a system to elicit observable responses
@@ -150,6 +150,10 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 \begin{frame}{Pacing to ``steady state''}
+% Regular stimulus causes action potential; cell returns to rest.
+% Nest this entire protocol, repeating until the rest state is unchanging
+% (to a given threshold on norm of differences in state variables).
+% Demonstrates nested protocols, while loops.
 \begin{center}
 \includegraphics<1>[width=\textwidth]{matsuoka_pace_all_state_variables}
 \includegraphics<2>[width=\textwidth]{st_st_diag}
@@ -159,7 +163,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 \begin{frame}{Intestinal crypt --- cell-based Chaste}
 \begin{center}
-\movie[poster,autostart,loop,showcontrols,height=6.44cm,width=6.64cm]{}{figs/NodeBased3DCrypt.mpeg}
+\movie[autostart,loop,showcontrols,height=6.44cm,width=6.64cm]{Simulation movie}{figs/NodeBased3DCrypt.mpeg}
 \end{center}
 % Refer back to Ozzy's talk.
 % Look at distribution of cell division events in space, cell ages at division.
@@ -170,6 +174,8 @@ We have been working on defining and using virtual experiments within a variety 
 
 \begin{frame}{Our framework}
 % This may be better at end of intro?
+% Just want to make point that this is real, there's software you can download
+% to run these.
 \begin{center}
 \vspace{-.5cm}\hspace*{-.75cm}\includegraphics[width=1.15\textwidth]{proto_diag}
 \end{center}
@@ -295,20 +301,21 @@ We have been working on defining and using virtual experiments within a variety 
 \frametitle{Getting the results out}
 \alert{Problem}:
  Repeated and combined tasks lead to more complex results data
- structures than the 2d arrays in SED-ML L1V1.
+ structures than the vectors in SED-ML L1V1.
 
 \begin{itemize}
 \item Repeated tasks yield n-dimensional arrays
       --- see \hyperlink{prop:nd}{later}
 \item Combined tasks yield ``sub-results''
+% Can't just stick results together if sub-tasks might not be sequential
 \end{itemize}
 
 \alert{Proposal}:
  Enhance the \sedml{taskReference} attribute on \sedml{variable} to be
  able to indicate sub-tasks,
- e.g.\ \sedml{taskReference='task:subtask'}.
+ e.g.\ \sedml{taskReference="task:subtask"}.
 
-Continuing the earlier example:
+Continuing the first example from earlier:
 \begin{blksedml}
 <variable id="V1_V" taskReference="seq:task1"
           target="..."/>
@@ -334,7 +341,7 @@ Continuing the earlier example:
  Most SED-ML elements already have an \sedml{id} attribute.
 
  Allow the \sedml{variable} element to reference these, either with
- \sedml{target='\#id'}, or a new attribute \sedml{idref}.
+ \sedml{target="\#id"}, or a new attribute \sedml{idref}.
  % FB used target="#current" in the nested proposal v3
 \end{frame}
 
@@ -348,6 +355,7 @@ Continuing the earlier example:
  If \sedml{algorithmParameter} gains an (optional) \sedml{id}, the
  referencing scheme proposed earlier suffices.
 
+\vspace{.8cm}
 Example: a timecourse simulation implemented using a repeated task.
 \begin{blksedml}
 modelTask id="singlestep"
@@ -384,7 +392,7 @@ repeatedTask id="timecourse" resetModel="false"
 % Stuart Moodie's email.
 % Find & index is the other helpful pair
 \item
-  This should be done in concert with NuML
+  This should ideally be done in concert with NuML
 \end{itemize}
 \end{frame}
 % Solicit opinions on how important these operations are, and where

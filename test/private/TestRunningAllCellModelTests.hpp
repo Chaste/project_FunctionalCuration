@@ -79,9 +79,9 @@ public:
             protocol_files.push_back("protocols/ICaL.xml");
             protocol_files.push_back("protocols/S1S2.xml");
             protocol_files.push_back("protocols/SteadyPacing.xml");
+            protocol_files.push_back("protocols/SteadyStateRunner.xml");
             protocol_files.push_back("private/protocols/INa_IV_curve.xml");
             protocol_files.push_back("private/protocols/Hypokalaemia.xml");
-            protocol_files.push_back("private/protocols/SteadyStateRunner.xml");
             protocol_files.push_back("private/protocols/IK1_IV_curve.xml");
             protocol_files.push_back("private/protocols/IKr_IV_curve.xml");
             protocol_files.push_back("private/protocols/IKs_IV_curve.xml");

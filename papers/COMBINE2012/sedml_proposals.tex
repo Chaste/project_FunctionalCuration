@@ -117,7 +117,7 @@ We have been working on defining and using virtual experiments within a variety 
 \begin{itemize}
 \item A \alert{model} is a purposeful simplification of reality
 \item An \alert{experiment} is the process of stimulating a system to elicit observable responses
-\item A \alert{protocol} is a detailed specification for carrying out an experiment
+\item A \alert{protocol} is a set of detailed instructions for carrying out an experiment
   \subitem{Environmental conditions / parameters, interventions, recordings, filtering \& post-processing, numerical algorithms, etc.}
 \end{itemize}
 \end{frame}
@@ -176,6 +176,8 @@ We have been working on defining and using virtual experiments within a variety 
 % This may be better at end of intro?
 % Just want to make point that this is real, there's software you can download
 % to run these.
+% Also emphasise not pushing our lang - was developed to play with ideas with
+% no pre-conceptions - want to improve SED-ML
 \begin{center}
 \vspace{-.5cm}\hspace*{-.75cm}\includegraphics[width=1.15\textwidth]{proto_diag}
 \end{center}
@@ -200,7 +202,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}<1>[label=prop:anymodel]{Applying a protocol to any model}
+\begin{frame}<1>[label=prop:anymodel]{Proposal 1: Applying a protocol to any model}
 \alert{Problem}:
  In order to compare models under a given protocol, we require that
  the protocol does not hardcode the model to use.
@@ -214,7 +216,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}<1>[label=prop:onto]{Extending variable references (1)}
+\begin{frame}<1>[label=prop:onto]{Proposal 1: Accessing model variables}
 \alert{Problem}:
  Different models may use different names for the same concept.  How
  can a single protocol be applied to both?
@@ -233,7 +235,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}<1>[label=prop:tasks]{New task hierarchy}
+\begin{frame}<1>[label=prop:tasks]{Proposal 2: New task hierarchy}
 \alert{Problem}:
  Frank's proposed \sedml{repeatedTask} conflates concepts:
 \begin{itemize}
@@ -251,7 +253,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 \begin{frame}[fragile=singleslide]
-\frametitle{Examples (1)}
+\frametitle{Proposal 2: Examples (1)}
 \begin{blksedml}
 <!-- Test when order matters -->
 <combinedTask id="seq" scheduling="sequential">
@@ -272,7 +274,7 @@ We have been working on defining and using virtual experiments within a variety 
 \end{frame}
         
 \begin{frame}[fragile=singleslide]
-\frametitle{Examples (2)}
+\frametitle{Proposal 2: Examples (2)}
 \begin{blksedml}
 <!-- Test nesting a combined task -->
 <nestedTask id="nested" resetModel="false"
@@ -284,7 +286,7 @@ We have been working on defining and using virtual experiments within a variety 
             <value>2</value>
         </vectorRange>
     </listOfRanges>
-    <subTask task="seq"/>
+    <subTask task="para"/>
 </nestedTask>
         
 <!-- Test combined inside combined -->
@@ -298,7 +300,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 \begin{frame}[fragile=singleslide]
-\frametitle{Getting the results out}
+\frametitle{Proposal 2: Getting the results out}
 \alert{Problem}:
  Repeated and combined tasks lead to more complex results data
  structures than the vectors in SED-ML L1V1.
@@ -315,16 +317,18 @@ We have been working on defining and using virtual experiments within a variety 
  able to indicate sub-tasks,
  e.g.\ \sedml{taskReference="task:subtask"}.
 
-Continuing the first example from earlier:
+Continuing the examples from earlier:
 \begin{blksedml}
-<variable id="V1_V" taskReference="seq:task1"
+<variable id="para_V1" taskReference="para:task1"
+          target="..."/>
+<variable id="nested_V1" taskReference="nested:task1"
           target="..."/>
 \end{blksedml}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}<1>[label=prop:varref]{Extending variable references (2)}
+\begin{frame}<1>[label=prop:varref]{Proposal 3: Accessing protocol variables}
 \alert{Problem}:
  Sometimes we want to refer to variables defined in the
  \emph{protocol}, not the model.
@@ -346,7 +350,7 @@ Continuing the first example from earlier:
 \end{frame}
 
 
-\begin{frame}[fragile=singleslide]{Extending variable references (3)}
+\begin{frame}[fragile=singleslide]{Proposal 3: Changing algorithm parameters}
 % This needs to be after the new task hierarchy
 \alert{Problem}:
  We might want to vary algorithm parameters over a repeated task.
@@ -375,22 +379,21 @@ repeatedTask id="timecourse" resetModel="false"
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}<1>[label=prop:nd]{Handling n-dimensional data}
+\begin{frame}<1>[label=prop:nd]{Proposal 4: Handling n-dimensional data}
 \begin{itemize}
-\item
-  In SED-ML at present, the data generators implicitly map MathML
-  operators element-wise over result vectors
+%\item
+%  In SED-ML at present, the data generators implicitly map MathML
+%  operators element-wise over result vectors
 \item
   With nesting of tasks, results may have arbitrary dimensionality
 \item
   Standard MathML has no facilities for dealing with such data types
 \item
-  We can define new \texttt{csymbol}s for operations such as explicit
-  maps, extracting sub-arrays, creating new arrays, and `folds'
-  (c.f.\ \doi[last year's talk]{10.1038/npre.2011.6327.1})
+  We can define new \texttt{csymbol}s for operations such as
+  extracting sub-arrays, creating new arrays, explicit maps, and
+  `folds' (see \doi[last year's talk]{10.1038/npre.2011.6327.1})
 % Mention that array creation makes it easy to define vectors like in
 % Stuart Moodie's email.
-% Find & index is the other helpful pair
 \item
   This should ideally be done in concert with NuML
 \end{itemize}

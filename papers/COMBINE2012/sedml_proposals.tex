@@ -173,7 +173,7 @@ We have been working on defining and using virtual experiments within a variety 
 
 
 \begin{frame}{Our framework}
-% This may be better at end of intro?
+% Start with pause to allow digestion!
 % Just want to make point that this is real, there's software you can download
 % to run these.
 % Also emphasise not pushing our lang - was developed to play with ideas with
@@ -240,7 +240,7 @@ We have been working on defining and using virtual experiments within a variety 
 % Put something in the slide text to this effect.
 \begin{frame}<1>[label=prop:tasks]{Proposal 2: New task hierarchy}
 \alert{Problem}:
- Frank's proposed \sedml{repeatedTask} conflates concepts:
+ Frank's \sedml{repeatedTask} is great, but includes too much:
 \begin{itemize}
 \item Associating a model with a simulation
 \item Repeating a task (potentially with changes)
@@ -248,7 +248,7 @@ We have been working on defining and using virtual experiments within a variety 
 \end{itemize}
 
 \alert{Proposal}:
- Separate them into separate classes:
+ Separate these concepts into separate classes:
 \begin{center}
 \includegraphics[width=\textwidth]{task_uml}
 \end{center}
@@ -432,9 +432,8 @@ repeatedTask id="timecourse" resetModel="false"
   \item Encoding protocols for cardiac electrophysiology, cell-based Chaste, immunology, synthetic biology, \ldots
   \item Developing new protocol concepts as needed by applications
   \item Developing SED-ML extension proposals
-  \item Improving implementation
-% Maybe cut subitem, or change to just user-friendly, emphasise want our tools to run SED-ML (L2)
-    \subitem{Including a simple graphical interface for running experiments and querying results}
+  \item Improving implementation, especially user-friendliness
+% Emphasise our tools run SED-ML (and more!)
   \item Textual syntax for protocol language
   \end{itemize}
 \end{itemize}

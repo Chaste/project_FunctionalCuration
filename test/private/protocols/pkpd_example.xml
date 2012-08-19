@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:proto="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    
+    <!-- Concise textual syntax:
+
+import "pkpd_core.xml" {
+    # Set the 'parameters' of each arm of the study
+    # Number of patients, dose mg/kg, dose application times
+    num_patients = [20, 20, 40, 40]
+    dosage = [0.25, 0.5, 0.5, 1]
+    dose_times = [ [0:24:192], [0:48:192], [0:24:192], [0:48:192] ]
+    
+    # Specify when you want to record each output
+    output_names = [ 'Cc', 'E' ]
+    output_times = [ [0.5] ++ [4:4:192] ++ [192:24:240], [...] ]
+    
+    # How many times to repeat the whole thing
+    repeats = 200
+}
+
+    -->
+    
+    <!-- Additional concepts needed:
+        1. Vectors of vectors, that might not be regular n-d array.
+           1a. Also in task ranges, where an inner range length varies on each outer iteration
+        2. Specifying outputs of interest as protocol parameters.
+           2a. Arrays of strings
+        3. std:Unique would be easier if fold could generate a vector
+    -->
+    
+    <import source="pkpd_core.xml" mergeDefinitions="true">
+        <!-- Set the 'parameters' of each arm of the study -->
+        <!-- Number of patients, dose mg/kg, dose application times -->
+        <setInput name="num_patients">
+            <apply xmlns="http://www.w3.org/1998/Math/MathML">
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                <cn>20</cn>
+                <cn>20</cn>
+                <cn>40</cn>
+                <cn>40</cn>
+            </apply>
+        </setInput>
+        <setInput name="dosage">
+            <apply xmlns="http://www.w3.org/1998/Math/MathML">
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                <cn>0.25</cn>
+                <cn>0.5</cn>
+                <cn>0.5</cn>
+                <cn>1</cn>
+            </apply>
+        </setInput>
+        <setInput name="dose_times">
+            <apply xmlns="http://www.w3.org/1998/Math/MathML">
+                <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                <!-- Arm 1: [0:24:192] -->
+                <apply>
+                    <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                    <domainofapplication>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/tuple"/>
+                            <cn>0</cn><cn>0</cn><cn>24</cn><cn>192</cn>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/string">i</csymbol>
+                        </apply>
+                    </domainofapplication>
+                    <ci>i</ci>
+                </apply>
+                <!-- etc. -->
+            </apply>
+        </setInput>
+    </import>
+</protocol>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:proto="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
+    xmlns:cellml="http://www.cellml.org/cellml/1.0#"
+    xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
+    
+    <!-- Concise textual syntax:
+
+inputs {
+    # The 'parameters' of each arm of the study
+    # Number of patients, dose mg/kg, dose application times
+    num_patients = []
+    dosage = []
+    dose_times = []
+    
+    # When you want to record each output
+    output_names = []
+    output_times = []
+    
+    # How many times to repeat the whole thing
+    repeats = 0
+}
+
+import "BasicLibrary.xml" as "std"
+
+library {
+    # Check suitable protocol inputs have been supplied
+    assert num_patients.NUM_DIMS == 1
+    assert dosage.NUM_DIMS == 1
+    assert dose_times.NUM_DIMS == 2
+    assert output_names.NUM_DIMS == 1
+    assert output_times.NUM_DIMS == 2
+    
+    num_arms = num_patients.SHAPE[0]
+    assert dosage.SHAPE[0] == num_arms
+    assert dose_times.SHAPE[0] == num_arms
+    
+    num_outputs = output_names.SHAPE[0]
+    assert output_times.SHAPE[0] == num_outputs
+    
+    assert repeats > 0
+    
+    # Determine all the output times of interest
+    all_output_times = std:Unique(std:Sort(std:Reshape(output_times,
+                                                       [1, output_times.SHAPE[0]*output_times.SHAPE[1]])))
+    
+    # Define function to find the indices in the second argument vector
+    # of values in the first argument vector.
+    # To do this we extend the arguments to shape haystack.SHAPE[0] x needle.SHAPE[0], map on these so you
+    # get (i,j) = 1 iff needle[j] == haystack[i], then use std:Max to collapse to a vector matching haystack.
+    indicesOf(needle, haystack) = {
+        big_haystack = std:Stretch(haystack, 1, needle.SHAPE[0])
+        big_needle = std:Stretch(needle, 0, haystack.SHAPE[0])
+        pattern = std:Max(map(=, big_needle, big_haystack), 1)
+        return find(pattern)
+    }
+}
+
+models {
+    model "m" {
+        source "urn:sedml:anymodel"
+        
+        # Set initial conditions here - wasn't specified by user!
+        # Presumably need some link to data.
+    }
+}
+
+simulations {
+    oneStep "sim" {
+        parameter "next_point"
+    }
+}
+
+tasks {
+    nestedProtocol "patient" {
+        tasks {
+            modelTask "run_model_step" {
+                simulation "sim"
+                model "m"
+            }
+            
+            repeatedTask "run_model" {
+                resetModel false
+                # This may not be quite right if I've misunderstood the requirements
+                vectorRange "output_point" std:After(all_output_times, start_time)
+                changes {
+                    next_point = output_point
+                }
+                subTask "run_model_step"
+            }
+        
+            repeatedTask "patient_main" {
+                resetModel true
+                vectorRange "dose_time" dose_times[arm_num]
+                changes {
+                    # Here we may need to set the model's idea of current time,
+                    # depending on interpretation of requirements
+                    start_time = dose_time
+                }
+                subTask "run_model"
+            }
+        }
+        
+        post-processing {
+            # Superimpose the separate curves, time-shifted appropriately
+            len = all_output_times.SHAPE[0]
+            for i in [0:num_outputs-1] {
+                # How to shift the individual timecourses within this array depends on requirement interpretation
+                # If we have them as vectors of vectors of varying lengths, then we need a map of a vector function,
+                # using something like:
+                temp = map(lambda v: ([0]*(len-v.SHAPE[0])) ++ v, patient_main:<output_names[i]>)
+                # We can easily add the curves: this is just sum along the outer dimension:
+                <output_names[i]> = std:Sum(temp, 0)
+            }
+        }
+        
+        outputs {
+            for i in [0:num_outputs-1] {
+                <output_names[i]> = <output_names[i]>
+            }
+        }
+    }
+
+    repeatedTask "patients" {
+        resetModel true
+        uniformRange "patient_num" [1:num_patients[arm_num]]
+        subTask "patient"
+    }
+
+    repeatedTask "arms" {
+        resetModel true
+        uniformRange "arm_num" [1:num_arms]
+        subTask "patients"
+    }
+
+    repeatedTask "main" {
+        resetModel true
+        uniformRange "repeat_num" [1:repeats]
+        subTask "arms"
+    }
+}
+
+outputs {
+    # Raw simulation outputs are shape [repeats, num_arms, num_patients[arm], all_output_times.SHAPE[0]]
+    for i in [0:num_outputs-1] {
+        <output_names[i]> = main:<output_names[i]>[-1#indicesOf(output_times[i], all_output_times)]
+    }
+}
+
+    -->
+    
+    <!--
+Study
+   * 4 arms with diff treatment regimes
+   * run model for each patient, sampling from distributions
+   * dosing regime provides initial conditions/params
+   * need to run model starting at each dosing time independently and superimpose results (i.e. add curves) as post-processing
+   * specify points at which you want to get each output variable individually
+    -->
+    
+</protocol>

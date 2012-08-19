@@ -368,6 +368,8 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
             SetContext(p_range);
             const std::string range_type(X2C(p_range->getLocalName()));
             const std::string range_id(GetRequiredAttr(p_range, "id"));
+            PROTO_ASSERT(ranges.find(range_id) == ranges.end(),
+                         "Range id '" << range_id << "' is duplicated.");
             if (range_type == "vectorRange")
             {
                 std::vector<double> values;
@@ -377,6 +379,19 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
                     values.push_back(String2Double(X2C(p_value->getTextContent())));
                 }
                 ranges[range_id] = boost::make_shared<VectorStepper>(range_id, "unknown", values);
+            }
+            else if (range_type == "uniformRange")
+            {
+                //id="range_utc2" start="0.0" end="10.0" numberOfPoints="10"
+                double t_start = String2Double(GetRequiredAttr(p_range, "start"));
+                double t_end = String2Double(GetRequiredAttr(p_range, "end"));
+                PROTO_ASSERT(t_start <= t_end,
+                             "Time course end " << t_end << " is before start " << t_start);
+                unsigned num_points = String2Unsigned(GetRequiredAttr(p_range, "numberOfPoints"));
+                double t_step = num_points == 0u ? 0.0 : (t_end - t_start) / num_points;
+                PROTO_ASSERT(num_points == 0u || 0.0 < t_step,
+                             "Time course output interval is of zero duration.");
+                ranges[range_id] = boost::make_shared<UniformStepper>(range_id, "unknown", t_start, t_end, t_step);
             }
             else
             {

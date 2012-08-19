@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sedML  level="1" version="1" xmlns="http://sed-ml.org/"
+<sedML level="1" version="1" xmlns="http://sed-ml.org/"
     xmlns:m="http://www.w3.org/1998/Math/MathML"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:cmeta="http://www.cellml.org/metadata/1.0#">
@@ -43,7 +43,7 @@
         </combinedTask>
         
         <!-- Test nesting a combined task -->
-        <nestedTask id="nested" resetModel="false" range="loop_counter">
+        <repeatedTask id="nested" resetModel="false" range="loop_counter">
             <listOfRanges>
                 <vectorRange id="loop_counter">
                     <value>0</value>
@@ -52,7 +52,7 @@
                 </vectorRange>
             </listOfRanges>
             <subTask task="seq"/>
-        </nestedTask>
+        </repeatedTask>
         
         <!-- Test combined inside combined -->
         <combinedTask id="c_in_c" scheduling="sequential">

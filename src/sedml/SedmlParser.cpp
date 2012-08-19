@@ -313,7 +313,7 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
         // Pretend that we're simulating the same model as our first child, for now
         p_sim->SetModel(child_sims.front()->GetModel()); ///\todo do better
     }
-    else if (task_type == "nestedTask")
+    else if (task_type == "repeatedTask")
     {
         // Steppers / ranges
         const std::string range_attr(GetRequiredAttr(pDefnElt, "range"));

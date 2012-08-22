@@ -65,6 +65,53 @@ public:
         // Run the protocol
         p_proto->Run();
         p_proto->WriteToFile(handler, "outputs");
+
+        // Test the results
+        std::cout << "Checking results..." << std::endl;
+        const Environment& r_outputs = p_proto->rGetOutputsCollection();
+
+        std::vector<std::string> tasks = boost::assign::list_of("utc")("repeat")("utc_repeat")("utc_set_model")
+                ("functional_range1")("functional_range2");
+        std::vector<double> t_offsets = boost::assign::list_of(0)(0)(1)(1)(1)(1);
+        std::vector<double> V_offsets = boost::assign::list_of(0)(0)(1)(1)(11)(11);
+        std::vector<double> V_increments = boost::assign::list_of(1)(1)(1)(0)(1)(1);
+        std::vector<unsigned> extra_dim_sizes = boost::assign::list_of(0)(3)(0)(0)(0)(0);
+
+        for (unsigned i=0; i<6u; ++i)
+        {
+            std::string task = "task_" + tasks[i];
+            NdArray<double> V = GET_ARRAY(r_outputs.Lookup("V_"+task, "TestRepeatedTask-"+task));
+            NdArray<double> t = GET_ARRAY(r_outputs.Lookup("t_"+task, "TestRepeatedTask-"+task));
+            // Check result shapes
+            unsigned num_dims = extra_dim_sizes[i] > 0u ? 2u : 1u;
+            TSM_ASSERT_EQUALS(task, V.GetNumDimensions(), num_dims);
+            TSM_ASSERT_EQUALS(task, t.GetNumDimensions(), num_dims);
+            TSM_ASSERT_EQUALS(task, V.GetShape().back(), 11u);
+            TSM_ASSERT_EQUALS(task, t.GetShape().back(), 11u);
+            unsigned dim0_size = extra_dim_sizes[i] > 0u ? extra_dim_sizes[i] : 1u;
+            if (num_dims == 2u)
+            {
+                TSM_ASSERT_EQUALS(task, V.GetShape().front(), dim0_size);
+                TSM_ASSERT_EQUALS(task, t.GetShape().front(), dim0_size);
+            }
+            // Check result values
+            for (unsigned dim0=0; dim0<dim0_size; ++dim0)
+            {
+                double expected_t = t_offsets[i];
+                double expected_V = V_offsets[i];
+                NdArray<double>::ConstIterator V_it = V.Begin();
+                NdArray<double>::ConstIterator t_it = t.Begin();
+                for (unsigned dim1=0; dim1<11u; ++dim1)
+                {
+                    TSM_ASSERT_DELTA(task, *V_it, expected_V, 1e-6);
+                    TSM_ASSERT_DELTA(task, *t_it, expected_t, 1e-6);
+                    expected_t += 1;
+                    expected_V += V_increments[i];
+                    ++V_it;
+                    ++t_it;
+                }
+            }
+        }
     }
 
     void TestCombinedTask() throw (Exception)

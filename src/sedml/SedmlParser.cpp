@@ -50,6 +50,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ModifierCollection.hpp"
 #include "StateSaverModifier.hpp"
 #include "ModelResetModifier.hpp"
+#include "SetVariableModifier.hpp"
 #include "UniformStepper.hpp"
 #include "VectorStepper.hpp"
 #include "MultipleStepper.hpp"
@@ -274,6 +275,13 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
     AbstractSimulationPtr p_sim;
     const std::string task_type(X2C(pDefnElt->getLocalName()));
     const std::string task_id(GetRequiredAttr(pDefnElt, "id"));
+    // Create an initial reset if needed (for 'task' this is done in ParseSimulation)
+    AbstractSimulationModifierPtr p_initial_reset;
+    if (resetModel)
+    {
+        p_initial_reset.reset(new ModelResetModifier<N_Vector>(
+                AbstractSimulationModifier::AT_START_ONLY, "", mpProtocol->GetStateCollection()));
+    }
     if (task_type == "task")
     {
         const std::string model_ref(GetRequiredAttr(pDefnElt, "modelReference"));
@@ -320,6 +328,10 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
                             << scheduling_attr << "'.");
         }
         p_sim = boost::make_shared<CombinedSimulation>(child_sims, scheduling);
+        if (p_initial_reset)
+        {
+            p_sim->AddModifier(p_initial_reset);
+        }
         // Pretend that we're simulating the same model as our first child, for now
         p_sim->SetModel(child_sims.front()->GetModel()); ///\todo do better
     }
@@ -345,9 +357,13 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
             }
             p_stepper.reset(new MultipleStepper(sub_ranges));
         }
-        // Modifiers implied by resetModel
+        // Modifiers implied by resetModel attributes
         bool reset_model = String2Bool(GetRequiredAttr(pDefnElt, "resetModel"));
         std::vector<boost::shared_ptr<AbstractSimulationModifier> > modifiers;
+        if (p_initial_reset)
+        {
+            modifiers.push_back(p_initial_reset);
+        }
         if (reset_model)
         {
             modifiers.push_back(boost::make_shared<ModelResetModifier<N_Vector> >(
@@ -363,17 +379,24 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
         p_sim = boost::make_shared<NestedSimulation>(p_nested_sim, p_stepper, p_modifiers);
         // We're simulating the same model as our nested task
         p_sim->SetModel(p_nested_sim->GetModel());
+        // Add modifiers according to the listOfChanges
+        BOOST_FOREACH(const DOMElement* p_change_elt, XmlTools::FindElements(pDefnElt, "listOfChanges/setValue"))
+        {
+            std::map<std::string, std::string> var_name_map;
+            const std::string range_ref(GetOptionalAttr(p_change_elt, "range"));
+            if (!range_ref.empty())
+            {
+                var_name_map[range_ref] = range_ref;
+            }
+            AbstractExpressionPtr p_value = ParseSedmlMath(p_change_elt, var_name_map);
+            std::string target_var_name = DetermineVariableReferent(p_change_elt, p_sim);
+            p_sim->AddModifier(boost::make_shared<SetVariableModifier>(
+                    AbstractSimulationModifier::EVERY_LOOP, target_var_name, p_value));
+        }
     }
     else
     {
         PROTO_EXCEPTION("Unknown task type '" << task_type << "'.");
-    }
-    // Add an initial reset if needed (for 'task' this is done in ParseSimulation)
-    if (resetModel && task_type != "task")
-    {
-        AbstractSimulationModifierPtr p_initial_reset(new ModelResetModifier<N_Vector>(
-                AbstractSimulationModifier::AT_START_ONLY, "", mpProtocol->GetStateCollection()));
-        p_sim->AddModifier(p_initial_reset);
     }
     TransferContext(pDefnElt, p_sim);
     p_sim->SetOutputsPrefix(task_id);
@@ -418,12 +441,6 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
             }
             else if (range_type == "functionalRange")
             {
-                // We want something like a VectorStepper, but the single expression should be evaluated
-                // once per loop.  Since a functionalRange will never be the only range in a repeatedTask
-                // (cf #2189) we don't actually need to test it for at-end, etc.; just re-evaluate the
-                // expression when stepped.  So there will need to be a new stepper (FunctionalStepper) -
-                // we can't pre-evaluate all the values since the base range might (in the future) be a
-                // while loop.
                 std::map<std::string, std::string> var_name_map;
                 const std::string range_ref(GetOptionalAttr(p_range, "range"));
                 if (!range_ref.empty())
@@ -432,7 +449,6 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
                 }
                 AbstractExpressionPtr p_expr = ParseSedmlMath(p_range, var_name_map);
                 ranges[range_id] = boost::make_shared<FunctionalStepper>(range_id, "unknown", p_expr);
-                ///\todo listOfChanges!
             }
             else
             {
@@ -482,7 +498,8 @@ AbstractStatementPtr SedmlParser::ParseParameter(const DOMElement* pParamElt)
 }
 
 
-std::string SedmlParser::DetermineVariableReferent(const DOMElement* pVariableElt)
+std::string SedmlParser::DetermineVariableReferent(const DOMElement* pVariableElt,
+                                                   AbstractSimulationPtr pTask)
 {
     SetContext(pVariableElt);
     std::string referent;
@@ -494,26 +511,40 @@ std::string SedmlParser::DetermineVariableReferent(const DOMElement* pVariableEl
     if (!target.empty())
     {
         // This variable refers to a model output
-        const std::string full_task_ref(GetRequiredAttr(pVariableElt, "taskReference"));
+        const std::string full_task_ref(GetOptionalAttr(pVariableElt, "taskReference"));
+        PROTO_ASSERT(!full_task_ref.empty() || pTask,
+                     "A taskReference must be supplied with a target attribute to locate a variable.");
 
-        // If we're using a combinedTask, the task_ref may be prefixed.  Check all components exist,
-        // and get the model from the last one.
-        std::string model_task_ref(full_task_ref);
-        size_t i = 0;
-        while ((i = model_task_ref.find(':')) != std::string::npos)
+        std::string prefix;
+        boost::shared_ptr<AbstractSystemWithOutputs> p_model;
+        if (!full_task_ref.empty())
         {
-            std::string parent_task_ref = model_task_ref.substr(0, i);
-            PROTO_ASSERT(mTasks.find(parent_task_ref) != mTasks.end(),
-                         "Referenced task " << parent_task_ref << " does not exist.");
-            model_task_ref = model_task_ref.substr(i+1);
-        }
-        PROTO_ASSERT(mTasks.find(model_task_ref) != mTasks.end(),
-                     "Referenced task " << model_task_ref << " does not exist.");
+            // If we're using a combinedTask, the task_ref may be prefixed.  Check all components exist,
+            // and get the model from the last one.
+            std::string model_task_ref(full_task_ref);
+            size_t i = 0;
+            while ((i = model_task_ref.find(':')) != std::string::npos)
+            {
+                std::string parent_task_ref = model_task_ref.substr(0, i);
+                PROTO_ASSERT(mTasks.find(parent_task_ref) != mTasks.end(),
+                             "Referenced task " << parent_task_ref << " does not exist.");
+                model_task_ref = model_task_ref.substr(i+1);
+            }
+            PROTO_ASSERT(mTasks.find(model_task_ref) != mTasks.end(),
+                         "Referenced task " << model_task_ref << " does not exist.");
 
+            prefix = full_task_ref + ":";
+            p_model = mTasks[model_task_ref]->GetModel();
+        }
+        else
+        {
+            p_model = pTask->GetModel();
+            // This is a bit hacky - it assumes there's just one environment wrapping the model,
+            // which is certainly the case at present for SED-ML.
+            prefix = p_model->rGetEnvironmentMap().begin()->first + ":";
+        }
         ///\todo Consider also using GetShortName (or similar) for generic ontology terms?
-        boost::shared_ptr<AbstractSystemWithOutputs> p_model = mTasks[model_task_ref]->GetModel();
-        std::string varname = p_model->rGetShortName(target);
-        referent = full_task_ref + ":" + varname;
+        referent = prefix + p_model->rGetShortName(target);
     }
     else
     {

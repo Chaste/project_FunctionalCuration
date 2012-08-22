@@ -231,7 +231,7 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults,
         if (pResults == pIterationOutputs)
         {
             // Special case for CombinedSimulation at the top level;
-            // will apply also to other non-looped simulation types in the future.
+            // will apply also to other non-looped simulation types (e.g. OneStep).
             assert(num_local_dims == 0u);
             return;
         }

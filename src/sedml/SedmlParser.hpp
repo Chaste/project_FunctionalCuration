@@ -173,8 +173,10 @@ private:
      * Parse a variable element to determine the name to look up to obtain the variable's value.
      *
      * @param pVariableElt  the SED-ML variable element
+     * @param pTask  if given, the task in which to look up variables.  Used for setValue elements.
      */
-    std::string DetermineVariableReferent(const xercesc::DOMElement* pVariableElt);
+    std::string DetermineVariableReferent(const xercesc::DOMElement* pVariableElt,
+                                          AbstractSimulationPtr pTask=AbstractSimulationPtr());
 
     /**
      * Parse the MathML math element in a SED-ML element into a return statement.

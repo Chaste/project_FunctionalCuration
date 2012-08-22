@@ -163,6 +163,41 @@ private:
     void ParseDataGenerators(const xercesc::DOMElement* pRootElt);
 
     /**
+     * Parse a parameter definition into an assignment of the parameter's value to its id.
+     *
+     * @param pParamElt  the SED-ML parameter element
+     */
+    AbstractStatementPtr ParseParameter(const xercesc::DOMElement* pParamElt);
+
+    /**
+     * Parse a variable element to determine the name to look up to obtain the variable's value.
+     *
+     * @param pVariableElt  the SED-ML variable element
+     */
+    std::string DetermineVariableReferent(const xercesc::DOMElement* pVariableElt);
+
+    /**
+     * Parse the MathML math element in a SED-ML element into a return statement.
+     *
+     * @param pParentElt  the SED-ML element containing a MathML math element child
+     */
+    AbstractStatementPtr ParseSedmlMathExpression(const xercesc::DOMElement* pParentElt);
+
+    /**
+     * Parse the contents of a SED-ML element that define a mathematical calculation.
+     * This is used by data generators and functional ranges to parse the computation aspects
+     * of these element.
+     *
+     * @param pDefnElt  the SED-ML element to parse
+     * @param rVariableNameMap  as an input, contains any predefined mappings from variable names
+     *     that may be used within the MathML to their fully-qualified names in the protocol
+     *     implementation.  It may be modified by the method to include extra definitions from
+     *     variable elements within pDefnElt.
+     */
+    AbstractExpressionPtr ParseSedmlMath(const xercesc::DOMElement* pDefnElt,
+                                         std::map<std::string, std::string>& rVariableNameMap);
+
+    /**
      * Parse the SED-ML output specifications and convert them to our output and plot specifications.
      *
      * Implementation notes: our current graphing functionality doesn't cover all of SED-ML.  In particular,

@@ -35,11 +35,15 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "OneStepSimulation.hpp"
 
+#include "BacktraceException.hpp"
 
 OneStepSimulation::OneStepSimulation(double step)
     : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr()),
       mStep(step)
-{}
+{
+    PROTO_ASSERT(mStep == DOUBLE_UNSET || mStep > 0.0,
+                 "The step size for a oneStep simulation must be greater than zero.");
+}
 
 
 void OneStepSimulation::Run(EnvironmentPtr pResults)

@@ -85,7 +85,7 @@ const std::string& AbstractSystemWithOutputs::rGetShortName(const std::string& r
 
 
 AbstractSystemWithOutputs::AbstractSystemWithOutputs()
-    : mFreeVariable(DOUBLE_UNSET)
+    : mFreeVariable(0.0) ///\todo hack!
 {
 }
 

@@ -96,6 +96,7 @@ void AbstractSimulation::AddModifier(AbstractSimulationModifierPtr pModifier)
 
 void AbstractSimulation::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pModel)
 {
+    assert(pModel);
     mpModel = pModel;
     const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
     BOOST_FOREACH(StringEnvPair binding, r_model_envs)

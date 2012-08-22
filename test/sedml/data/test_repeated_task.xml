@@ -183,7 +183,7 @@
                 <variable id="V_task_utc_V" taskReference="task_utc" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
             </listOfVariables>
             <m:math>
-                <m:ci>V_task_utc_t</m:ci>
+                <m:ci>V_task_utc_V</m:ci>
             </m:math>
         </dataGenerator>
         <dataGenerator id="V_task_repeat">
@@ -191,7 +191,7 @@
                 <variable id="V_task_repeat_V" taskReference="task_repeat" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
             </listOfVariables>
             <m:math>
-                <m:ci>V_task_repeat_t</m:ci>
+                <m:ci>V_task_repeat_V</m:ci>
             </m:math>
         </dataGenerator>
         <dataGenerator id="V_task_utc_repeat">
@@ -199,7 +199,7 @@
                 <variable id="V_task_utc_repeat_V" taskReference="task_utc_repeat" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
             </listOfVariables>
             <m:math>
-                <m:ci>V_task_utc_repeat_t</m:ci>
+                <m:ci>V_task_utc_repeat_V</m:ci>
             </m:math>
         </dataGenerator>
         <dataGenerator id="V_task_utc_set_model">
@@ -207,7 +207,7 @@
                 <variable id="V_task_utc_set_model_V" taskReference="task_utc_set_model" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
             </listOfVariables>
             <m:math>
-                <m:ci>V_task_utc_set_model_t</m:ci>
+                <m:ci>V_task_utc_set_model_V</m:ci>
             </m:math>
         </dataGenerator>
         <dataGenerator id="V_task_functional_range1">
@@ -215,7 +215,7 @@
                 <variable id="V_task_functional_range1_V" taskReference="task_functional_range1" target="/cellml:model/cellml:component/cellml:variable[@name='V']"/>
             </listOfVariables>
             <m:math>
-                <m:ci>V_task_functional_range1_t</m:ci>
+                <m:ci>V_task_functional_range1_V</m:ci>
             </m:math>
         </dataGenerator>
         <dataGenerator id="V_task_functional_range2">

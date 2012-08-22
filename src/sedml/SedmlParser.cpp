@@ -249,6 +249,7 @@ AbstractSimulationPtr SedmlParser::ParseSimulation(const DOMElement* pSimElt,
         double t_step = String2Double(GetRequiredAttr(pSimElt, "step"));
         p_main_sim.reset(new OneStepSimulation(t_step));
         TransferContext(pSimElt, p_main_sim);
+        p_main_sim->SetModel(pModel);
     }
     else
     {
@@ -423,11 +424,15 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
                 // expression when stepped.  So there will need to be a new stepper (FunctionalStepper) -
                 // we can't pre-evaluate all the values since the base range might (in the future) be a
                 // while loop.
+                std::map<std::string, std::string> var_name_map;
                 const std::string range_ref(GetOptionalAttr(p_range, "range"));
-                // Parse listOfVariables and m:math
-                AbstractExpressionPtr p_expr;
+                if (!range_ref.empty())
+                {
+                    var_name_map[range_ref] = range_ref;
+                }
+                AbstractExpressionPtr p_expr = ParseSedmlMath(p_range, var_name_map);
                 ranges[range_id] = boost::make_shared<FunctionalStepper>(range_id, "unknown", p_expr);
-                PROTO_EXCEPTION("functionalRange not finished.");
+                ///\todo listOfChanges!
             }
             else
             {
@@ -464,87 +469,133 @@ void SedmlParser::ParseTasks(const DOMElement* pRootElt)
 }
 
 
+AbstractStatementPtr SedmlParser::ParseParameter(const DOMElement* pParamElt)
+{
+    SetContext(pParamElt);
+    const std::string param_id(GetRequiredAttr(pParamElt, "id"));
+    double value = String2Double(GetRequiredAttr(pParamElt, "value"));
+    AbstractExpressionPtr p_value = CONST(value);
+    TransferContext(pParamElt, p_value);
+    AbstractStatementPtr p_assign = ASSIGN_STMT(param_id, p_value);
+    TransferContext(pParamElt, p_assign);
+    return p_assign;
+}
+
+
+std::string SedmlParser::DetermineVariableReferent(const DOMElement* pVariableElt)
+{
+    SetContext(pVariableElt);
+    std::string referent;
+    // A variable may be defined using symbol, target, or idref attributes.
+    // If idref is not used, then a taskReference must be supplied.
+    const std::string symbol(GetOptionalAttr(pVariableElt, "symbol"));
+    PROTO_ASSERT(symbol.empty(), "Variables defined by SED-ML symbols are not supported in CellML.");
+    const std::string target(GetOptionalAttr(pVariableElt, "target"));
+    if (!target.empty())
+    {
+        // This variable refers to a model output
+        const std::string full_task_ref(GetRequiredAttr(pVariableElt, "taskReference"));
+
+        // If we're using a combinedTask, the task_ref may be prefixed.  Check all components exist,
+        // and get the model from the last one.
+        std::string model_task_ref(full_task_ref);
+        size_t i = 0;
+        while ((i = model_task_ref.find(':')) != std::string::npos)
+        {
+            std::string parent_task_ref = model_task_ref.substr(0, i);
+            PROTO_ASSERT(mTasks.find(parent_task_ref) != mTasks.end(),
+                         "Referenced task " << parent_task_ref << " does not exist.");
+            model_task_ref = model_task_ref.substr(i+1);
+        }
+        PROTO_ASSERT(mTasks.find(model_task_ref) != mTasks.end(),
+                     "Referenced task " << model_task_ref << " does not exist.");
+
+        ///\todo Consider also using GetShortName (or similar) for generic ontology terms?
+        boost::shared_ptr<AbstractSystemWithOutputs> p_model = mTasks[model_task_ref]->GetModel();
+        std::string varname = p_model->rGetShortName(target);
+        referent = full_task_ref + ":" + varname;
+    }
+    else
+    {
+        const std::string idref(GetOptionalAttr(pVariableElt, "idref"));
+        PROTO_ASSERT(!idref.empty(), "A variable must contain a symbol, target or idref attribute.");
+        // This variable refers to a protocol variable, assumed to be local at present
+        referent = idref;
+    }
+    return referent;
+}
+
+
+AbstractStatementPtr SedmlParser::ParseSedmlMathExpression(const DOMElement* pParentElt)
+{
+    SetContext(pParentElt);
+    std::vector<DOMElement*> maths = XmlTools::FindElements(pParentElt, "math");
+    PROTO_ASSERT(maths.size() == 1u, "There must be exactly one math element.");
+    SetContext(maths.front());
+    std::vector<DOMElement*> math_children = XmlTools::GetChildElements(maths.front());
+    PROTO_ASSERT(math_children.size() == 1u, "The math element must have exactly one child.");
+    AbstractExpressionPtr p_result = ParseExpression(math_children.front());
+    AbstractStatementPtr p_return = RETURN_STMT(p_result);
+    TransferContext(pParentElt, p_return);
+    return p_return;
+}
+
+
+AbstractExpressionPtr SedmlParser::ParseSedmlMath(const xercesc::DOMElement* pDefnElt,
+                                                  std::map<std::string, std::string>& rVariableNameMap)
+{
+    // Implementation note: the contents of the math element becomes the return statement in an
+    // anonymous lambda function, with the variables as function arguments.
+    // Any parameters are defined locally to the function.
+    AbstractExpressionPtr p_result;
+    std::vector<AbstractStatementPtr> body;
+    std::vector<std::string> fps;
+
+    // Arguments to the function, mapping names from the rest of the protocol to local names in the MathML
+    BOOST_FOREACH(const DOMElement* p_var, XmlTools::FindElements(pDefnElt, "listOfVariables/variable"))
+    {
+        SetContext(p_var);
+        const std::string var_id(GetRequiredAttr(p_var, "id"));
+        PROTO_ASSERT(rVariableNameMap[var_id].empty(),
+                     "The variable id " << var_id << " has been used twice.");
+        rVariableNameMap[var_id] = DetermineVariableReferent(p_var);
+        fps.push_back(var_id);
+    }
+
+    // Constant parameters for the calculation
+    BOOST_FOREACH(const DOMElement* p_param, XmlTools::FindElements(pDefnElt, "listOfParameters/parameter"))
+    {
+        body.push_back(ParseParameter(p_param));
+    }
+
+    // The actual equation to compute
+    body.push_back(ParseSedmlMathExpression(pDefnElt));
+
+    // Create a function call containing the MathML body
+    AbstractExpressionPtr p_anon_lambda = boost::make_shared<LambdaExpression>(fps, body);
+    TransferContext(pDefnElt, p_anon_lambda);
+    std::vector<AbstractExpressionPtr> call_args;
+    BOOST_FOREACH(const std::string& r_var_id, fps)
+    {
+        call_args.push_back(boost::make_shared<NameLookup>(rVariableNameMap[r_var_id]));
+        TransferContext(pDefnElt, call_args.back());
+    }
+    p_result = boost::make_shared<FunctionCall>(p_anon_lambda, call_args);
+    TransferContext(pDefnElt, p_result);
+    return p_result;
+}
+
+
 void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
 {
     BOOST_FOREACH(const DOMElement* p_data_gen, XmlTools::FindElements(pRootElt, "listOfDataGenerators/dataGenerator"))
     {
         SetContext(p_data_gen);
         const std::string data_gen_id(GetRequiredAttr(p_data_gen, "id"));
-        std::vector<AbstractStatementPtr> body;
-        std::vector<std::string> fps;
-
-        // Constant parameters for the calculation
-        BOOST_FOREACH(const DOMElement* p_param, XmlTools::FindElements(p_data_gen, "listOfParameters/parameter"))
-        {
-            SetContext(p_param);
-            const std::string param_id(GetRequiredAttr(p_param, "id"));
-            double value = String2Double(GetRequiredAttr(p_param, "value"));
-            AbstractExpressionPtr p_value = CONST(value);
-            TransferContext(p_param, p_value);
-            AbstractStatementPtr p_assign = ASSIGN_STMT(param_id, p_value);
-            TransferContext(p_param, p_assign);
-            body.push_back(p_assign);
-        }
-
-        // Variables, which represent simulation results
-        std::map<std::string, std::string> var_name_map;
-        BOOST_FOREACH(const DOMElement* p_var, XmlTools::FindElements(p_data_gen, "listOfVariables/variable"))
-        {
-            ///\todo In order to support chaining data generators, we need to make taskReference optional,
-            /// and add a new attribute (or extend target) to specify the dataGenerator id, which we can
-            /// look up in var_name_map.
-            SetContext(p_var);
-            const std::string var_id(GetRequiredAttr(p_var, "id"));
-            PROTO_ASSERT(var_name_map[var_id].empty(),
-                         "The variable id " << var_id << " has been used twice.");
-            const std::string target(GetOptionalAttr(p_var, "target"));
-            PROTO_ASSERT(!target.empty(), "Variables defined by SED-ML symbols are not supported in CellML.");
-            const std::string full_task_ref(GetRequiredAttr(p_var, "taskReference"));
-
-            // If we're using a combinedTask, the task_ref may be prefixed.  Check all components exist,
-            // and get the model from the last one.
-            std::string model_task_ref(full_task_ref);
-            size_t i = 0;
-            while ((i = model_task_ref.find(':')) != std::string::npos)
-            {
-                std::string parent_task_ref = model_task_ref.substr(0, i);
-                PROTO_ASSERT(mTasks.find(parent_task_ref) != mTasks.end(),
-                             "Referenced task " << parent_task_ref << " does not exist.");
-                model_task_ref = model_task_ref.substr(i+1);
-            }
-            PROTO_ASSERT(mTasks.find(model_task_ref) != mTasks.end(),
-                         "Referenced task " << model_task_ref << " does not exist.");
-
-            ///\todo Consider also using GetShortName (or similar) for generic ontology terms?
-            boost::shared_ptr<AbstractSystemWithOutputs> p_model = mTasks[model_task_ref]->GetModel();
-            std::string varname = p_model->rGetShortName(target);
-            var_name_map[var_id] = full_task_ref + ":" + varname;
-            fps.push_back(var_id);
-        }
-
-        // The actual equation to compute
-        SetContext(p_data_gen);
-        std::vector<DOMElement*> maths = XmlTools::FindElements(p_data_gen, "math");
-        PROTO_ASSERT(maths.size() == 1u, "There must be exactly one math element.");
-        SetContext(maths.front());
-        std::vector<DOMElement*> math_children = XmlTools::GetChildElements(maths.front());
-        PROTO_ASSERT(math_children.size() == 1u, "The math element must have exactly one child.");
-        AbstractExpressionPtr p_result = ParseExpression(math_children.front());
-        AbstractStatementPtr p_return = RETURN_STMT(p_result);
-        TransferContext(p_data_gen, p_return);
-        body.push_back(p_return);
 
         // Create a function call containing the data generator body
-        AbstractExpressionPtr p_anon_lambda = boost::make_shared<LambdaExpression>(fps, body);
-        TransferContext(p_data_gen, p_anon_lambda);
-        std::vector<AbstractExpressionPtr> call_args;
-        BOOST_FOREACH(const std::string& r_var_id, fps)
-        {
-            call_args.push_back(boost::make_shared<NameLookup>(var_name_map[r_var_id]));
-            TransferContext(p_data_gen, call_args.back());
-        }
-        AbstractExpressionPtr p_call = boost::make_shared<FunctionCall>(p_anon_lambda, call_args);
-        TransferContext(p_data_gen, p_call);
+        std::map<std::string, std::string> var_name_map;
+        AbstractExpressionPtr p_call = ParseSedmlMath(p_data_gen, var_name_map);
 
         // Assign the call result to the data generator id
         AbstractStatementPtr p_assign = ASSIGN_STMT(data_gen_id, p_call);

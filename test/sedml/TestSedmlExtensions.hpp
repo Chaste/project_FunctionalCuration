@@ -52,6 +52,21 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestSedmlExtensions : public CxxTest::TestSuite
 {
 public:
+    void TestRepeatedTask() throw (Exception)
+    {
+        OutputFileHandler handler("TestSedmlExtensions_RepeatedTask");
+        FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
+        FileFinder sedml_file("data/test_repeated_task.xml", this_test);
+
+        // Parse the SED-ML
+        SedmlParser sedml_parser;
+        ProtocolPtr p_proto = sedml_parser.ParseSedml(sedml_file, handler);
+
+        // Run the protocol
+        p_proto->Run();
+        p_proto->WriteToFile(handler, "outputs");
+    }
+
     void TestCombinedTask() throw (Exception)
     {
         OutputFileHandler handler("TestSedmlExtensions_CombinedTask");

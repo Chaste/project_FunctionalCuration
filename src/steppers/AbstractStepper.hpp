@@ -133,7 +133,7 @@ public:
      *
      * @param pEnv
      */
-    void SetEnvironment(EnvironmentPtr pEnv);
+    virtual void SetEnvironment(EnvironmentPtr pEnv);
 
     /** Get the environment in which this stepper's value is bound. */
     Environment& rGetEnvironment() const;

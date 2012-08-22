@@ -50,6 +50,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UniformStepper.hpp"
 #include "VectorStepper.hpp"
 #include "WhileStepper.hpp"
+#include "MultipleStepper.hpp"
 
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
@@ -63,67 +64,79 @@ using boost::make_shared;
 
 class TestSteppers : public CxxTest::TestSuite
 {
-    void DoAbstractTest(boost::shared_ptr<AbstractStepper> ps, const std::string& rName)
+    void DoAbstractTest(boost::shared_ptr<AbstractStepper> pStepper,
+                        const std::string& rName, const std::string& rUnits)
     {
-        TS_ASSERT_EQUALS(ps->GetIndexName(), rName);
-        TS_ASSERT_LESS_THAN(0u, ps->GetNumberOfOutputPoints());
-        TS_ASSERT_EQUALS(ps->GetCurrentOutputNumber(), 0u);
-        TS_ASSERT(!ps->AtEnd());
+        TS_ASSERT_EQUALS(pStepper->GetIndexName(), rName);
+        TS_ASSERT_EQUALS(pStepper->GetUnits(), rUnits);
+        TS_ASSERT_LESS_THAN(0u, pStepper->GetNumberOfOutputPoints());
+        TS_ASSERT_EQUALS(pStepper->GetCurrentOutputNumber(), 0u);
+        TS_ASSERT(!pStepper->AtEnd());
+    }
+
+    void DoUniformTestBody(boost::shared_ptr<AbstractStepper> pStepper, double start, double end, double step)
+    {
+        TS_ASSERT(pStepper->IsEndFixed());
+        const double tol = fabs(step)/1000.0;
+
+        TS_ASSERT_EQUALS(pStepper->GetNumberOfOutputPoints(), 1 + (unsigned)floor((end-start)/step + 0.5));
+        TS_ASSERT_EQUALS(pStepper->GetCurrentOutputPoint(), start);
+        for (unsigned i=0; i<pStepper->GetNumberOfOutputPoints(); i++)
+        {
+            TS_ASSERT(!pStepper->AtEnd());
+            TS_ASSERT_EQUALS(pStepper->GetCurrentOutputNumber(), i);
+            TS_ASSERT_DELTA(pStepper->Step(), start+(i+1)*step, tol);
+            TS_ASSERT_DELTA(pStepper->GetCurrentOutputPoint(), start+(i+1)*step, tol);
+        }
+        TS_ASSERT(pStepper->AtEnd());
+        pStepper->Reset();
+        TS_ASSERT_EQUALS(pStepper->GetCurrentOutputNumber(), 0u);
+        TS_ASSERT_EQUALS(pStepper->GetCurrentOutputPoint(), start);
+        TS_ASSERT(!pStepper->AtEnd());
     }
 
     void DoUniformTest(const std::string& rName, const std::string& rUnits,
                        double start, double end, double step)
     {
         MAKE_PTR_A(AbstractStepper, UniformStepper, p_uniform, (rName, rUnits, start, end, step));
-        DoAbstractTest(p_uniform, rName);
-        TS_ASSERT(p_uniform->IsEndFixed());
-        const double tol = fabs(step)/1000.0;
+        DoAbstractTest(p_uniform, rName, rUnits);
+        DoUniformTestBody(p_uniform, start, end, step);
+    }
 
-        TS_ASSERT_EQUALS(p_uniform->GetNumberOfOutputPoints(), 1 + (unsigned)floor((end-start)/step + 0.5));
-        TS_ASSERT_EQUALS(p_uniform->GetCurrentOutputPoint(), start);
-        for (unsigned i=0; i<p_uniform->GetNumberOfOutputPoints(); i++)
+    void DoVectorTestBody(AbstractStepperPtr pStepper, const std::vector<double>& rVec, double tol=1e-6)
+    {
+        TS_ASSERT(pStepper->IsEndFixed());
+
+        TS_ASSERT_EQUALS(pStepper->GetNumberOfOutputPoints(), rVec.size());
+        for (unsigned i=0; i<pStepper->GetNumberOfOutputPoints(); i++)
         {
-            TS_ASSERT(!p_uniform->AtEnd());
-            TS_ASSERT_EQUALS(p_uniform->GetCurrentOutputNumber(), i);
-            TS_ASSERT_DELTA(p_uniform->Step(), start+(i+1)*step, tol);
-            TS_ASSERT_DELTA(p_uniform->GetCurrentOutputPoint(), start+(i+1)*step, tol);
+            TS_ASSERT(!pStepper->AtEnd());
+            TS_ASSERT_EQUALS(pStepper->GetCurrentOutputNumber(), i);
+            TS_ASSERT_EQUALS(pStepper->GetCurrentOutputPoint(), rVec[i]);
+            if (i<rVec.size()-1)
+            {
+                const double next = rVec[i+1];
+                TS_ASSERT_EQUALS(pStepper->Step(), next);
+                TS_ASSERT_EQUALS(pStepper->GetCurrentOutputPoint(), next);
+            }
+            else
+            {
+                TS_ASSERT_EQUALS(pStepper->Step(), DOUBLE_UNSET);
+            }
         }
-        TS_ASSERT(p_uniform->AtEnd());
-        p_uniform->Reset();
-        TS_ASSERT_EQUALS(p_uniform->GetCurrentOutputNumber(), 0u);
-        TS_ASSERT_EQUALS(p_uniform->GetCurrentOutputPoint(), start);
-        TS_ASSERT(!p_uniform->AtEnd());
+        TS_ASSERT(pStepper->AtEnd());
+        pStepper->Reset();
+        TS_ASSERT_EQUALS(pStepper->GetCurrentOutputNumber(), 0u);
+        TS_ASSERT_EQUALS(pStepper->GetCurrentOutputPoint(), rVec[0]);
+        TS_ASSERT(!pStepper->AtEnd());
     }
 
     void DoVectorTest(const std::string& rName, const std::string& rUnits,
                       const std::vector<double>& rVec, double tol=1e-6)
     {
         MAKE_PTR_A(AbstractStepper, VectorStepper, ps, (rName, rUnits, rVec));
-        DoAbstractTest(ps, rName);
-        TS_ASSERT(ps->IsEndFixed());
-
-        TS_ASSERT_EQUALS(ps->GetNumberOfOutputPoints(), rVec.size());
-        for (unsigned i=0; i<ps->GetNumberOfOutputPoints(); i++)
-        {
-            TS_ASSERT(!ps->AtEnd());
-            TS_ASSERT_EQUALS(ps->GetCurrentOutputNumber(), i);
-            TS_ASSERT_EQUALS(ps->GetCurrentOutputPoint(), rVec[i]);
-            if (i<rVec.size()-1)
-            {
-                const double next = rVec[i+1];
-                TS_ASSERT_EQUALS(ps->Step(), next);
-                TS_ASSERT_EQUALS(ps->GetCurrentOutputPoint(), next);
-            }
-            else
-            {
-                TS_ASSERT_EQUALS(ps->Step(), DOUBLE_UNSET);
-            }
-        }
-        TS_ASSERT(ps->AtEnd());
-        ps->Reset();
-        TS_ASSERT_EQUALS(ps->GetCurrentOutputNumber(), 0u);
-        TS_ASSERT_EQUALS(ps->GetCurrentOutputPoint(), rVec[0]);
-        TS_ASSERT(!ps->AtEnd());
+        DoAbstractTest(ps, rName, rUnits);
+        DoVectorTestBody(ps, rVec, tol);
     }
 
 public:
@@ -149,6 +162,91 @@ public:
         std::vector<double> empty;
         TS_ASSERT_THROWS_CONTAINS(VectorStepper("x", "u", empty),
                                   "A VectorStepper must be given a non-empty vector.");
+    }
+
+    void TestMultipleStepper() throw (Exception)
+    {
+        const std::string uname("units");
+        {
+            AbstractStepperPtr p_stepper1(new UniformStepper("uniform1", uname, 0, 4, 1));
+            AbstractStepperPtr p_stepper2(new UniformStepper("uniform2", uname, 4, 12, 2));
+            std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_stepper1)(p_stepper2);
+            AbstractStepperPtr p_stepper(new MultipleStepper(steppers));
+            // The multiple stepper should behave like its first member for normal operation
+            DoAbstractTest(p_stepper, "uniform1", uname);
+            DoUniformTestBody(p_stepper, 0, 4, 1);
+            // All stepper values should be in the environment
+            EnvironmentPtr p_env(new Environment);
+            p_stepper->SetEnvironment(p_env);
+            p_stepper->Reset();
+            TS_ASSERT_EQUALS(p_env->GetNumberOfDefinitions(), 2u);
+            std::vector<std::string> names = p_env->GetDefinedNames();
+            TS_ASSERT_EQUALS(names[0], "uniform1");
+            TS_ASSERT_EQUALS(names[1], "uniform2");
+            TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(p_env->Lookup("uniform1", "TestMultipleStepper")), 0.0);
+            TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(p_env->Lookup("uniform2", "TestMultipleStepper")), 4.0);
+            // Subsidiary steppers should step every time the first one does
+            TS_ASSERT_EQUALS(p_stepper1->GetNumberOfOutputPoints(), 5u);
+            TS_ASSERT_EQUALS(p_stepper1->GetCurrentOutputNumber(), 0u);
+            TS_ASSERT_EQUALS(p_stepper1->GetCurrentOutputPoint(), 0.0);
+            TS_ASSERT_EQUALS(p_stepper2->GetNumberOfOutputPoints(), 5u);
+            TS_ASSERT_EQUALS(p_stepper2->GetCurrentOutputNumber(), 0u);
+            TS_ASSERT_EQUALS(p_stepper2->GetCurrentOutputPoint(), 4.0);
+
+            for (unsigned i=0; i<5u; i++)
+            {
+                TS_ASSERT(!p_stepper1->AtEnd());
+                TS_ASSERT(!p_stepper2->AtEnd());
+                TS_ASSERT_EQUALS(p_stepper1->GetCurrentOutputNumber(), i);
+                TS_ASSERT_EQUALS(p_stepper2->GetCurrentOutputNumber(), i);
+                TS_ASSERT_DELTA(p_stepper->Step(), i+1, 1e-6);
+                TS_ASSERT_DELTA(p_stepper1->GetCurrentOutputPoint(), 0.0+i+1, 1e-6);
+                TS_ASSERT_DELTA(p_stepper2->GetCurrentOutputPoint(), 4.0+i*2+2, 1e-6);
+                TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_env->Lookup("uniform1", "TestMultipleStepper")), 0.0+i+1, 1e-6);
+                TS_ASSERT_DELTA(GET_SIMPLE_VALUE(p_env->Lookup("uniform2", "TestMultipleStepper")), 4.0+i*2+2, 1e-6);
+            }
+            TS_ASSERT(p_stepper1->AtEnd());
+            TS_ASSERT(p_stepper2->AtEnd());
+        }
+
+        // Basic test with vector members
+        {
+            std::vector<double> values1 = boost::assign::list_of(5)(10)(20);
+            std::vector<double> values2 = boost::assign::list_of(15)(10)(0);
+            AbstractStepperPtr p_stepper1(new VectorStepper("vector1", uname, values1));
+            AbstractStepperPtr p_stepper2(new VectorStepper("vector2", uname, values2));
+            std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_stepper1)(p_stepper2);
+            AbstractStepperPtr p_stepper(new MultipleStepper(steppers));
+            DoAbstractTest(p_stepper, "vector1", uname);
+            DoVectorTestBody(p_stepper, values1);
+        }
+
+        // It's an error if a subsidiary stepper is exhausted too soon (but not v.v.)
+        {
+            std::vector<double> values1 = boost::assign::list_of(5)(10)(20)(40);
+            std::vector<double> values2 = boost::assign::list_of(15)(10)(0);
+            AbstractStepperPtr p_stepper1(new VectorStepper("vector1", uname, values1));
+            AbstractStepperPtr p_stepper2(new VectorStepper("vector2", uname, values2));
+            std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_stepper1)(p_stepper2);
+            AbstractStepperPtr p_stepper(new MultipleStepper(steppers));
+            for (unsigned i=0; i<3u; i++)
+            {
+                p_stepper->Step();
+            }
+            TS_ASSERT(!p_stepper->AtEnd());
+            TS_ASSERT(!p_stepper1->AtEnd());
+            TS_ASSERT(p_stepper2->AtEnd());
+            TS_ASSERT_THROWS_CONTAINS(p_stepper->Step(), "A subsidiary range for this task has been exhausted.");
+
+            steppers = boost::assign::list_of(p_stepper2)(p_stepper1);
+            AbstractStepperPtr p_stepper3(new MultipleStepper(steppers));
+            for (p_stepper3->Reset(); !p_stepper3->AtEnd(); p_stepper3->Step())
+            {
+            }
+            TS_ASSERT(p_stepper3->AtEnd());
+            TS_ASSERT(!p_stepper1->AtEnd());
+            TS_ASSERT(p_stepper2->AtEnd());
+        }
     }
 
     void TestS1S2Steppers() throw (Exception)
@@ -218,7 +316,7 @@ public:
         p_stepper->SetEnvironment(p_env);
         p_stepper->Initialise();
 
-        DoAbstractTest(p_stepper, "i");
+        DoAbstractTest(p_stepper, "i", "number");
         TS_ASSERT(!p_stepper->IsEndFixed());
         TS_ASSERT_LESS_THAN(N, p_stepper->GetNumberOfOutputPoints()); // It should make a large initial guess!
         TS_ASSERT_EQUALS(p_stepper->GetCurrentOutputNumber(), 0u);

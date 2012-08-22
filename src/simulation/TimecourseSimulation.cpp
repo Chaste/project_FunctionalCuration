@@ -47,10 +47,10 @@ void TimecourseSimulation::Run(EnvironmentPtr pResults)
 {
     // Loop over time
     mpStepper->Reset();
-    mpModel->SetFreeVariable(mpStepper->GetCurrentOutputPoint());
     while (!mpStepper->AtEnd())
     {
         LoopBodyStartHook();
+        mpModel->SetFreeVariable(mpStepper->GetCurrentOutputPoint());
         // Compute outputs here, so we get the initial state
         AddIterationOutputs(pResults, mpModel->GetOutputs());
         LoopBodyEndHook();

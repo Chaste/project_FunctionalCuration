@@ -58,6 +58,7 @@ void ModelResetModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractSystemWit
     if (mStateName.empty())
     {
         p_system->ResetToInitialConditions();
+        pModel->SetFreeVariable(0.0); ///\todo hack!
     }
     else
     {

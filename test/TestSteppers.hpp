@@ -179,6 +179,7 @@ public:
             // All stepper values should be in the environment
             EnvironmentPtr p_env(new Environment);
             p_stepper->SetEnvironment(p_env);
+            TS_ASSERT_EQUALS(&(p_stepper->rGetEnvironment()), p_env.get());
             p_stepper->Reset();
             TS_ASSERT_EQUALS(p_env->GetNumberOfDefinitions(), 2u);
             std::vector<std::string> names = p_env->GetDefinedNames();

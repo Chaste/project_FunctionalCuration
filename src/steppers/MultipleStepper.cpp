@@ -111,6 +111,7 @@ double MultipleStepper::Step()
 
 void MultipleStepper::SetEnvironment(EnvironmentPtr pEnv)
 {
+    mpEnvironment = pEnv;
     BOOST_FOREACH(AbstractStepperPtr p_stepper, mSteppers)
     {
         p_stepper->SetEnvironment(pEnv);

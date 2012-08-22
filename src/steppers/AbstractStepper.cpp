@@ -34,6 +34,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "AbstractStepper.hpp"
+
+#include <cassert>
 #include "BacktraceException.hpp"
 #include "NullDeleter.hpp"
 #include "ProtoHelperMacros.hpp"
@@ -79,6 +81,7 @@ void AbstractStepper::SetEnvironment(EnvironmentPtr pEnv)
 
 Environment& AbstractStepper::rGetEnvironment() const
 {
+    assert(mpEnvironment);
     return *mpEnvironment;
 }
 

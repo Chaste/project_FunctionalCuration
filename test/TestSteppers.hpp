@@ -51,6 +51,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VectorStepper.hpp"
 #include "WhileStepper.hpp"
 #include "MultipleStepper.hpp"
+#include "FunctionalStepper.hpp"
 
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
@@ -247,6 +248,38 @@ public:
             TS_ASSERT(!p_stepper1->AtEnd());
             TS_ASSERT(p_stepper2->AtEnd());
         }
+    }
+
+    void TestFunctionalStepper() throw (Exception)
+    {
+        // Create a "2*i" functional stepper
+        std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(2));
+        DEFINE(expr, make_shared<MathmlTimes>(args));
+        AbstractStepperPtr p_fn_stepper(new FunctionalStepper("double", "ms", expr));
+        TS_ASSERT_EQUALS(p_fn_stepper->GetIndexName(), "double");
+        TS_ASSERT_EQUALS(p_fn_stepper->GetUnits(), "ms");
+        TS_ASSERT_EQUALS(p_fn_stepper->GetCurrentOutputNumber(), 0u);
+        TS_ASSERT(!p_fn_stepper->IsEndFixed());
+        TS_ASSERT(!p_fn_stepper->AtEnd());
+        TS_ASSERT_THROWS_CONTAINS(p_fn_stepper->GetNumberOfOutputPoints(),
+                                  "The number of points in a functionalRange cannot be determined.");
+
+        // Add it to a MultipleStepper so it can be used as in real life
+        AbstractStepperPtr p_primary(new UniformStepper("i", "ms", 1, 5, 1));
+        std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_primary)(p_fn_stepper);
+        AbstractStepperPtr p_multi_stepper(new MultipleStepper(steppers));
+        EnvironmentPtr p_env(new Environment);
+        p_multi_stepper->SetEnvironment(p_env);
+        p_multi_stepper->Initialise();
+        for (p_multi_stepper->Reset(); !p_multi_stepper->AtEnd(); p_multi_stepper->Step())
+        {
+            TS_ASSERT_EQUALS(p_fn_stepper->GetCurrentOutputNumber(), p_multi_stepper->GetCurrentOutputNumber());
+            TS_ASSERT_EQUALS(p_fn_stepper->GetCurrentOutputNumber(), p_primary->GetCurrentOutputNumber());
+            TS_ASSERT_EQUALS(p_fn_stepper->GetCurrentOutputPoint(), p_primary->GetCurrentOutputPoint() * 2);
+        }
+        TS_ASSERT(!p_fn_stepper->AtEnd());
+        p_multi_stepper->Reset();
+        TS_ASSERT_EQUALS(p_fn_stepper->GetCurrentOutputPoint(), 2.0);
     }
 
     void TestS1S2Steppers() throw (Exception)

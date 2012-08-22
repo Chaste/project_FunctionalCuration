@@ -36,13 +36,19 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OneStepSimulation.hpp"
 
 
-OneStepSimulation::OneStepSimulation()
-    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr())
+OneStepSimulation::OneStepSimulation(double step)
+    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr()),
+      mStep(step)
 {}
 
 
 void OneStepSimulation::Run(EnvironmentPtr pResults)
 {
-    mpModel->SolveModel(DOUBLE_UNSET);
+    double end_time = mStep;
+    if (end_time != DOUBLE_UNSET)
+    {
+        end_time += mpModel->GetFreeVariable();
+    }
+    mpModel->SolveModel(end_time);
     AddIterationOutputs(pResults, mpModel->GetOutputs());
 }

@@ -33,35 +33,34 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef ONESTEPSIMULATION_HPP_
-#define ONESTEPSIMULATION_HPP_
+#ifndef TESTONESTEPSIMULATION_HPP_
+#define TESTONESTEPSIMULATION_HPP_
 
-#include "AbstractSimulation.hpp"
+#include <cxxtest/TestSuite.h>
 
-/**
- * This simulation class just runs one step of whatever algorithm is built in to the model.
- */
-class OneStepSimulation : public AbstractSimulation
+#include "ProtocolRunner.hpp"
+
+#include "FileFinder.hpp"
+
+class TestOneStepSimulation : public CxxTest::TestSuite
 {
 public:
     /**
-     * Create a new simulation instance.
-     *
-     * @param step  optional step size, for SED-ML support
+     * We put all the tests in one protocol for efficiency - generating the model code is the long bit!
      */
-    OneStepSimulation(double step=DOUBLE_UNSET);
+    void TestBasic() throw (Exception)
+    {
+        std::string dirname = "TestOneStepSimulation";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_onestep_sim.xml", RelativeTo::ChasteSourceRoot);
 
-protected:
-    /**
-     * Run a simulation, filling in the results if requested.
-     *
-     * @param pResults  an Environment to be filled in with results, which must be non-empty
-     */
-    void Run(EnvironmentPtr pResults);
+        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
 
-private:
-    /** The step size to take; needed for SED-ML at present. */
-    double mStep;
+        // Run
+        runner.RunProtocol();
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+    }
 };
 
-#endif // ONESTEPSIMULATION_HPP_
+#endif // TESTONESTEPSIMULATION_HPP_

@@ -806,7 +806,12 @@ public:
 
     AbstractSimulationPtr ParseOneStepSimulation(DOMElement* pDefnElt)
     {
-        return boost::make_shared<OneStepSimulation>();
+        double step = DOUBLE_UNSET;
+        if (pDefnElt->hasAttribute(X("step")))
+        {
+            step = String2Double(X2C(pDefnElt->getAttribute(X("step"))));
+        }
+        return boost::make_shared<OneStepSimulation>(step);
     }
 
     /**

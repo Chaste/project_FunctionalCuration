@@ -52,9 +52,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ModelResetModifier.hpp"
 #include "UniformStepper.hpp"
 #include "VectorStepper.hpp"
+#include "MultipleStepper.hpp"
+#include "FunctionalStepper.hpp"
 #include "TimecourseSimulation.hpp"
 #include "CombinedSimulation.hpp"
 #include "NestedSimulation.hpp"
+#include "OneStepSimulation.hpp"
 #include "ProtoHelperMacros.hpp"
 #include "AssignmentStatement.hpp"
 #include "NameLookup.hpp"
@@ -191,7 +194,7 @@ AbstractSimulationPtr SedmlParser::ParseSimulation(const DOMElement* pSimElt,
     AbstractSimulationPtr p_main_sim;
     SetContext(pSimElt);
     const std::string sim_type(X2C(pSimElt->getLocalName()));
-    const std::string id(GetRequiredAttr(pSimElt, "id"));
+    const std::string sim_id(GetRequiredAttr(pSimElt, "id"));
     if (sim_type == "uniformTimeCourse")
     {
         // Extract and check time interval
@@ -219,7 +222,7 @@ AbstractSimulationPtr SedmlParser::ParseSimulation(const DOMElement* pSimElt,
         {
             // Create an extra simulation for the portion that isn't recorded
             std::vector<double> values = boost::assign::list_of(t_start)(t_output_start);
-            AbstractStepperPtr p_stepper(new VectorStepper(id + "_init", "", values));
+            AbstractStepperPtr p_stepper(new VectorStepper(sim_id + "_init", "", values));
             AbstractSimulationPtr p_init_sim(new TimecourseSimulation(pModel, p_stepper));
             if (p_initial_reset)
             {
@@ -232,13 +235,19 @@ AbstractSimulationPtr SedmlParser::ParseSimulation(const DOMElement* pSimElt,
         }
 
         // Create the main part of the simulation
-        AbstractStepperPtr p_stepper(new UniformStepper(id, "", t_output_start, t_end, t_step));
+        AbstractStepperPtr p_stepper(new UniformStepper(sim_id, "", t_output_start, t_end, t_step));
         p_main_sim.reset(new TimecourseSimulation(pModel, p_stepper));
         if (p_initial_reset)
         {
             p_main_sim->AddModifier(p_initial_reset);
         }
         TransferContext(pSimElt, p_stepper);
+        TransferContext(pSimElt, p_main_sim);
+    }
+    else if (sim_type == "oneStep")
+    {
+        double t_step = String2Double(GetRequiredAttr(pSimElt, "step"));
+        p_main_sim.reset(new OneStepSimulation(t_step));
         TransferContext(pSimElt, p_main_sim);
     }
     else
@@ -319,9 +328,22 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
         const std::string range_attr(GetRequiredAttr(pDefnElt, "range"));
         std::map<std::string, AbstractStepperPtr> ranges = ParseRanges(pDefnElt);
         SetContext(pDefnElt);
-        PROTO_ASSERT(ranges.size() == 1u, "Only a single range is supported at present.");
         AbstractStepperPtr p_stepper = ranges[range_attr];
         PROTO_ASSERT(p_stepper, "Primary task range '" << range_attr << "' is not defined!");
+        if (ranges.size() > 1u)
+        {
+            ///\todo topological sort
+            std::vector<AbstractStepperPtr> sub_ranges(1, p_stepper);
+            std::pair<std::string, AbstractStepperPtr> named_range;
+            BOOST_FOREACH(named_range, ranges)
+            {
+                if (named_range.first != range_attr)
+                {
+                    sub_ranges.push_back(named_range.second);
+                }
+            }
+            p_stepper.reset(new MultipleStepper(sub_ranges));
+        }
         // Modifiers implied by resetModel
         bool reset_model = String2Bool(GetRequiredAttr(pDefnElt, "resetModel"));
         std::vector<boost::shared_ptr<AbstractSimulationModifier> > modifiers;
@@ -382,7 +404,6 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
             }
             else if (range_type == "uniformRange")
             {
-                //id="range_utc2" start="0.0" end="10.0" numberOfPoints="10"
                 double t_start = String2Double(GetRequiredAttr(p_range, "start"));
                 double t_end = String2Double(GetRequiredAttr(p_range, "end"));
                 PROTO_ASSERT(t_start <= t_end,
@@ -391,12 +412,28 @@ std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc
                 double t_step = num_points == 0u ? 0.0 : (t_end - t_start) / num_points;
                 PROTO_ASSERT(num_points == 0u || 0.0 < t_step,
                              "Time course output interval is of zero duration.");
-                ranges[range_id] = boost::make_shared<UniformStepper>(range_id, "unknown", t_start, t_end, t_step);
+                ranges[range_id] = boost::make_shared<UniformStepper>(range_id, "unknown",
+                                                                      t_start, t_end, t_step);
+            }
+            else if (range_type == "functionalRange")
+            {
+                // We want something like a VectorStepper, but the single expression should be evaluated
+                // once per loop.  Since a functionalRange will never be the only range in a repeatedTask
+                // (cf #2189) we don't actually need to test it for at-end, etc.; just re-evaluate the
+                // expression when stepped.  So there will need to be a new stepper (FunctionalStepper) -
+                // we can't pre-evaluate all the values since the base range might (in the future) be a
+                // while loop.
+                const std::string range_ref(GetOptionalAttr(p_range, "range"));
+                // Parse listOfVariables and m:math
+                AbstractExpressionPtr p_expr;
+                ranges[range_id] = boost::make_shared<FunctionalStepper>(range_id, "unknown", p_expr);
+                PROTO_EXCEPTION("functionalRange not finished.");
             }
             else
             {
                 PROTO_EXCEPTION("Unrecognised range type '" << range_type << "'.");
             }
+            TransferContext(p_range, ranges[range_id]);
         }
     }
     return ranges;

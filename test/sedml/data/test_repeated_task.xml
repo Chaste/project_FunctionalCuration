@@ -72,7 +72,7 @@
         </repeatedTask>
 
         <!-- Test nesting with multiple ranges, including a functional range -->
-        <repeatedTask id="task_functional_range1" resetModel="false" range="range_counter">
+        <repeatedTask id="task_functional_range1" resetModel="false" range="range_counter1">
             <listOfRanges>
                 <uniformRange id="range_counter1" start="0.0" end="10.0" numberOfPoints="10"/>
                 <functionalRange id="range_function1">
@@ -101,7 +101,7 @@
         </repeatedTask>
         
         <!-- Identical to the above, but using the range shorthands -->
-        <repeatedTask id="task_functional_range2" resetModel="false" range="range_counter">
+        <repeatedTask id="task_functional_range2" resetModel="false" range="range_counter2">
             <listOfRanges>
                 <uniformRange id="range_counter2" start="0.0" end="10.0" numberOfPoints="10"/>
                 <functionalRange id="range_function2" range="range_counter2">

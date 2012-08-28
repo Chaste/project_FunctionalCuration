@@ -73,7 +73,7 @@ public:
         std::vector<std::string> tasks = boost::assign::list_of("utc")("repeat")("utc_repeat")("utc_set_model")
                 ("functional_range1")("functional_range2");
         std::vector<double> t_offsets = boost::assign::list_of(0)(0)(1)(1)(1)(1);
-        std::vector<double> V_offsets = boost::assign::list_of(0)(0)(1)(1)(11)(11);
+        std::vector<double> V_offsets = boost::assign::list_of(0)(4)(1)(1)(11)(11);
         std::vector<double> V_increments = boost::assign::list_of(1)(1)(1)(0)(1)(1);
         std::vector<unsigned> extra_dim_sizes = boost::assign::list_of(0)(3)(0)(0)(0)(0);
 
@@ -95,12 +95,12 @@ public:
                 TSM_ASSERT_EQUALS(task, t.GetShape().front(), dim0_size);
             }
             // Check result values
+            NdArray<double>::ConstIterator V_it = V.Begin();
+            NdArray<double>::ConstIterator t_it = t.Begin();
             for (unsigned dim0=0; dim0<dim0_size; ++dim0)
             {
                 double expected_t = t_offsets[i];
-                double expected_V = V_offsets[i];
-                NdArray<double>::ConstIterator V_it = V.Begin();
-                NdArray<double>::ConstIterator t_it = t.Begin();
+                double expected_V = V_offsets[i] - dim0;
                 for (unsigned dim1=0; dim1<11u; ++dim1)
                 {
                     TSM_ASSERT_DELTA(task, *V_it, expected_V, 1e-6);

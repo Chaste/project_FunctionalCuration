@@ -37,6 +37,16 @@
                     <value>2</value>
                 </vectorRange>
             </listOfRanges>
+            <listOfChanges>
+                <setValue target="/cellml:model/cellml:component/cellml:variable[@name='V']" range="loop_counter">
+                    <m:math>
+                        <m:apply><m:minus/>
+                            <m:cn>4</m:cn>
+                            <m:ci>loop_counter</m:ci>
+                        </m:apply>
+                    </m:math>
+                </setValue>
+            </listOfChanges>
             <subTask task="task_utc"/>
         </repeatedTask>
         

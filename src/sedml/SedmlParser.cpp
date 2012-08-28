@@ -375,7 +375,7 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
         PROTO_ASSERT(subtasks.size() == 1u, "A nestedTask must have exactly one subTask element.");
         SetContext(subtasks.front());
         const std::string subtask_id(GetRequiredAttr(subtasks.front(), "task"));
-        AbstractSimulationPtr p_nested_sim = ParseTask(mTaskDefinitions[subtask_id]);
+        AbstractSimulationPtr p_nested_sim = ParseTask(mTaskDefinitions[subtask_id], false);
         p_sim = boost::make_shared<NestedSimulation>(p_nested_sim, p_stepper, p_modifiers);
         // We're simulating the same model as our nested task
         p_sim->SetModel(p_nested_sim->GetModel());

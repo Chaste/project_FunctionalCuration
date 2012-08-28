@@ -584,13 +584,40 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
         std::cout << "Plotting " << r_title << ":\t" << label_y << " against " << label_x << "..." << std::endl;
 
         // Check the shapes of the arrays to plot
-        // X must be 1d
+        // X must be 1d, or be equivalent to a 1d array (i.e. just multiple copies of the same vector)
+        const unsigned x_length = output_x.GetShape().back();
         if (output_x.GetNumDimensions() != 1)
         {
-            std::cerr << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
-            continue;
+            // Create a 1d slice of X
+            std::vector<NdArray<double>::Range> ranges;
+            for (unsigned dim=0; dim<output_x.GetNumDimensions()-1; ++dim)
+            {
+                ranges.push_back(NdArray<double>::Range(0u));
+            }
+            ranges.push_back(NdArray<double>::Range(0u, NdArray<double>::Range::END));
+            NdArray<double> output_x_1d = output_x[ranges];
+            // Compare each possible slice to it
+            bool equal = true;
+            NdArray<double>::Indices idxs_1d = output_x_1d.GetIndices();
+            for (NdArray<double>::ConstIterator it = output_x.Begin(); it != output_x.End(); ++it)
+            {
+                idxs_1d.front() = it.rGetIndices().back();
+                if (*it != output_x_1d[idxs_1d])
+                {
+                    equal = false;
+                    break;
+                }
+            }
+            if (!equal)
+            {
+                std::cerr << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
+                continue;
+            }
+            else
+            {
+                output_x = output_x_1d;
+            }
         }
-        const unsigned x_length = output_x.GetShape()[0];
         // Y arrays can be n-d, but the last dimension must match the length of X
         std::vector<NdArray<double> > y_arrays;
         std::vector<unsigned> num_traces;

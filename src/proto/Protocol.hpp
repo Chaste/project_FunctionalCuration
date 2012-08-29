@@ -75,6 +75,18 @@ public:
     void Run();
 
     /**
+     * Run this protocol and, provided SetOutputFolder has been called, write the protocol
+     * outputs to files upon completion.  If an error occurs while running the protocol,
+     * this method will try to write out any requested outputs that have been generated.
+     * Provenance information about the machine running the protocol will also be recorded.
+     * If the protocol completes successfully, an empty file named 'success' will be created
+     * in the output folder to indicate this.
+     *
+     * @param fileNameBase  base part of output file names; see WriteToFile for details
+     */
+    void RunAndWrite(const std::string fileNameBase="outputs");
+
+    /**
      * Set the location to which protocol outputs, and any debugging/tracing information,
      * will be written.  If this is not called prior to running the protocol, then certain
      * debug/trace features will not be available.

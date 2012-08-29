@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
             p_proto->SetPngOutput(png_output);
 
             // Run the protocol
-            p_proto->Run();
-            p_proto->WriteToFile(handler, "outputs");
+            p_proto->SetOutputFolder(handler);
+            p_proto->RunAndWrite("outputs");
         }
     }
     catch (const Exception& e)

@@ -45,6 +45,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/assign/list_of.hpp>
 
 #include "Exception.hpp"
+#include "ExecutableSupport.hpp"
 
 #include "ProtoHelperMacros.hpp"
 #include "VectorStreaming.hpp"
@@ -267,6 +268,51 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 {
     SetOutputFolder(rHandler);
     WriteToFile(rFileNameBase);
+}
+
+
+void Protocol::RunAndWrite(const std::string fileNameBase)
+{
+    // Record provenance info
+    ExecutableSupport::SetOutputDirectory(mpOutputHandler->GetOutputDirectoryFullPath());
+    ExecutableSupport::WriteMachineInfoFile("machine_info");
+    ExecutableSupport::WriteProvenanceInfoFile();
+    // Run protocol
+    try
+    {
+        Run();
+    }
+    catch (...)
+    {
+        if (mpOutputHandler)
+        {
+            try
+            {
+                std::cout << "Error running protocol. Trying to write intermediate results to file..." << std::endl;
+                WriteToFile(fileNameBase);
+                std::cout << "Intermediate results written; re-throwing error..." << std::endl;
+            }
+            catch (const Exception& e)
+            {
+                std::cout << "Failed to write intermediate results:" << std::endl << e.GetMessage();
+            }
+            catch (...)
+            {
+                std::cout << "Failed to write intermediate results." << std::endl;
+            }
+        }
+        throw;
+    }
+    if (mpOutputHandler)
+    {
+        std::cout << "Writing results to file..." << std::endl;
+        WriteToFile(fileNameBase);
+        // Indicate successful completion
+        std::cout << "Done!" << std::endl;
+        out_stream p_file = mpOutputHandler->OpenOutputFile("success");
+        (*p_file) << "Protocol completed successfully." << std::endl;
+        p_file->close();
+    }
 }
 
 

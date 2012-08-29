@@ -45,7 +45,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CellMLToSharedLibraryConverter.hpp"
 #include "DynamicCellModelLoader.hpp"
 #include "AbstractDynamicallyLoadableEntity.hpp"
-#include "ExecutableSupport.hpp"
 
 #include "ProtocolParser.hpp"
 
@@ -105,40 +104,7 @@ void ProtocolRunner::SetPngOutput(bool writePng)
 
 void ProtocolRunner::RunProtocol()
 {
-    // Record provenance info
-    ExecutableSupport::SetOutputDirectory(mHandler.GetOutputDirectoryFullPath());
-    ExecutableSupport::WriteMachineInfoFile("machine_info");
-    ExecutableSupport::WriteProvenanceInfoFile();
-    // Run protocol
-    try
-    {
-        mpProtocol->Run();
-    }
-    catch (...)
-    {
-        try
-        {
-            std::cout << "Error running protocol. Trying to write intermediate results to file..." << std::endl;
-            mpProtocol->WriteToFile("outputs");
-            std::cout << "Intermediate results written; re-throwing error..." << std::endl;
-        }
-        catch (const Exception& e)
-        {
-            std::cout << "Failed to write intermediate results:" << std::endl << e.GetMessage();
-        }
-        catch (...)
-        {
-            std::cout << "Failed to write intermediate results." << std::endl;
-        }
-        throw;
-    }
-    std::cout << "Writing results to file..." << std::endl;
-    mpProtocol->WriteToFile("outputs");
-    // Indicate successful completion
-    std::cout << "Done!" << std::endl;
-    out_stream p_file = mHandler.OpenOutputFile("success");
-    (*p_file) << "Protocol completed successfully." << std::endl;
-    p_file->close();
+    mpProtocol->RunAndWrite("outputs");
 }
 
 

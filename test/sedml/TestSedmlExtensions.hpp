@@ -63,8 +63,9 @@ public:
         ProtocolPtr p_proto = sedml_parser.ParseSedml(sedml_file, handler);
 
         // Run the protocol
-        p_proto->Run();
-        p_proto->WriteToFile(handler, "outputs");
+        p_proto->SetOutputFolder(handler);
+        p_proto->RunAndWrite("outputs");
+        TS_ASSERT(handler.FindFile("success").Exists());
 
         // Test the results
         std::cout << "Checking results..." << std::endl;
@@ -125,8 +126,9 @@ public:
         ProtocolPtr p_proto = sedml_parser.ParseSedml(sedml_file, handler);
 
         // Run the protocol
-        p_proto->Run();
-        p_proto->WriteToFile(handler, "outputs");
+        p_proto->SetOutputFolder(handler);
+        p_proto->RunAndWrite("outputs");
+        TS_ASSERT(handler.FindFile("success").Exists());
 
         // Test the results
         std::cout << "Checking results..." << std::endl;

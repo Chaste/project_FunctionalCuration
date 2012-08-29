@@ -119,6 +119,7 @@ ProtocolPtr SedmlParser::CreateProtocol()
     FileFinder lib_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
     ProtocolPtr p_library_proto = fc_parser.ParseFile(lib_file);
     mpProtocol->AddImport("std", p_library_proto, "TestSedml");
+    mpProtocol->SetPngOutput(true); // Write PNGs too by default
     return mpProtocol;
 }
 

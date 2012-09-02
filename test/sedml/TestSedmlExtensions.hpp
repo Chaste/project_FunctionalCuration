@@ -127,7 +127,9 @@ public:
             FileComparison comp(ref_graph, new_graph);
             comp.SetIgnoreCommentLines(false);
             comp.IgnoreLinesContaining("CreationDate");
-            comp.CompareFiles();
+            comp.IgnoreLinesContaining("Title");
+            comp.IgnoreLinesContaining("Author");
+            TS_ASSERT(comp.CompareFiles());
         }
     }
 

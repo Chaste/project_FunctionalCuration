@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sedML  level="1" version="1" xmlns="http://sed-ml.org/" xmlns:math="http://www.w3.org/1998/Math/MathML">
+    <notes><p xmlns="http://www.w3.org/1999/xhtml">
+        An example of encoding the Biological Modelling Engine directives in SED-ML.
+        See http://sed-ml.org/ for language specification.
+    </p></notes>
+    <!-- directive (duration|sample) Float=1000.0 [[points] Integer=10000]
+    
+    This would be represented as a UniformTimeCourse simulation within the listOfSimulations in SED-ML.
+    Since the BME supports both stochastic and deterministic simulation, we export two simulations:
+    one for each solution method, with suitable algorithms chosen from the KiSAO list.
+    
+    -->
+    <listOfSimulations>
+        <uniformTimeCourse id="sim_det"
+            initialTime="0" outputStartTime="0" outputEndTime="1000.0" numberOfPoints="10000" >
+            <algorithm kisaoID="KISAO:0000019"> <!-- CVODE -->
+                <listOfAlgorithmParameters>
+                    <!-- directive tolerance Float
+
+                    This sets the relative tolerance for the deterministic simulator, and can be specified
+                    in SED-ML using the algorithmParameter extension (which has been approved, but wasn't
+                    in L1V1).  Note that the value exported to SED-ML should be multiplied by the scale
+                    factor.
+                    -->
+                    <algorithmParameter kisaoID="KISAO:0000209" value="1e-6"/>
+                </listOfAlgorithmParameters>
+            </algorithm>
+        </uniformTimeCourse>
+        <uniformTimeCourse id="sim_stoch"
+            initialTime="0" outputStartTime="0" outputEndTime="1000.0" numberOfPoints="10000" >
+            <algorithm kisaoID="KISAO:0000241"/> <!-- Gillespie-like method -->
+        </uniformTimeCourse>
+    </listOfSimulations>
+
+    <!-- The models to simulate -->
+    <listOfModels>
+        <!-- This is a reference to the exported SBML file. -->
+        <model id="model1" name="Human-readable name" language="urn:sedml:language:sbml" source="model1.xml">
+            <!--
+                Model pre-processing may be applied here, e.g. to modify parameter values.
+                This could be used to have a separate model definition for the stochastic case, if needed,
+                but only a single SBML file.
+            <listOfChanges>
+                <changeAttribute id="change1" target="XPath expression" newValue="value"/>
+            </listOfChanges>
+            -->
+        </model>
+    </listOfModels>
+    
+    <!-- Tasks link a model and simulation -->
+    <listOfTasks>
+        <task id="task_det" name="Deterministic simulation" modelReference="model1" simulationReference="sim_det"/>
+        <task id="task_stoch" name="Stochastic simulation" modelReference="model1" simulationReference="sim_stoch"/>
+    </listOfTasks>
+    
+    <!-- Data generators select the outputs of interest, and apply limited post-processing -->
+    <!-- directive plot Plots
+        
+    Here 'Plots' is a semicolon-separated list of things to plot, always against time.
+    SED-ML can certainly specify such 2d plots (see below), and the data generators support the limited
+    post-processing included in the BME directive.
+    
+    The main feature of the directive which isn't supported natively in SED-ML is the variety of ways to
+    select model variables to plot - the SED-ML export would have to resolve these to explicit XPath
+    expressions referencing model variables in the generated SBML (at least until my ontology-based
+    extensions are included).
+    -->
+    <listOfDataGenerators>
+        <!-- The time variables from each task -->
+        <dataGenerator id="time_det" name="time">
+            <listOfVariables>
+                <variable id="t1" taskReference="task_det" symbol="urn:sedml:symbol:time"/>
+            </listOfVariables>
+            <math:math>
+                <math:ci>t1</math:ci>
+            </math:math>
+        </dataGenerator>
+
+        <dataGenerator id="time_stoch" name="time">
+            <listOfVariables>
+                <variable id="t2" taskReference="task_stoch" symbol="urn:sedml:symbol:time"/>
+            </listOfVariables>
+            <math:math>
+                <math:ci>t2</math:ci>
+            </math:math>
+        </dataGenerator>
+        
+        <!-- Single variables to output -->
+        <dataGenerator id="var1" name="Variable 1">
+            <listOfVariables>
+                <variable id="v1" taskReference="task_det" target="XPath"/>
+            </listOfVariables>
+            <math:math>
+                <math:ci>v1</math:ci>
+            </math:math>
+        </dataGenerator>
+        
+        <dataGenerator id="var2" name="Variable 2">
+            <listOfVariables>
+                <variable id="v2" taskReference="task_stoch" target="XPath"/>
+            </listOfVariables>
+            <math:math>
+                <math:ci>v2</math:ci>
+            </math:math>
+        </dataGenerator>
+        
+        <!-- Post-processed outputs -->
+        <dataGenerator id="pp_sum" name="Post-processing: sum">
+            <listOfVariables>
+                <variable id="v3" taskReference="task_det" target="XPath"/>
+                <variable id="v4" taskReference="task_det" target="XPath"/>
+            </listOfVariables>
+            <math:math>
+                <math:apply>
+                    <math:plus/>
+                    <math:ci>v3</math:ci>
+                    <math:ci>v4</math:ci>
+                </math:apply>
+            </math:math>
+        </dataGenerator>
+        
+        <dataGenerator id="pp_sub" name="Post-processing: sub">
+            <listOfVariables>
+                <variable id="v5" taskReference="task_stoch" target="XPath"/>
+                <variable id="v6" taskReference="task_stoch" target="XPath"/>
+            </listOfVariables>
+            <math:math>
+                <math:apply>
+                    <math:minus/>
+                    <math:ci>v5</math:ci>
+                    <math:ci>v6</math:ci>
+                </math:apply>
+            </math:math>
+        </dataGenerator>
+        
+        <dataGenerator id="pp_diff" name="Post-processing: diff">
+            <listOfVariables>
+                <variable id="v7" taskReference="task_det" target="XPath"/>
+                <variable id="v8" taskReference="task_det" target="XPath"/>
+            </listOfVariables>
+            <math:math>
+                <math:apply>
+                    <math:abs/>
+                    <math:apply>
+                        <math:plus/>
+                        <math:ci>v7</math:ci>
+                        <math:ci>v8</math:ci>
+                    </math:apply>
+                </math:apply>
+            </math:math>
+        </dataGenerator>
+        
+        <dataGenerator id="pp_div" name="Post-processing: div">
+            <listOfVariables>
+                <variable id="v9" taskReference="task_det" target="XPath"/>
+                <variable id="v10" taskReference="task_det" target="XPath"/>
+            </listOfVariables>
+            <math:math>
+                <math:apply>
+                    <math:divide/>
+                    <math:ci>v9</math:ci>
+                    <math:ci>v10</math:ci>
+                </math:apply>
+            </math:math>
+        </dataGenerator>
+    </listOfDataGenerators>
+    
+    <!-- directive plot Plots
+
+    Here 'Plots' is a semicolon-separated list of things to plot, always against time.
+    SED-ML allows you to specify which curves are plotted on which graphs, which doesn't appear to be
+    supported in the BME directive.  Here I've just separated the outputs from the stochastic and
+    deterministic simulation into separate graphs for illustrative purposes.
+    -->
+    
+    <listOfOutputs>
+        <plot2D id="plot1" name="First plot">
+            <listOfCurves>
+                <curve id="c1.1" logX="false" logY="false" xDataReference="time_det" yDataReference="var1"/>
+                <curve id="c1.2" logX="false" logY="false" xDataReference="time_det" yDataReference="pp_sum"/>
+                <curve id="c1.3" logX="false" logY="false" xDataReference="time_det" yDataReference="pp_diff"/>
+                <curve id="c1.4" logX="false" logY="false" xDataReference="time_det" yDataReference="pp_div"/>
+            </listOfCurves>
+        </plot2D>
+        <plot2D id="plot2" name="Second plot">
+            <listOfCurves>
+                <curve id="c2.1" logX="false" logY="false" xDataReference="time_stoch" yDataReference="var2"/>
+                <curve id="c2.2" logX="false" logY="false" xDataReference="time_stoch" yDataReference="pp_sub"/>
+            </listOfCurves>
+        </plot2D>
+    </listOfOutputs>
+</sedML>

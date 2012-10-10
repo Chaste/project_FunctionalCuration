@@ -1,1 +1,0 @@
-TestCompactSyntaxParser.py

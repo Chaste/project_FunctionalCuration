@@ -358,7 +358,7 @@ public:
                     OUR_WARN(e.GetMessage(), cellml_files[i], "ICaL");
                 }
             }
-            CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-6); // 0.5% rel tol
+            CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5); // 0.5% rel tol
         }
 
         ////////////////////////////////////////////////////////////////////////////////////

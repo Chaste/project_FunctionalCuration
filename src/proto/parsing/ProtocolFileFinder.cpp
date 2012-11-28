@@ -65,6 +65,12 @@ ProtocolFileFinder::ProtocolFileFinder(const fs::path& rPath)
 }
 
 
+const FileFinder& ProtocolFileFinder::rGetOriginalSource() const
+{
+    return mOriginalFinder;
+}
+
+
 void ProtocolFileFinder::ConvertIfNeeded()
 {
 	mOriginalFinder = *this;

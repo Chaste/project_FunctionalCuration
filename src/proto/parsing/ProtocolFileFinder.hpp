@@ -75,6 +75,12 @@ public:
      */
 	ProtocolFileFinder(const fs::path& rPath);
 
+	/**
+	 * Get a finder for the original protocol file, whatever format it was in.
+	 * This is crucial for interpreting relative URIs in the protocol.
+	 */
+	const FileFinder& rGetOriginalSource() const;
+
 private:
 	/**
 	 * Convert the protocol this finder points at to XML if it isn't already.

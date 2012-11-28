@@ -47,31 +47,41 @@ class TestProtocolFileFinder : public CxxTest::TestSuite
 public:
     void TestFinder() throw (Exception)
     {
-    	std::string chaste_test_output = OutputFileHandler::GetChasteTestOutputDirectory();
-    	ProtocolFileFinder xml_proto1("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
-    	ProtocolFileFinder txt_proto1("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
-    	FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
-    	ProtocolFileFinder xml_proto2("protocols/GraphState.xml", this_file);
-		ProtocolFileFinder txt_proto2("protocols/compact/GraphState.txt", this_file);
+        std::string chaste_test_output = OutputFileHandler::GetChasteTestOutputDirectory();
+        ProtocolFileFinder xml_proto1("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder txt_proto1("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder xml_proto2("protocols/GraphState.xml", this_file);
+        ProtocolFileFinder txt_proto2("protocols/compact/GraphState.txt", this_file);
 
-		TS_ASSERT(AreSameFile(xml_proto1, xml_proto2));
-		TS_ASSERT(!AreSameFile(txt_proto1, txt_proto2));
+        TS_ASSERT(AreSameFile(xml_proto1, xml_proto2));
+        TS_ASSERT(!AreSameFile(txt_proto1, txt_proto2));
 
-		const std::string txt_path1 = txt_proto1.GetAbsolutePath();
-		const std::string txt_path2 = txt_proto2.GetAbsolutePath();
+        TS_ASSERT(AreSameFile(xml_proto1.rGetOriginalSource(), xml_proto1));
+        TS_ASSERT(AreSameFile(xml_proto2.rGetOriginalSource(), xml_proto2));
+        TS_ASSERT(!AreSameFile(txt_proto1.rGetOriginalSource(), txt_proto1));
+        TS_ASSERT(!AreSameFile(txt_proto2.rGetOriginalSource(), txt_proto2));
 
-		TS_ASSERT_EQUALS(txt_path1.find(chaste_test_output), 0);
-		TS_ASSERT_EQUALS(txt_path2.find(chaste_test_output), 0);
-		TS_ASSERT_EQUALS(txt_path1.substr(txt_path1.length()-4), ".xml");
-		TS_ASSERT_EQUALS(txt_path2.substr(txt_path2.length()-4), ".xml");
+        FileFinder src_proto1("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder src_proto2("protocols/compact/GraphState.txt", this_file);
+        TS_ASSERT(AreSameFile(txt_proto1.rGetOriginalSource(), src_proto1));
+        TS_ASSERT(AreSameFile(txt_proto2.rGetOriginalSource(), src_proto2));
+
+        const std::string txt_path1 = txt_proto1.GetAbsolutePath();
+        const std::string txt_path2 = txt_proto2.GetAbsolutePath();
+
+        TS_ASSERT_EQUALS(txt_path1.find(chaste_test_output), 0);
+        TS_ASSERT_EQUALS(txt_path2.find(chaste_test_output), 0);
+        TS_ASSERT_EQUALS(txt_path1.substr(txt_path1.length()-4), ".xml");
+        TS_ASSERT_EQUALS(txt_path2.substr(txt_path2.length()-4), ".xml");
     }
 
 private:
     bool AreSameFile(const FileFinder& rFile1, const FileFinder& rFile2)
     {
-    	fs::path path1(rFile1.GetAbsolutePath());
-    	fs::path path2(rFile2.GetAbsolutePath());
-    	return fs::equivalent(path1, path2);
+        fs::path path1(rFile1.GetAbsolutePath());
+        fs::path path2(rFile2.GetAbsolutePath());
+        return fs::equivalent(path1, path2);
     }
 };
 

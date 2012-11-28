@@ -63,7 +63,7 @@ private:
         std::string dirname = "FunctionalCuration/" + rCellMLFileBaseName + "/" + protocol_name;
 
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/" + protocol_name + ".xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/" + protocol_name + ".xml", RelativeTo::ChasteSourceRoot);
 
         try
         {

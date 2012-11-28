@@ -136,8 +136,11 @@ public:
     {
         PROTO_ASSERT(pImportElt->hasAttribute(X("source")), "Imports must have a source attribute.");
         std::string source_uri = X2C(pImportElt->getAttribute(X("source")));
-        ///\todo handle absolute paths?
-        FileFinder imported_proto_file(source_uri, mpCurrentProtocolObject->rGetSourceFile());
+        ProtocolFileFinder imported_proto_file(source_uri, mpCurrentProtocolObject->rGetSourceFile());
+        if (FileFinder::IsAbsolutePath(source_uri))
+        {
+            imported_proto_file.SetPath(source_uri, RelativeTo::Absolute);
+        }
         return mrParser.ParseFile(imported_proto_file);
     }
 
@@ -1200,7 +1203,7 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
     pProto->FinaliseSetup();
 }
 
-ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)
+ProtocolPtr ProtocolParser::ParseFile(const ProtocolFileFinder& rProtocolFile)
 {
     // Read the file to a DOM tree
     xsd::cxx::xml::auto_initializer init_fini(true, true);
@@ -1210,7 +1213,19 @@ ProtocolPtr ProtocolParser::ParseFile(const FileFinder& rProtocolFile)
     ProtocolParserImpl proto_parser(*this);
     DOMElement* p_root_elt = p_proto_doc->getDocumentElement();
     ProtocolPtr p_proto = proto_parser.CreateProtocolObject(p_root_elt);
-    p_proto->SetSourceFile(rProtocolFile);
+    if (p_root_elt->getBaseURI())
+    {
+        std::string xml_base(X2C(p_root_elt->getBaseURI()));
+        if (xml_base.substr(0, 7) == "file://")
+        {
+            xml_base = xml_base.substr(7);
+        }
+        p_proto->SetSourceFile(FileFinder(xml_base));
+    }
+    else
+    {
+        p_proto->SetSourceFile(rProtocolFile.rGetOriginalSource());
+    }
     AddElementsToProtocol(p_proto, proto_parser, p_root_elt);
 
     return p_proto;

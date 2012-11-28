@@ -52,6 +52,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PetscException.hpp"
 
 #include "FileFinder.hpp"
+#include "ProtocolFileFinder.hpp"
 #include "ProtocolRunner.hpp"
 
 int main(int argc, char *argv[])
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
         else
         {
             FileFinder model(argv[1], RelativeTo::AbsoluteOrCwd);
-            FileFinder proto_xml(argv[2], RelativeTo::AbsoluteOrCwd);
+            ProtocolFileFinder proto_xml(argv[2], RelativeTo::AbsoluteOrCwd);
 
             std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.GetLeafNameNoExtension());
 

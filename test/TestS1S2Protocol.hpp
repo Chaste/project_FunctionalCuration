@@ -49,14 +49,27 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestS1S2Protocol : public CxxTest::TestSuite
 {
 public:
-    void TestS1S2ProtocolRunning() throw(Exception, std::bad_alloc)
+    void TestXmlSyntax() throw(Exception, std::bad_alloc)
     {
         std::string dirname = "TestS1S2ProtocolOutputs";
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         // Assume we get to steady state quickly
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_xml_file);
+    }
 
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
+    void TestCompactSyntax() throw(Exception, std::bad_alloc)
+    {
+        std::string dirname = "TestS1S2ProtocolOutputs_Compact";
+        // Assume we get to steady state quickly
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_S1S2.txt", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_xml_file);
+    }
+
+private:
+    void DoTest(const std::string& rDirName, const ProtocolFileFinder& rProtocolFile)
+    {
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, rProtocolFile, rDirName, true);
 
         // Don't do too many runs
         std::vector<AbstractExpressionPtr> s2_intervals
@@ -66,7 +79,7 @@ public:
 
         // Run
         runner.RunProtocol();
-        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
         // Check the max slope hasn't changed.

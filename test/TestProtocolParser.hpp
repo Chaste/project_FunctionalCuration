@@ -42,6 +42,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolLanguage.hpp"
 #include "ProtocolParser.hpp"
 #include "Protocol.hpp"
+#include "ProtocolFileFinder.hpp"
 #include "AbstractTemplatedSystemWithOutputs.hpp"
 
 #include "OutputFileHandler.hpp"
@@ -82,7 +83,7 @@ public:
     void TestWithCorePostproc() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
         p_proto->InitialiseLibrary();
 
@@ -189,7 +190,7 @@ public:
     void TestSimpleError() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_error1.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_error1.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
@@ -223,7 +224,7 @@ public:
     void TestFindAndIndex() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_find_index.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_find_index.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
@@ -257,7 +258,7 @@ public:
     void TestCoreLibrary() throw (Exception)
     {
         ProtocolParser parser;
-        FileFinder proto_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
         p_proto->InitialiseLibrary();
         Environment& env = p_proto->rGetLibrary();
@@ -465,7 +466,7 @@ public:
 
         // Test with simulation & post-processing loaded from file
         ProtocolParser parser;
-        FileFinder proto_file("projects/FunctionalCuration/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_basic_simulation_and_apd.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
         p_proto->SetModel(boost::dynamic_pointer_cast<AbstractTemplatedSystemWithOutputs<VECTOR> >(p_cell));
         p_proto->Run();

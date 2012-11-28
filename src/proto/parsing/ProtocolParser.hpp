@@ -39,7 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/utility.hpp>
 
 #include "Protocol.hpp"
-#include "FileFinder.hpp"
+#include "ProtocolFileFinder.hpp"
 
 /**
  * Parser for a protocol definition XML file.
@@ -52,7 +52,7 @@ public:
      *
      * @param rProtocolFile  the file to parse
      */
-    ProtocolPtr ParseFile(const FileFinder& rProtocolFile);
+    ProtocolPtr ParseFile(const ProtocolFileFinder& rProtocolFile);
 };
 
 #endif // PROTOCOLPARSER_HPP_

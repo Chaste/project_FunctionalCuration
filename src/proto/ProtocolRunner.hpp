@@ -40,6 +40,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
+#include "ProtocolFileFinder.hpp"
 #include "Protocol.hpp"
 
 /**
@@ -58,7 +59,7 @@ public:
      * @param optimiseModel  whether to apply PyCml optimisations to the model
      */
     ProtocolRunner(const FileFinder& rModelFile,
-                   const FileFinder& rProtoXmlFile,
+                   const ProtocolFileFinder& rProtoXmlFile,
                    const std::string& rOutputFolder,
                    bool optimiseModel=false);
 

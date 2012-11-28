@@ -65,6 +65,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OutputSpecification.hpp"
 #include "ProtocolLanguage.hpp"
 #include "ProtocolParser.hpp"
+#include "ProtocolFileFinder.hpp"
 #include "BacktraceException.hpp"
 
 using namespace xercesc;
@@ -116,7 +117,7 @@ ProtocolPtr SedmlParser::CreateProtocol()
 {
     mpProtocol.reset(new Protocol);
     ProtocolParser fc_parser;
-    FileFinder lib_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
+    ProtocolFileFinder lib_file("projects/FunctionalCuration/src/proto/library/BasicLibrary.xml", RelativeTo::ChasteSourceRoot);
     ProtocolPtr p_library_proto = fc_parser.ParseFile(lib_file);
     mpProtocol->AddImport("std", p_library_proto, "TestSedml");
     mpProtocol->SetPngOutput(true); // Write PNGs too by default

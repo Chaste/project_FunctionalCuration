@@ -52,12 +52,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef N_Vector VECTOR;
 
 ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
-                               const FileFinder& rProtoXmlFile,
+                               const ProtocolFileFinder& rProtoXmlFile,
                                const std::string& rOutputFolder,
                                bool optimiseModel)
     : mHandler(rOutputFolder)
 {
-    std::cout << "Running protocol '" << rProtoXmlFile.GetAbsolutePath() << "' on model '"
+    std::cout << "Running protocol '" << rProtoXmlFile.rGetOriginalSource().GetAbsolutePath() << "' on model '"
               << rModelFile.GetAbsolutePath() << "' and writing output to "
               << mHandler.GetOutputDirectoryFullPath() << std::endl;
     // Copy CellML file into output dir and create conf file

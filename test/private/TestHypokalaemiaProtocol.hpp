@@ -60,7 +60,7 @@ private:
     {
         std::string dirname = "FunctionalCuration/" + rCellMLFileBaseName + "/Hypokalaemia";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/Hypokalaemia.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/Hypokalaemia.xml", RelativeTo::ChasteSourceRoot);
 
         try
         {
@@ -79,7 +79,7 @@ public:
     {
         std::string dirname = "TestHypokalaemiaProtocolOutputs";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/Hypokalaemia.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/private/protocols/Hypokalaemia.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
 

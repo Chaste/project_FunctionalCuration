@@ -96,6 +96,9 @@ void ProtocolFileFinder::ConvertIfNeeded()
 		output.erase(output.find('\n')); // Script output is newline-terminated
 		pclose(pipe);
 		SetPath(output, RelativeTo::Absolute);
-		EXCEPT_IF_NOT(Exists());
+		if (!Exists())
+		{
+		    EXCEPTION("Conversion of text protocol to XML failed.  XML file '" << GetAbsolutePath() << "' not found.");
+		}
 	}
 }

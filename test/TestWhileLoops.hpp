@@ -45,6 +45,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
 #include "VectorStreaming.hpp"
+#include "ProtocolFileFinder.hpp"
 
 #include "FileFinder.hpp"
 #include "NumericFileComparison.hpp"
@@ -55,10 +56,23 @@ public:
     void TestSimpleIteration() throw (Exception)
     {
         std::string dirname = "TestWhileLoops";
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        FileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_while_loop.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_while_loop.xml", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_xml_file);
+    }
 
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+    void TestCompactSyntax() throw (Exception)
+	{
+        std::string dirname = "TestWhileLoops_Compact";
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_while_loop.txt", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_file);
+	}
+
+private:
+    void DoTest(const std::string& rDirname, const ProtocolFileFinder& rProtocol)
+    {
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+
+        ProtocolRunner runner(cellml_file, rProtocol, rDirname);
 
         // How many loops to run
         const unsigned N = 10u;
@@ -66,7 +80,7 @@ public:
 
         // Run
         runner.RunProtocol();
-        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        FileFinder success_file(rDirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
         // Check the final Vs are correct
@@ -79,7 +93,7 @@ public:
         CheckFinalV(r_outputs, "V_3001", 3001);
         CheckFinalV(r_outputs, "V_empty", 1);
     }
-private:
+
     void CheckFinalV(const Environment& rOutputs, const std::string& rOutputName, unsigned N)
     {
         NdArray<double> V = GET_ARRAY(rOutputs.Lookup(rOutputName));

@@ -70,6 +70,7 @@ RangeIndex CheckRangeElement(const AbstractValuePtr pValue, bool nullOk, Index s
     return index;
 }
 
+
 void ExtractRangeSpecs(std::map<Index, R>& rRangeSpecs,
                        const std::vector<AbstractValuePtr>& rTuples,
                        const std::string& rLocationInfo,
@@ -82,6 +83,7 @@ void ExtractRangeSpecs(std::map<Index, R>& rRangeSpecs,
     }
     bool nulls_ok = pRangeNames ? false : true;
     unsigned num_tuple_items = 0u;
+    bool implicit_dimension = true;
     for (Index i=0; i<num_tuples; ++i)
     {
         TupleValue* p_range = static_cast<TupleValue*>(rTuples[i].get());
@@ -90,9 +92,10 @@ void ExtractRangeSpecs(std::map<Index, R>& rRangeSpecs,
         {
             if (pRangeNames)
             {
-                PROTO_ASSERT2(num_items == 5,
-                              "Range specification " << i << " has " << num_items << " not 5 items.", rLocationInfo);
-                num_tuple_items = 5u;
+                PROTO_ASSERT2(num_items == 5 || num_items == 4,
+                              "Range specification " << i << " has " << num_items << " not 4 or 5 items.", rLocationInfo);
+                num_tuple_items = num_items;
+                implicit_dimension = (num_items == 4);
             }
             else
             {
@@ -100,6 +103,7 @@ void ExtractRangeSpecs(std::map<Index, R>& rRangeSpecs,
                               "Range specifications must be 3-tuples or 4-tuples; specification " << i
                               << " has " << num_items << " items.", rLocationInfo);
                 num_tuple_items = num_items;
+                implicit_dimension = (num_items == 3);
             }
         }
         else
@@ -109,20 +113,20 @@ void ExtractRangeSpecs(std::map<Index, R>& rRangeSpecs,
                           << i << " has " << num_items << " not " << num_tuple_items << ".", rLocationInfo);
         }
         // Get & check dimension
-        Index dimension = (Index)((num_items == 3) ? i : CheckRangeElement(p_range->GetItem(0), nulls_ok, i, rLocationInfo, true));
+        Index dimension = (Index)(implicit_dimension ? i : CheckRangeElement(p_range->GetItem(0), nulls_ok, i, rLocationInfo, true));
         PROTO_ASSERT2(rRangeSpecs.find(dimension) == rRangeSpecs.end(),
                       "Multiple range specifications given for dimension " << dimension << ".", rLocationInfo);
         // Get & check stride, start & end
-        unsigned ioff = (num_items == 3) ? 0 : 1;
+        unsigned ioff = implicit_dimension ? 0 : 1;
         RangeIndex stride = CheckRangeElement(p_range->GetItem(1+ioff), false, i, rLocationInfo);
         RangeIndex start = CheckRangeElement(p_range->GetItem(0+ioff), nulls_ok && stride != 0, i, rLocationInfo);
         RangeIndex end = CheckRangeElement(p_range->GetItem(2+ioff), nulls_ok && stride != 0, i, rLocationInfo);
         // Get & check index variable name
-        if (num_tuple_items == 5)
+        if (pRangeNames)
         {
-            AbstractValuePtr p_name_item = p_range->GetItem(4);
+            AbstractValuePtr p_name_item = p_range->GetItem(3 + ioff);
             PROTO_ASSERT2(p_name_item->IsString(),
-                          "The fifth item in range specification " << i << " is not a string", rLocationInfo);
+                          "The last item in range specification " << i << " is not a string", rLocationInfo);
             std::string name = static_cast<StringValue*>(p_name_item.get())->GetString();
             pRangeNames->insert(std::pair<Index, std::string>(dimension, name));
         }

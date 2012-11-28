@@ -61,6 +61,20 @@ public:
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
     }
+
+    void TestCompactSyntax() throw (Exception)
+    {
+        std::string dirname = "TestOneStepSimulation_Compact";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_onestep_sim.txt", RelativeTo::ChasteSourceRoot);
+
+        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+
+        // Run
+        runner.RunProtocol();
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+    }
 };
 
 #endif // TESTONESTEPSIMULATION_HPP_

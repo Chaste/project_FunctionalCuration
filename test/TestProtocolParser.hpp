@@ -79,12 +79,10 @@ class TestProtocolParser : public CxxTest::TestSuite
         return str;
     }
 
-public:
-    void TestWithCorePostproc() throw (Exception)
+    void DoCorePostproc(const ProtocolFileFinder& rProtoFile) throw (Exception)
     {
         ProtocolParser parser;
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
-        ProtocolPtr p_proto = parser.ParseFile(proto_file);
+        ProtocolPtr p_proto = parser.ParseFile(rProtoFile);
         p_proto->InitialiseLibrary();
 
         // Test inputs
@@ -187,6 +185,20 @@ public:
         }
     }
 
+public:
+    void TestCorePostprocXml() throw (Exception)
+    {
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
+        DoCorePostproc(proto_file);
+    }
+
+    void TestCorePostprocCompact() throw (Exception)
+    {
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_core_postproc.txt", RelativeTo::ChasteSourceRoot);
+        DoCorePostproc(proto_file);
+
+    }
+
     void TestSimpleError() throw (Exception)
     {
         ProtocolParser parser;
@@ -219,6 +231,18 @@ public:
             TS_ASSERT_EQUALS(e.CheckShortMessageContains("Cannot fold over dimension 4294967295 as the operand array only has 0 dimensions."), "");
         }
         TS_ASSERT(threw);
+    }
+
+    void TestFindAndIndexCompact() throw (Exception)
+    {
+        ProtocolParser parser;
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_find_index.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolPtr p_proto = parser.ParseFile(proto_file);
+
+        std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
+        EnvironmentPtr p_env(new Environment);
+        Environment& env = *p_env; // Save typing!
+        env.ExecuteStatements(r_program);
     }
 
     void TestFindAndIndex() throw (Exception)

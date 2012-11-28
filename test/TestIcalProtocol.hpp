@@ -51,14 +51,27 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestIcalProtocol : public CxxTest::TestSuite
 {
 public:
-    void TestShortIcal() throw (Exception)
+    void TestXmlSyntax() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
+        DoTestShortIcal(dirname, proto_xml_file);
+    }
+
+    void TestCompactSyntax() throw (Exception)
+    {
+        std::string dirname = "TestICaLProtocolOutputs";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/ICaL.txt", RelativeTo::ChasteSourceRoot);
+        DoTestShortIcal(dirname, proto_xml_file);
+    }
+
+private:
+    void DoTestShortIcal(const std::string& rDirName, const ProtocolFileFinder& rProtoFile) throw (Exception)
+    {
         std::string model_name = "fox_mcharg_gilmour_2002";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+        ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
 
         // Don't do too many runs
         std::vector<AbstractExpressionPtr> test_potentials
@@ -68,7 +81,7 @@ public:
         runner.GetProtocol()->SetInput("steady_state_time", CONST(1000));
 
         runner.RunProtocol();
-        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
         // Check the key outputs haven't changed.

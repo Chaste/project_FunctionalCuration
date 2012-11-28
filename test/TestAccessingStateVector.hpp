@@ -50,16 +50,29 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestAccessingStateVector : public CxxTest::TestSuite
 {
 public:
-    void TestGraphState() throw (Exception)
+    void TestXmlSyntax() throw (Exception)
     {
         std::string dirname = "TestAccessingStateVector";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
+        DoTestGraphState(dirname, proto_xml_file);
+    }
+
+    void TestCompactSyntax() throw (Exception)
+    {
+        std::string dirname = "TestAccessingStateVector_Compact";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
+        DoTestGraphState(dirname, proto_xml_file);
+    }
+
+private:
+    void DoTestGraphState(const std::string& rDirName, const ProtocolFileFinder& rProtoFile) throw (Exception)
+    {
         std::string model_name = "luo_rudy_1991";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
 
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+        ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
         runner.RunProtocol();
-        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
         // Double-check transpose
@@ -75,7 +88,7 @@ public:
 
         // Compare the results with original data
         FileFinder ref_dir("projects/FunctionalCuration/test/data/TestAccessingStateVector", RelativeTo::ChasteSourceRoot);
-        FileFinder out_dir(dirname, RelativeTo::ChasteTestOutput);
+        FileFinder out_dir(rDirName, RelativeTo::ChasteTestOutput);
 
         // Test metadata files
         std::vector<std::string> filenames = boost::assign::list_of("-contents.csv")("-default-plots.csv");

@@ -45,16 +45,29 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestNestedProtocols : public CxxTest::TestSuite
 {
 public:
-    void TestSimpleExample() throw (Exception)
+    void TestXmlSyntax() throw (Exception)
     {
         std::string dirname = "TestNestedProtocols";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_nested_protocol.xml", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_xml_file);
+    }
+
+    void TestCompactSyntax() throw (Exception)
+    {
+        std::string dirname = "TestNestedProtocol_Compact";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_nested_protocol.txt", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_xml_file);
+    }
+
+private:
+    void DoTest(const std::string& rDirName, const ProtocolFileFinder& rProtoFile) throw (Exception)
+    {
         std::string model_name = "luo_rudy_1991";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_nested_protocol.xml", RelativeTo::ChasteSourceRoot);
 
-        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+        ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
         runner.RunProtocol();
-        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
         // Check results

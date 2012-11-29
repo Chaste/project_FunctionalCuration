@@ -76,6 +76,12 @@ public:
         TS_ASSERT_EQUALS(txt_path2.substr(txt_path2.length()-4), ".xml");
     }
 
+    void TestErrors() throw (Exception)
+    {
+        TS_ASSERT_THROWS_CONTAINS(ProtocolFileFinder no_proto("projects/FunctionalCuration/not_a_protocol.txt", RelativeTo::ChasteSourceRoot),
+                                  "Conversion of text protocol '");
+    }
+
 private:
     bool AreSameFile(const FileFinder& rFile1, const FileFinder& rFile2)
     {

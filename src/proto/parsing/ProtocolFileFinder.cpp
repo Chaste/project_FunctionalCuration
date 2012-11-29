@@ -93,12 +93,18 @@ void ProtocolFileFinder::ConvertIfNeeded()
 		{
 			output += buf;
 		}
-		output.erase(output.find('\n')); // Script output is newline-terminated
+		std::string::size_type line_end = output.find('\n'); // Script output is newline-terminated, if successful
+		if (line_end == std::string::npos)
+		{
+		    EXCEPTION("Conversion of text protocol '" << mOriginalFinder.GetAbsolutePath() << "' to XML failed.");
+		}
+		output.erase(line_end);
 		pclose(pipe);
 		SetPath(output, RelativeTo::Absolute);
 		if (!Exists())
 		{
-		    EXCEPTION("Conversion of text protocol to XML failed.  XML file '" << GetAbsolutePath() << "' not found.");
+		    EXCEPTION("Conversion of text protocol '" << mOriginalFinder.GetAbsolutePath()
+		              << "' to XML failed: XML file '" << GetAbsolutePath() << "' not found.");
 		}
 	}
 }

@@ -47,7 +47,6 @@ class TestProtocolFileFinder : public CxxTest::TestSuite
 public:
     void TestFinder() throw (Exception)
     {
-        std::string chaste_test_output = OutputFileHandler::GetChasteTestOutputDirectory();
         ProtocolFileFinder xml_proto1("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
         ProtocolFileFinder txt_proto1("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
         FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
@@ -66,14 +65,26 @@ public:
         FileFinder src_proto2("protocols/compact/GraphState.txt", this_file);
         TS_ASSERT(AreSameFile(txt_proto1.rGetOriginalSource(), src_proto1));
         TS_ASSERT(AreSameFile(txt_proto2.rGetOriginalSource(), src_proto2));
+        TS_ASSERT(AreSameFile(txt_proto1.rGetOriginalSource(), txt_proto2.rGetOriginalSource()));
 
-        const std::string txt_path1 = txt_proto1.GetAbsolutePath();
-        const std::string txt_path2 = txt_proto2.GetAbsolutePath();
+        CheckOutputIsXml(txt_proto1);
+        CheckOutputIsXml(txt_proto2);
 
-        TS_ASSERT_EQUALS(txt_path1.find(chaste_test_output), 0);
-        TS_ASSERT_EQUALS(txt_path2.find(chaste_test_output), 0);
-        TS_ASSERT_EQUALS(txt_path1.substr(txt_path1.length()-4), ".xml");
-        TS_ASSERT_EQUALS(txt_path2.substr(txt_path2.length()-4), ".xml");
+        // Check other constructors and calling SetPath directly work too
+        fs::path boost_path("projects/FunctionalCuration/test/protocols/compact/GraphState.txt");
+        ProtocolFileFinder txt_proto3(boost_path);
+        TS_ASSERT(AreSameFile(txt_proto3.rGetOriginalSource(), src_proto1));
+        CheckOutputIsXml(txt_proto3);
+        ProtocolFileFinder txt_proto4;
+        txt_proto4.SetPath(txt_proto3.rGetOriginalSource().GetAbsolutePath(), RelativeTo::Absolute);
+        TS_ASSERT(AreSameFile(txt_proto4.rGetOriginalSource(), src_proto1));
+        CheckOutputIsXml(txt_proto4);
+
+        // Check we can re-target a finder successfully
+        FileFinder src("projects/FunctionalCuration/test/protocols/compact/test_find_index.txt", RelativeTo::ChasteSourceRoot);
+        txt_proto4.SetPath(src.GetAbsolutePath(), RelativeTo::Absolute);
+        TS_ASSERT(AreSameFile(txt_proto4.rGetOriginalSource(), src));
+        CheckOutputIsXml(txt_proto4);
     }
 
     void TestErrors() throw (Exception)
@@ -83,6 +94,13 @@ public:
     }
 
 private:
+    void CheckOutputIsXml(const ProtocolFileFinder& rFile)
+    {
+        const std::string path = rFile.GetAbsolutePath();
+        TS_ASSERT_EQUALS(path.find(OutputFileHandler::GetChasteTestOutputDirectory()), 0);
+        TS_ASSERT_EQUALS(path.substr(path.length()-4), ".xml");
+    }
+
     bool AreSameFile(const FileFinder& rFile1, const FileFinder& rFile2)
     {
         fs::path path1(rFile1.GetAbsolutePath());

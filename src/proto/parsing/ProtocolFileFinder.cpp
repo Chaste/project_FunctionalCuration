@@ -42,26 +42,44 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Exception.hpp"
 #include "OutputFileHandler.hpp"
 
+// Note that with all these constructors we need to use the default base class constructor
+// and call SetPath ourselves, since it's a virtual method overridden here.
+
 ProtocolFileFinder::ProtocolFileFinder(const std::string& rPath,
-									   RelativeTo::Value relativeTo)
-	: FileFinder(rPath, relativeTo)
+                                       RelativeTo::Value relativeTo)
 {
-	ConvertIfNeeded();
+    SetPath(rPath, relativeTo);
 }
 
 
 ProtocolFileFinder::ProtocolFileFinder(const std::string& rLeafName,
-									   const FileFinder& rParentOrSibling)
-	: FileFinder(rLeafName, rParentOrSibling)
+                                       const FileFinder& rParentOrSibling)
 {
-	ConvertIfNeeded();
+    SetPath(rLeafName, rParentOrSibling);
 }
 
 
 ProtocolFileFinder::ProtocolFileFinder(const fs::path& rPath)
-	: FileFinder(rPath)
 {
-	ConvertIfNeeded();
+    SetPath(fs::complete(rPath).string(), RelativeTo::Absolute);
+}
+
+
+ProtocolFileFinder::ProtocolFileFinder()
+{}
+
+
+void ProtocolFileFinder::SetPath(const std::string& rPath, RelativeTo::Value relativeTo)
+{
+    FileFinder::SetPath(rPath, relativeTo);
+    ConvertIfNeeded();
+}
+
+
+void ProtocolFileFinder::SetPath(const std::string& rLeafName, const FileFinder& rParentOrSibling)
+{
+    FileFinder::SetPath(rLeafName, rParentOrSibling);
+    ConvertIfNeeded();
 }
 
 
@@ -73,38 +91,43 @@ const FileFinder& ProtocolFileFinder::rGetOriginalSource() const
 
 void ProtocolFileFinder::ConvertIfNeeded()
 {
-	mOriginalFinder = *this;
-	if (GetExtension() != ".xml")
-	{
-		EXCEPT_IF_NOT(system(NULL));
-		// Call a Python script to convert the protocol, and obtain the resulting path from it
-		OutputFileHandler handler("ProtocolConverter", false);
-		FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
-		FileFinder converter("CompactSyntaxParser.py", this_file);
-		std::string cmd = "/usr/bin/env python \"" + converter.GetAbsolutePath()
-				+ "\" \"" + mOriginalFinder.GetAbsolutePath()
-				+ "\" \"" + handler.GetOutputDirectoryFullPath() + '"';
-		FILE* pipe = popen(cmd.c_str(), "r");
-		EXCEPT_IF_NOT(pipe != NULL);
-		std::string output;
-		const int BUFSIZE = 1024;
-		char buf[BUFSIZE];
-		while (fgets(buf, sizeof (buf), pipe))
-		{
-			output += buf;
-		}
-		std::string::size_type line_end = output.find('\n'); // Script output is newline-terminated, if successful
-		if (line_end == std::string::npos)
-		{
-		    EXCEPTION("Conversion of text protocol '" << mOriginalFinder.GetAbsolutePath() << "' to XML failed.");
-		}
-		output.erase(line_end);
-		pclose(pipe);
-		SetPath(output, RelativeTo::Absolute);
-		if (!Exists())
-		{
-		    EXCEPTION("Conversion of text protocol '" << mOriginalFinder.GetAbsolutePath()
-		              << "' to XML failed: XML file '" << GetAbsolutePath() << "' not found.");
-		}
-	}
+    if (!mOriginalFinder.IsPathSet())
+    {
+        mOriginalFinder = *this;
+    }
+    if (GetExtension() != ".xml")
+    {
+        mOriginalFinder = *this; // The same line above doesn't get executed if the finder has been re-targeted
+        EXCEPT_IF_NOT(system(NULL));
+        // Call a Python script to convert the protocol, and obtain the resulting path from it
+        OutputFileHandler handler("ProtocolConverter", false);
+        FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
+        FileFinder converter("CompactSyntaxParser.py", this_file);
+        std::string cmd = "/usr/bin/env python \"" + converter.GetAbsolutePath()
+                + "\" \"" + mOriginalFinder.GetAbsolutePath()
+                + "\" \"" + handler.GetOutputDirectoryFullPath() + '"';
+        FILE* pipe = popen(cmd.c_str(), "r");
+        EXCEPT_IF_NOT(pipe != NULL);
+        std::string output;
+        const int BUFSIZE = 1024;
+        char buf[BUFSIZE];
+        while (fgets(buf, sizeof (buf), pipe))
+        {
+            output += buf;
+        }
+        pclose(pipe);
+        std::string::size_type line_end = output.find('\n'); // Script output is newline-terminated, if successful
+        if (line_end == std::string::npos)
+        {
+            EXCEPTION("Conversion of text protocol '" << mOriginalFinder.GetAbsolutePath() << "' to XML failed.");
+        }
+        output.erase(line_end);
+        EXCEPT_IF_NOT(output.substr(output.length()-4) == ".xml");
+        FileFinder::SetPath(output, RelativeTo::Absolute);
+        if (!Exists())
+        {
+            EXCEPTION("Conversion of text protocol '" << mOriginalFinder.GetAbsolutePath()
+                      << "' to XML failed: XML file '" << GetAbsolutePath() << "' not found.");
+        }
+    }
 }

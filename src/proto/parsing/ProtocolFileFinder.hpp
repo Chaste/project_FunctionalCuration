@@ -41,7 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * This specialised FileFinder subclass allows us to abstract away the file format for protocols.
  * It can be initialised to point at a protocol in either XML or compact textual syntax.
- * However, if the text syntax is used, the instance will translate it to XML on construction,
+ * However, if the text syntax is used, the instance will translate it to XML when SetPath is called,
  * and provide the path of the XML version to other code.
  */
 class ProtocolFileFinder : public FileFinder
@@ -53,7 +53,7 @@ public:
      * @param rPath  the path to the file/dir to find
      * @param relativeTo  how to interpret this path
      */
-	ProtocolFileFinder(const std::string& rPath, RelativeTo::Value relativeTo);
+    ProtocolFileFinder(const std::string& rPath, RelativeTo::Value relativeTo);
 
     /**
      * Find a file (or folder) relative to some file or directory.
@@ -64,7 +64,7 @@ public:
      * @param rLeafName  the leaf name of the file/dir to find
      * @param rParentOrSibling  where to look for it
      */
-	ProtocolFileFinder(const std::string& rLeafName, const FileFinder& rParentOrSibling);
+    ProtocolFileFinder(const std::string& rLeafName, const FileFinder& rParentOrSibling);
 
     /**
      * Conversion constructor from a Boost Filesystem path object.
@@ -73,23 +73,44 @@ public:
      *
      * @param rPath  the path to the file/dir to find
      */
-	ProtocolFileFinder(const fs::path& rPath);
+    ProtocolFileFinder(const fs::path& rPath);
 
-	/**
-	 * Get a finder for the original protocol file, whatever format it was in.
-	 * This is crucial for interpreting relative URIs in the protocol.
-	 */
-	const FileFinder& rGetOriginalSource() const;
+    /**
+     * Default constructor for an uninitialised finder.
+     */
+    ProtocolFileFinder();
+
+    /**
+     * Change this finder to point at a new location.
+     *
+     * @param rPath  the path to the file/dir to find
+     * @param relativeTo  how to interpret this path
+     */
+    void SetPath(const std::string& rPath, RelativeTo::Value relativeTo);
+
+    /**
+     * Change this finder to point at a new location, relative to some file or directory.
+     *
+     * @param rLeafName  the leaf name of the file/dir to find
+     * @param rParentOrSibling  where to look for it
+     */
+    void SetPath(const std::string& rLeafName, const FileFinder& rParentOrSibling);
+
+    /**
+     * Get a finder for the original protocol file, whatever format it was in.
+     * This is crucial for interpreting relative URIs in the protocol.
+     */
+    const FileFinder& rGetOriginalSource() const;
 
 private:
-	/**
-	 * Convert the protocol this finder points at to XML if it isn't already.
-	 * Called by the various constructors.
-	 */
-	void ConvertIfNeeded();
+    /**
+     * Convert the protocol this finder points at to XML if it isn't already.
+     * Called by the various constructors.
+     */
+    void ConvertIfNeeded();
 
-	/** This refers to the location we originally pointed at, whether text or XML syntax. */
-	FileFinder mOriginalFinder;
+    /** This refers to the location we originally pointed at, whether text or XML syntax. */
+    FileFinder mOriginalFinder;
 };
 
 #endif // PROTOCOLFILEFINDER_HPP_

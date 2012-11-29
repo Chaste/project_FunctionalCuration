@@ -136,10 +136,14 @@ public:
     {
         PROTO_ASSERT(pImportElt->hasAttribute(X("source")), "Imports must have a source attribute.");
         std::string source_uri = X2C(pImportElt->getAttribute(X("source")));
-        ProtocolFileFinder imported_proto_file(source_uri, mpCurrentProtocolObject->rGetSourceFile());
+        ProtocolFileFinder imported_proto_file;
         if (FileFinder::IsAbsolutePath(source_uri))
         {
             imported_proto_file.SetPath(source_uri, RelativeTo::Absolute);
+        }
+        else
+        {
+            imported_proto_file.SetPath(source_uri, mpCurrentProtocolObject->rGetSourceFile());
         }
         return mrParser.ParseFile(imported_proto_file);
     }

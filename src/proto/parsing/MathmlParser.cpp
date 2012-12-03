@@ -44,6 +44,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BacktraceException.hpp"
 #include "TaggingDomParser.hpp"
 
+/** The namespace for our protocol language */
+#define PROTO_NS X("https://chaste.cs.ox.ac.uk/nss/protocol/0.1#")
+
 
 void MathmlParser::SetUseImplicitMap(bool useImplicitMap)
 {
@@ -260,12 +263,24 @@ MathmlParser::~MathmlParser()
 
 void MathmlParser::SetContext(const DOMNode* pNode)
 {
-    const TaggingDomParser::Tag* p_tag = TaggingDomParser::GetTag(pNode);
-    assert(p_tag != NULL);
-    std::stringstream loc;
-    loc << p_tag->mSystemId << ":" << p_tag->mLineNumber << ":" << p_tag->mColumnNumber
-            << "\t" << X2C(pNode->getLocalName());
-    mLocationInfo = loc.str();
+    mLocationInfo.clear();
+    if (pNode->getNodeType() == DOMNode::ELEMENT_NODE)
+    {
+        const DOMElement* p_elt = static_cast<const DOMElement*>(pNode);
+        if (p_elt->hasAttributeNS(PROTO_NS, X("loc")))
+        {
+            mLocationInfo = X2C(p_elt->getAttributeNS(PROTO_NS, X("loc")));
+        }
+    }
+    if (mLocationInfo.empty())
+    {
+        const TaggingDomParser::Tag* p_tag = TaggingDomParser::GetTag(pNode);
+        assert(p_tag != NULL);
+        std::stringstream loc;
+        loc << p_tag->mSystemId << ":" << p_tag->mLineNumber << ":" << p_tag->mColumnNumber
+                << "\t" << X2C(pNode->getLocalName());
+        mLocationInfo = loc.str();
+    }
 }
 
 
@@ -276,7 +291,7 @@ void MathmlParser::TransferContext(const DOMNode* pNode, boost::shared_ptr<Locat
     if (pNode->getNodeType() == DOMNode::ELEMENT_NODE)
     {
         const DOMElement* p_elt = static_cast<const DOMElement*>(pNode);
-        if (p_elt->hasAttributeNS(X("https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"), X("trace")))
+        if (p_elt->hasAttributeNS(PROTO_NS, X("trace")))
         {
             pConstruct->SetTrace();
         }

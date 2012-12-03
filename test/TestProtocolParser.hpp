@@ -233,6 +233,39 @@ public:
         TS_ASSERT(threw);
     }
 
+    void TestErrorInCompactSyntax() throw (Exception)
+    {
+        ProtocolParser parser;
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_error_msg.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolPtr p_proto = parser.ParseFile(proto_file);
+
+        std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
+        EnvironmentPtr p_env(new Environment);
+        bool threw = false;
+        try
+        {
+            p_env->ExecuteStatements(r_program);
+        }
+        catch (const BacktraceException& e)
+        {
+            threw = true;
+            std::string expected_msg = "Protocol backtrace (most recent call last):\n"
+                    "  <file>:5:5\t    bad_sum = sum(1.0)\n"
+                    "  <file>:5:15\t    bad_sum = sum(1.0)\n"
+                    "  <file>:4:11\t    sum = lambda a, dim=default: fold(@2:+, a, 0, dim)\n"
+                    "  (Implicit return statement)\n"
+                    "  <file>:4:34\t    sum = lambda a, dim=default: fold(@2:+, a, 0, dim)\n"
+                    "Cannot fold over dimension 4294967295 as the operand array only has 0 dimensions.\n";
+            std::string actual_msg = ReplaceAll(e.GetShortMessage(), proto_file.rGetOriginalSource().GetAbsolutePath(), "<file>");
+            TS_ASSERT_EQUALS(actual_msg, expected_msg);
+            // Line/col numbers might easily change, but the strings below really shouldn't
+            TS_ASSERT_EQUALS(e.CheckShortMessageContains(proto_file.rGetOriginalSource().GetAbsolutePath()), "");
+            TS_ASSERT_EQUALS(e.CheckShortMessageContains("\t    sum = lambda a, dim=default: fold(@2:+, a, 0, dim)"), "");
+            TS_ASSERT_EQUALS(e.CheckShortMessageContains("Cannot fold over dimension 4294967295 as the operand array only has 0 dimensions."), "");
+        }
+        TS_ASSERT(threw);
+    }
+
     void TestFindAndIndexCompact() throw (Exception)
     {
         ProtocolParser parser;

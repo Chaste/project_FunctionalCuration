@@ -60,13 +60,21 @@ public:
 
     void TestCompactSyntax() throw (Exception)
     {
-        std::string dirname = "TestICaLProtocolOutputs";
+        std::string dirname = "TestICaLProtocolOutputs_Compact";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/ICaL.txt", RelativeTo::ChasteSourceRoot);
         DoTestShortIcal(dirname, proto_xml_file);
     }
 
+    void TestImporting() throw (Exception)
+    {
+
+        std::string dirname = "TestICaLProtocolOutputs_Import";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_ical.xml", RelativeTo::ChasteSourceRoot);
+        DoTestShortIcal(dirname, proto_xml_file);
+    }
+
 private:
-    void DoTestShortIcal(const std::string& rDirName, const ProtocolFileFinder& rProtoFile) throw (Exception)
+    void DoTestShortIcal(const std::string& rDirName, const ProtocolFileFinder& rProtoFile, bool setInputs=true) throw (Exception)
     {
         std::string model_name = "fox_mcharg_gilmour_2002";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
@@ -74,11 +82,14 @@ private:
         ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
 
         // Don't do too many runs
-        std::vector<AbstractExpressionPtr> test_potentials
-            = EXPR_LIST(CONST(-45.01))(CONST(-25.01))(CONST(0.01))(CONST(15.01))(CONST(40.01))(CONST(79.99));
-        DEFINE(test_potentials_expr, boost::make_shared<ArrayCreate>(test_potentials));
-        runner.GetProtocol()->SetInput("test_potentials", test_potentials_expr);
-        runner.GetProtocol()->SetInput("steady_state_time", CONST(1000));
+        if (setInputs)
+        {
+            std::vector<AbstractExpressionPtr> test_potentials
+                = EXPR_LIST(CONST(-45.01))(CONST(-25.01))(CONST(0.01))(CONST(15.01))(CONST(40.01))(CONST(79.99));
+            DEFINE(test_potentials_expr, boost::make_shared<ArrayCreate>(test_potentials));
+            runner.GetProtocol()->SetInput("test_potentials", test_potentials_expr);
+            runner.GetProtocol()->SetInput("steady_state_time", CONST(1000));
+        }
 
         runner.RunProtocol();
         FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);

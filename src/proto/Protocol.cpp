@@ -904,6 +904,12 @@ ProtocolPtr Protocol::GetImportedProtocol(const std::string& rPrefix)
 }
 
 
+const std::map<std::string, ProtocolPtr> Protocol::rGetImportedProtocols() const
+{
+    return mImports;
+}
+
+
 const std::map<std::string, std::string>& Protocol::rGetNamespaceBindings() const
 {
     return mOntologyNamespaceBindings;

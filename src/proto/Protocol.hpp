@@ -177,6 +177,9 @@ public:
     /** Get the imported protocol associated with the given prefix. */
     ProtocolPtr GetImportedProtocol(const std::string& rPrefix);
 
+    /** Get all our (prefixed) imported protocols. */
+    const std::map<std::string, ProtocolPtr> rGetImportedProtocols() const;
+
     /** Get the namespaces available for use in referencing model variables. */
     const std::map<std::string, std::string>& rGetNamespaceBindings() const;
 

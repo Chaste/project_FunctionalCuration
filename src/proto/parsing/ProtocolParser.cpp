@@ -183,6 +183,12 @@ public:
                          "An import must define a prefix or merge definitions.");
             mpCurrentProtocolObject->AddNamespaceBindings(p_imported_proto->rGetNamespaceBindings());
             mpCurrentProtocolObject->AddInputDefinitions(p_imported_proto->rGetInputStatements());
+            const std::map<std::string, ProtocolPtr>& r_imports = p_imported_proto->rGetImportedProtocols();
+            typedef std::pair<std::string, ProtocolPtr> StringProtoPair;
+            BOOST_FOREACH(StringProtoPair import, r_imports)
+            {
+                mpCurrentProtocolObject->AddImport(import.first, import.second, GetLocationInfo());
+            }
             mpCurrentProtocolObject->AddLibrary(p_imported_proto->rGetLibraryStatements());
             mpCurrentProtocolObject->AddSimulations(p_imported_proto->rGetSimulations());
             mpCurrentProtocolObject->AddPostProcessing(p_imported_proto->rGetPostProcessing());

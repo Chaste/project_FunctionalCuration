@@ -811,6 +811,12 @@ public:
         return boost::make_shared<NestedSimulation>(p_nested_sim, pStepper, pModifiers);
     }
 
+    /**
+     * Parse a oneStep element.
+     *
+     * @param pDefnElt  the element
+     * @return  the corresponding simulation object
+     */
     AbstractSimulationPtr ParseOneStepSimulation(DOMElement* pDefnElt)
     {
         double step = DOUBLE_UNSET;
@@ -818,7 +824,13 @@ public:
         {
             step = String2Double(X2C(pDefnElt->getAttribute(X("step"))));
         }
-        return boost::make_shared<OneStepSimulation>(step);
+        boost::shared_ptr<ModifierCollection> p_modifiers;
+        std::vector<DOMElement*> children = XmlTools::GetChildElements(pDefnElt);
+        if (children.size() == 1)
+        {
+            p_modifiers = ParseModifiers(children.front());
+        }
+        return boost::make_shared<OneStepSimulation>(step, p_modifiers);
     }
 
     /**

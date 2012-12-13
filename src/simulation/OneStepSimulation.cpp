@@ -36,18 +36,25 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OneStepSimulation.hpp"
 
 #include "BacktraceException.hpp"
+#include "VectorStepper.hpp"
 
-OneStepSimulation::OneStepSimulation(double step)
-    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr()),
+OneStepSimulation::OneStepSimulation(double step, boost::shared_ptr<ModifierCollection> pModifiers)
+    : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr(), pModifiers),
       mStep(step)
 {
     PROTO_ASSERT(mStep == DOUBLE_UNSET || mStep > 0.0,
                  "The step size for a oneStep simulation must be greater than zero.");
+    // Create a fake stepper that's at the start, for use by the modifiers
+    std::vector<double> zero(1u, 0.0);
+    mpStepper.reset(new VectorStepper("fake", "fake", zero));
+    mpStepper->SetEnvironment(mpEnvironment);
 }
 
 
 void OneStepSimulation::Run(EnvironmentPtr pResults)
 {
+    (*mpModifiers)(mpModel, mpStepper);
+
     double end_time = mStep;
     if (end_time != DOUBLE_UNSET)
     {
@@ -55,4 +62,6 @@ void OneStepSimulation::Run(EnvironmentPtr pResults)
     }
     mpModel->SolveModel(end_time);
     AddIterationOutputs(pResults, mpModel->GetOutputs());
+
+    mpModifiers->ApplyAtEnd(mpModel, mpStepper);
 }

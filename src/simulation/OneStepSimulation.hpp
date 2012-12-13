@@ -48,8 +48,10 @@ public:
      * Create a new simulation instance.
      *
      * @param step  optional step size, for SED-ML support
+     * @param pModifiers  optional collection of modifiers
      */
-    OneStepSimulation(double step=DOUBLE_UNSET);
+    OneStepSimulation(double step=DOUBLE_UNSET,
+                      boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
 
 protected:
     /**

@@ -89,8 +89,10 @@ public:
 
     void TestErrors() throw (Exception)
     {
+        ProtocolFileFinder::BeQuiet();
         TS_ASSERT_THROWS_CONTAINS(ProtocolFileFinder no_proto("projects/FunctionalCuration/not_a_protocol.txt", RelativeTo::ChasteSourceRoot),
                                   "Conversion of text protocol '");
+        ProtocolFileFinder::BeQuiet(false);
     }
 
 private:

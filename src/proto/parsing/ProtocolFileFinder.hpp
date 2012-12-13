@@ -102,6 +102,13 @@ public:
      */
     const FileFinder& rGetOriginalSource() const;
 
+    /**
+     * Set whether to report errors in protocol format conversion.
+     *
+     * @param quiet  if set, errors will not be reported
+     */
+    static void BeQuiet(bool quiet=true);
+
 private:
     /**
      * Convert the protocol this finder points at to XML if it isn't already.
@@ -111,6 +118,9 @@ private:
 
     /** This refers to the location we originally pointed at, whether text or XML syntax. */
     FileFinder mOriginalFinder;
+
+    /** Whether to report errors in protocol format conversion. */
+    static bool msQuiet;
 };
 
 #endif // PROTOCOLFILEFINDER_HPP_

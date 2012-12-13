@@ -106,6 +106,10 @@ void ProtocolFileFinder::ConvertIfNeeded()
         std::string cmd = "/usr/bin/env python \"" + converter.GetAbsolutePath()
                 + "\" \"" + mOriginalFinder.GetAbsolutePath()
                 + "\" \"" + handler.GetOutputDirectoryFullPath() + '"';
+        if (msQuiet)
+        {
+            cmd += " -quiet";
+        }
         FILE* pipe = popen(cmd.c_str(), "r");
         EXCEPT_IF_NOT(pipe != NULL);
         std::string output;
@@ -130,4 +134,12 @@ void ProtocolFileFinder::ConvertIfNeeded()
                       << "' to XML failed: XML file '" << GetAbsolutePath() << "' not found.");
         }
     }
+}
+
+
+bool ProtocolFileFinder::msQuiet = false;
+
+void ProtocolFileFinder::BeQuiet(bool quiet)
+{
+    msQuiet = quiet;
 }

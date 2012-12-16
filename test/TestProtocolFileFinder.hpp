@@ -99,7 +99,7 @@ private:
     void CheckOutputIsXml(const ProtocolFileFinder& rFile)
     {
         const std::string path = rFile.GetAbsolutePath();
-        TS_ASSERT_EQUALS(path.find(OutputFileHandler::GetChasteTestOutputDirectory()), 0);
+        TS_ASSERT_EQUALS(path.find(OutputFileHandler::GetChasteTestOutputDirectory()), 0u);
         TS_ASSERT_EQUALS(path.substr(path.length()-4), ".xml");
     }
 

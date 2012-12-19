@@ -88,10 +88,13 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
         mpProtocol->SetOutputFolder(this_run);
     }
     // Run the nested protocol
-    mpProtocol->Run();
     if (pResults && mpOutputHandler && GetTrace())
     {
-        mpProtocol->WriteToFile("outputs");
+        mpProtocol->RunAndWrite("outputs");
+    }
+    else
+    {
+        mpProtocol->Run();
     }
     // Add only the selected protocol outputs
     EnvironmentPtr p_selected_outputs(new Environment);

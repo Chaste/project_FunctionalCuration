@@ -274,9 +274,12 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 void Protocol::RunAndWrite(const std::string fileNameBase)
 {
     // Record provenance info
-    ExecutableSupport::SetOutputDirectory(mpOutputHandler->GetOutputDirectoryFullPath());
-    ExecutableSupport::WriteMachineInfoFile("machine_info");
-    ExecutableSupport::WriteProvenanceInfoFile();
+    if (mpOutputHandler)
+    {
+        ExecutableSupport::SetOutputDirectory(mpOutputHandler->GetOutputDirectoryFullPath());
+        ExecutableSupport::WriteMachineInfoFile("machine_info");
+        ExecutableSupport::WriteProvenanceInfoFile();
+    }
     // Run protocol
     try
     {

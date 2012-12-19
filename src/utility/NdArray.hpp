@@ -38,7 +38,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
 #include <vector>
-#include <stdint.h> // Including this stops Eclipse complaining about the specific int types not being declared
 #include <boost/shared_ptr.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -56,22 +55,22 @@ class NdArray
 public:
 #ifdef BOOST_HAS_LONG_LONG
     /** The type of an index into a single dimension of an array. */
-    typedef uint32_t Index;
+    typedef boost::uint32_t Index;
 
     /**
      * The type of indices used to define ranges,
      * which can be negative to count from the end of the dimension.
      */
-    typedef int64_t RangeIndex;
+    typedef boost::int64_t RangeIndex;
 #else
     /** The type of an index into a single dimension of an array. */
-    typedef uint16_t Index;
+    typedef boost::uint16_t Index;
 
     /**
      * The type of indices used to define ranges,
      * which can be negative to count from the end of the dimension.
      */
-    typedef int32_t RangeIndex;
+    typedef boost::int32_t RangeIndex;
 #endif // BOOST_HAS_LONG_LONG
 
     /** The type of objects defining the extents of an array. */
@@ -192,7 +191,9 @@ public:
     public:
         /** Construct an iterator that doesn't point to anything. */
         IteratorImpl()
-            : mPointer(NULL)
+            : mPointer(NULL),
+              mpStrides(NULL),
+              mpExtents(NULL)
         {}
 
         /**

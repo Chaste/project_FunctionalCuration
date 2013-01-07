@@ -30,6 +30,7 @@
 \usepackage{url}
 \usepackage{amsmath,amssymb}
 \usepackage{comment}
+\usepackage[overlay,absolute]{textpos}
 \usepackage{hyperref}
 
 % Author-date citations
@@ -50,7 +51,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Functional Curation of Cardiac Cellular Models}
+\title{Further Adventures in Functional Curation}
 \author{Jonathan Cooper}
 \institute[University of Oxford]
 {Computational Biology Group\\
@@ -66,7 +67,7 @@
 
 \begin{comment}
 Ideas:
- - overview the goals (again), based on more recent material
+ - overview the goals (again), based on more recent material (VPH2012 talk, UL application!)
  - talk about textual syntax for usability, get feedback
  - show the cell-based example (briefly)
  - mention work done with John W in separate project, how this could be an alternative front-end
@@ -85,137 +86,66 @@ Ideas:
 \section{Introduction to functional curation}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% * Explain problem, focus on sell, ability to describe and run a variety of experiments
-% * Outline functional curation, demonstrate 2 example protocols
 
-\begin{frame}{What is the problem?}
+\begin{frame}{Setting the context}
 \begin{itemize}
-\item Many (cardiac cell) models exist
-  \begin{itemize}
-  \item Multiple models of a system are developed to explore and compare hypotheses
-  \item How do we choose between them?
-  \end{itemize}
-\item What functionality does a model have?
-\item How do we robustly parameterise models and challenge them with data?
-\item How can we determine a model's limitations or suitability for a given study?
-\item When extending a model to explore a new experimental scenario, does it still reproduce the original behaviour?
+\item Model reuse \& simulation result reproducibility
+\item Improving the modelling process
+\item Confronting models with data
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Models and experiments}
+
+\begin{frame}{Setting the context}
 \begin{itemize}
-\item We have languages (e.g.\ CellML) to describe mathematical models
-\item Models are based on and tested by \alert{experiments}
-\item We are developing
+\item Many models are available in languages such as CellML
+\item But, how can we\ldots
   \begin{itemize}
-  \item A \alert{protocol language} to describe experiments
-  \item A tool to run these on models and compare results
+  \item Determine a model's functionality, i.e.\ its suitability or limitations for a new study?
+  \item Re-use a model in a different experimental context?
+  \item Compare different models' behaviours under the same experiment?  (Compare hypotheses.)
   \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Potential applications}
+
+\begin{frame}{Goal of this work}
 \begin{itemize}
-\item Rational model selection: based on ability to produce expected results for set of protocols
-  \subitem{Or motivate further development if none can}
-\item Explore which model features are essential for particular behaviours
-\item ``Test-driven'' model development: continual comparison to set of protocols and experimental data
-  \subitem{Build up a published library thereof}
-\item Parameter fitting to a set of protocols
-\item Parameter sweeps, sensitivity analysis, \ldots
-\item Build into a framework that stores models, protocols, and associated data
-  \subitem{Publish alongside paper}
+\item Separate \alert{model structure} and \alert{experimental scenario}
+\item Provide a framework for a coherent approach to model fitting, simulation, comparison and validation
+  \subitem{Continuous evaluation of model predictions against experimental data, throughout model lifecycle}
 \end{itemize}
-\end{frame}
-
-\begin{frame}{Example: S1-S2 restitution}
 \begin{center}
-\includegraphics[width=\textwidth]{S1S2}
+\includegraphics[width=\textwidth]{VirtEx_overview}
 \end{center}
 \end{frame}
 
-\begin{frame}{Example: S1-S2 restitution on canine models}
-\begin{columns}[T]
-\begin{column}{.33\linewidth}
-\begin{center}
-\includegraphics[width=\textwidth]{sicouri_dog_ventricle_s1s2_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{hund_rudy_2004_s1s2_curve}
-\end{center}
-\end{column}
-\begin{column}{.33\linewidth}
-\begin{center}
-\includegraphics[width=\textwidth]{winslow_model_1999_s1s2_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{livshitz_rudy_2007_s1s2_curve}
-\end{center}
-\end{column}
-\begin{column}{.33\linewidth}
-\begin{center}
-\includegraphics[width=\textwidth]{fox_mcharg_gilmour_2002_s1s2_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{decker_2009_s1s2_curve}
-\end{center}
-\end{column}
-\end{columns}
-\end{frame}
 
-\begin{frame}{Example: S1-S2 restitution on human models}
-\begin{columns}[T]
-\begin{column}{.33\linewidth}
+\begin{frame}{Foundations: a mosaic of standards}
 \begin{center}
-\includegraphics[width=\textwidth]{morgan_human_ventricle_s1s2_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{iyer_model_2007_s1s2_curve}
-\end{center}
-\end{column}
-\begin{column}{.33\linewidth}
-\begin{center}
-\includegraphics[width=\textwidth]{priebe_beuckelmann_1998_s1s2_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{fink_noble_giles_model_2008_s1s2_curve}
-\end{center}
-\end{column}
-\begin{column}{.33\linewidth}
-\begin{center}
-\includegraphics[width=\textwidth]{ten_tusscher_model_2006_epi_s1s2_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{grandi_pasqualini_bers_2010_ss_s1s2_curve}
-\end{center}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Example: $I_{\textrm{Ca}_L}$ voltage clamp}
-\begin{center}
-\includegraphics[width=\textwidth]{ICaLIntro}
+\includegraphics<1->[scale=.5]{standards_mosaic}\\
+{\tiny Fig.: Mosaic of standards, adapted from (\textit{Chelliah et al., 2009, DILS})}
 \end{center}
 \end{frame}
 
-\begin{frame}{Example: $I_{\textrm{Ca}_L}$ voltage clamp}
-\begin{columns}[T]
-\begin{column}{.33\linewidth}
+\begin{frame}{Foundations: a mosaic of standards}
 \begin{center}
-\includegraphics[width=\textwidth]{sun_rat_ventricle_ICaL_IV_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{bondarenko_szigeti_bett_kim_rasmusson_2004_apical_ICaL_IV_curve}
+\includegraphics<1->[scale=.5]{standards_mosaic}\\
+{\tiny Fig.: Mosaic of standards, adapted from (\textit{Chelliah et al., 2009, DILS})}
 \end{center}
-\end{column}
-\begin{column}{.33\linewidth}
+\TPGrid{2}{2}
+\begin{textblock}{2}[0.5,0.5](1,1.2)
+\centering
+\includegraphics[scale=.8]{COMBINE}
+\end{textblock}
+\end{frame}
+
+
+\begin{frame}{Simulation Experiment Description Markup Language}
 \begin{center}
-\includegraphics[width=\textwidth]{corrias_purkinje_2011_ICaL_IV_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{grandi_pasqualini_bers_2010_ss_ICaL_IV_curve}
+\includegraphics[scale=.5]{SEDML_overview}\\
+{\tiny Fig.: SED-ML structure. \textit{Waltemath et al., BMC Sys Biol (2011)}}
 \end{center}
-\end{column}
-\begin{column}{.33\linewidth}
-\begin{center}
-\includegraphics[width=\textwidth]{fink_noble_giles_model_2008_ICaL_IV_curve}\\
-\vspace{.1cm}
-\includegraphics[width=\textwidth]{ten_tusscher_model_2006_epi_ICaL_IV_curve}
-\end{center}
-\end{column}
-\end{columns}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -231,9 +161,8 @@ Ideas:
 \item Description of what to plot
 \item ``Extra bits''
   \begin{itemize}
-  \item Inputs to the protocol
+  \item Inputs and outputs of the whole protocol
   \item Library of functions and/or variables
-  \item Specify protocol outputs of interest
   \item Imports of other protocols
   \end{itemize}
 \end{itemize}
@@ -241,8 +170,7 @@ Ideas:
 
 \begin{frame}{Protocol structure}
 \begin{center}
-\vspace{-.5cm}
-\includegraphics[height=.9\textheight]{proto_diag}
+\includegraphics[width=\textwidth]{protocol_language}
 \end{center}
 \end{frame}
 
@@ -504,6 +432,7 @@ Reference publication: \doi{10.1016/j.pbiomolbio.2011.06.003}
 \includegraphics[scale=.9]{chaste-266x60}\\ \vspace{.4cm}
 \includegraphics[width=.55\textwidth]{EPSRC1RGBLO} \hspace{.1cm}
 \includegraphics[scale=.55]{logo_msr}
+% TODO: Add 2020 Science
 \end{center}
 \end{frame}
 

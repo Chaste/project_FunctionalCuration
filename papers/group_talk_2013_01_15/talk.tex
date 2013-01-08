@@ -44,6 +44,7 @@
 
 % Shortcuts
 \newcommand{\myhref}[2]{\href{#1}{\textcolor{Blue}{#2}}}
+\newcommand{\myurl}[1]{\myhref{#1}{#1}}
 \newcommand{\subitem}[1]{\begin{itemize}[<.->]\item #1 \end{itemize}}
 \newcommand{\ghead}[1]{{\tiny #1\\}}
 \newcommand{\doi}[1]{\myhref{http://dx.doi.org/#1}{doi:#1}}
@@ -111,12 +112,20 @@ Ideas:
 
 \begin{frame}{Goal of this work}
 \begin{itemize}
-\item Separate \alert{model structure} and \alert{experimental scenario}
 \item Provide a framework for a coherent approach to model fitting, simulation, comparison and validation
-  \subitem{Continuous evaluation of model predictions against experimental data, throughout model lifecycle}
+  \begin{itemize}
+  \item Continuous evaluation of model predictions against experimental data, throughout model lifecycle
+  \item Models that are robust, well tested, and well characterised for particular biological studies
+  \item Model development akin to high quality software
+  \end{itemize}
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{How do we get there?}
+\subitem{Separate \alert{model structure} and \alert{experimental scenario}}
 \begin{center}
-\includegraphics[width=\textwidth]{VirtEx_overview}
+\includegraphics[width=.9\textwidth]{VirtEx_overview}
 \end{center}
 \end{frame}
 
@@ -141,15 +150,8 @@ Ideas:
 \end{frame}
 
 
-\begin{frame}{Simulation Experiment Description Markup Language}
-\begin{center}
-\includegraphics[scale=.5]{SEDML_overview}\\
-{\tiny Fig.: SED-ML structure. \textit{Waltemath et al., BMC Sys Biol (2011)}}
-\end{center}
-\end{frame}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Protocol language details}
+\section{Describing protocols}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -159,213 +161,119 @@ Ideas:
 \item Definition of simulations to perform
 \item Post-processing operations on simulation results
 \item Description of what to plot
-\item ``Extra bits''
-  \begin{itemize}
-  \item Inputs and outputs of the whole protocol
-  \item Library of functions and/or variables
-  \item Imports of other protocols
-  \end{itemize}
+%\item ``Extra bits''
+%  \begin{itemize}
+%  \item Inputs and outputs of the whole protocol
+%  \item Library of functions and/or variables
+%  \item Imports of other protocols
+%  \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Protocol structure}
+
+\begin{frame}{Simulation Experiment Description Markup Language}
+\begin{center}
+\includegraphics[scale=.5]{SEDML_overview}\\
+{\tiny Fig.: SED-ML structure. \textit{Waltemath et al., BMC Sys Biol (2011)}}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{Our protocol structure}
 \begin{center}
 \includegraphics[width=\textwidth]{protocol_language}
 \end{center}
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Interfacing protocols and models}
 
-\begin{frame}{Interfacing protocols and models}
+\begin{frame}{Protocol syntax}
 \begin{itemize}
-\item Challenges arise from desire to apply a single experiment description to any model
-  \subitem{And need to compare results for different models}
-\item There are variations in modelling conventions
+\item Both SED-ML and our original protocol language are XML
   \begin{itemize}
-  \item Different names for the same `thing'
-  \item Different ways of representing biology in mathematics
+  \item Good for exchange between tools
+  \item Good for re-using other vocabularies (e.g.\ MathML, RDF, CellML units)
+  \item Not good for human use!
   \end{itemize}
-\item An experiment may isolate a sub-component of the model (e.g.\ voltage clamp)
+\item I now have a compact textual syntax for protocols
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Referring to model variables}
+
+\begin{frame}{Examples}
+% Show these in Eclipse
 \begin{itemize}
-\item How do we cope with different variable names for the same entity?
-  \begin{itemize}
-  \item Transmembrane potential: $V$, $V_m$, $E$
-  \item Stimulus current: $i_{\mathrm{Stim}}$, $I_{\mathrm{st}}$, $i_{\mathrm{pulse}}$, $i_{\mathrm{ext}}$
-  \item Membrane capacitance: $C$, $C_m$, $\mathit{Acap}$
-  \end{itemize}
-\item Use \alert{ontological annotation} of variables
-%\item Protocol can use \texttt{prefix:name} notation as for XML namespaces
-\item No need for `approved' ontology --- just need model \& protocol to agree
+\item S1-S2 restitution
+\item ICaL voltage clamp
+\item Running to steady state
+\item Graph state variables
+\item Ken's restitution measure
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Units conversions}
+
+\begin{frame}{Name resolution}
+\begin{center}
+\vspace{-.5cm}
+\includegraphics{Name_resolution}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Other activities}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Cell-based Chaste}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Application to cell-based Chaste}
 \begin{itemize}
-\item Different models use different units
-\item Protocol declares the units it uses, and conversions applied automatically
-  \note{This is easy for scalings within a dimension, but models can use different approaches to representing the same biology, e.g.\ different normalisation for ionic currents}
-\item ``Biology-aware'' conversion rules can be defined
-  \begin{itemize}
-  \item A unary function for converting a value from one dimension to another
-  \item Can refer to model variables using ontology terms
-  \item Fall-back to next rule if required variables don't exist
-  \item See also \doi{10.1016/j.pbiomolbio.2011.06.002}
-  \end{itemize}
+%\item Work with Ozzy
+\item Here a `model' is a cell-based \alert{simulation}, not just equations
+\item Model parameters may be set
+\item Execution may be nested in outer loops, e.g.\ for parameter sweep
+\item Result post-processing may be performed
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Model modifications}
+
+\begin{frame}{Results}
+\vspace{-.45cm}
+{\footnotesize Distributions of crypt cell division events with different cell cycle models}
+\vspace{-.1cm}
+\begin{center}
+\includegraphics[width=.45\textwidth]{UniformWnt-Cell_division_locations}
+\hspace*{5mm}
+\includegraphics[width=.45\textwidth]{VariableWnt-Cell_division_locations}\\
+\includegraphics[width=.45\textwidth]{StochasticGenerationBased-Cell_division_locations}
+\hspace*{5mm}
+\includegraphics[width=.45\textwidth]{ContactInhibition-Cell_division_locations}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{Challenges arising}
 \begin{itemize}
-\item A model is viewed as a \alert{system of equations}, independent of modelling language
-\item<2-> Protocol specifies which variables are \alert{inputs} and \alert{outputs}
-\item<2-> Inputs become parameters that can be set by the protocol
-  \subitem{e.g.\ voltage clamp experiment}
-\item<2-> Only those equations required for the given outputs need be computed
-\item<3-> Equations may also be \alert{added or replaced}
-  \subitem{e.g.\ to specify a stimulus current waveform}
+\item Setting `biological' parameters that don't have direct representations in all models
+\item Describing the coupling of component models
+\item Cell birth \& death imply non-regular result arrays
+  \subitem{Move to ragged arrays as supported by HDF5, Scipy, etc.?}
+\item What post-processing should be in the protocol language, and what requires dedicated code?
+  \subitem{A language targeted at protocol exchange should be supportable by multiple tools}
 \end{itemize}
 \end{frame}
 
-%\begin{frame}{Interfacing protocols and models}
-%This will probably move, if we use it at all.
-%\begin{center}
-%\includegraphics[width=.9\textwidth]{schematic_v4}
-%\end{center}
-%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Simplified experiments}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Defining simulations}
-
-\begin{frame}{Sequenced and nested simulations}
-\begin{itemize}[<+->]
-\item Basic simulation: timecourse solve of model equations
-\item An experiment may have `setup' and `measurement' phases $\implies$ simulations should be able to run in sequence
-\item \alert{Nesting} simulations supports parameter scans, repeated runs, distribution sampling, etc.
-  \subitem{\alert{Model outputs therefore become regular $n$-dimensional arrays}}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Simulation loops}
+\begin{frame}{Generalising model populations / sensitivity}
 \begin{itemize}
-\item Each simulation requires a \alert{range} over which to iterate for generating output points
-\item These are given a name for the loop variable, and its units
-  \begin{description}
-  \item[UniformStepper] has start, stride, and end parameters
-  \item[VectorStepper] allows irregular steps, using post-processing language constructs to define an array of values for the loop variable
-  \item[WhileStepper] enables an outer loop to continue as long as a condition is met
-  \end{description}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Modifiers}
-\begin{itemize}
-\item Each simulation can also have a collection of \alert{modifiers}
-  \begin{description}
-  \item[SaveState] store the current model state, giving it a name
-  \item[ResetState] reset the model to a stored state or initial conditions
-  \item[SetVariable] set the value of a model variable\\
-      The value is given by an expression in the post-processing language,
-      and can access the current range value for this or any outer loop.
-  \end{description}
-\item Each can be applied just at the start or end of a simulation, or prior to each loop
-\end{itemize}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Post-processing}
-
-\begin{frame}{Post-processing}
-\begin{itemize}
-\item Raw simulation results are rarely what we're after
-\item Post-processing required to obtain markers of interest
-\item For a protocol exchange language, we need something more restrictive (and easier to implement) than general Matlab or similar
-\item But we still need the ability to describe complex operations
-  \subitem{e.g.\ maximum, average, APD, \ldots}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Post-processing language}
-\begin{itemize}
-\item For minimal implementation overhead, based on MathML, with as few as possible added features
-\item Key additions:
-  \begin{itemize}
-  \item Operators for working with $n$-dimensional arrays
-  \item Sequencing operations (defining variables, assertions)
-  \item Defining functions (that can also be passed to other functions)
-  \end{itemize}
-\item Not just used for post-processing: also input specifications, library definitions, etc.
-\item Technically, this is a \alert{pure} functional $n$-dimensional array based programming language
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Main special expressions}
-\note{Go through these in more detail on whiteboard!}
-\footnotesize
-\begin{description}
-\item[\csym{newArray}] Create a new array
-  \begin{itemize}
-  \item by listing elements (which may be arrays)
-  \item by \alert{comprehension} using a generator expression with index ranges% (abusing \texttt{domainofapplication})
-  \end{itemize}
-\item[\csym{view}] Extract a sub-array
-  \subitem{Can use arbitrary (even negative) strides over any dimension, with wildcards}
-\item[\csym{map}] Map an $n$-ary function onto $n$ arrays element-wise
-\item[\csym{fold}] Collapse an array along a single dimension using a binary function
-  \subitem{Used to define \texttt{sum}, \texttt{max}, etc.}
-\item[\csym{find}] Find indices where the operand array is non-zero
-\item[\csym{index}] Create a sub-array containing only the given indices
-  \subitem{Various options for avoiding irregular results}
-\end{description}
-\end{frame}
-
-\begin{frame}{Miscellaneous extra features}
-\begin{itemize}
-\item Accessor operation for testing values (IS\_ARRAY, SHAPE, etc.)
-\item Functions can have default parameters, and the default can be asked for explicitly
-\item Can define tuples (pairs, triples, etc.), e.g.\ to return multiple values
-\item Location information for user-friendly error messages
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Example: APD}
-\begin{itemize}
-\item Find the maximum upstroke velocity locations to locate APs
-  \subitem{Localised max above threshold}
-\item Work with extended arrays: extra dimension of size `max num APs'
-\item Find the peaks: First \texttt{t} s.t.\ \texttt{V == local\_Vmax \&\& t > t\_up}
-\item Assume resting potential is global minimum, and calculate relaxation potential
-\item Find (with interpolation) the first time before and after each peak where the relaxation potential is crossed
-\item APDs are differences between these arrays
-\item DIs = \texttt{diff(t\_ap\_starts) - apds[:-1]}
-\end{itemize}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Other protocol features}
-
-\begin{frame}{Nested protocols}
-\begin{itemize}
-\item Since a protocol has inputs and outputs, it can be viewed as a kind of model
-\item The ``system of equations'' abstraction does not apply, so model modifications are not possible
-\item This does effectively allow us to interleave post-processing and simulation however
-\item So we can do e.g.\ dynamic restitution without breaking the `regular $n$-d array' data model
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Importing protocols}
-\begin{itemize}
-\item Define libraries of common protocol components
-  \begin{itemize}
-  \item Especially useful for post-processing functions
-  \item Can also define standard simulations, model changes, etc.
-  \end{itemize}
-\item Specialise generic protocol for particular scenario
-  \subitem{e.g.\ set basic cycle length for species-specific S1-S2}
+\item `SimpleSensitivity' Chaste project with John Walmsley
+\item Simple data file input describing parameterisations for each experiment
+\item Code handles (parallel) looping over experiments and setting up model; simulation and post-processing left to user code
+% Show the test in Eclipse
+\item Could provide an alternative front-end to functional curation framework
 \end{itemize}
 \end{frame}
 
@@ -374,48 +282,47 @@ Ideas:
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}{Challenge the speaker}
-I think the language now has all the features required for cardiac cell electrophysiology.
-
-Describe your favourite protocol, and I'll try to outline how it would be encoded.
-\end{frame}
-
-\begin{frame}{Limitations of current implementation}
+\begin{frame}{Plans for this year}
 \begin{itemize}
-\item System implemented as Chaste user project
-\item It's still a prototype!
-\item Usability is limited
-  \begin{itemize}
-  \item Protocol language is XML, lacking nice front-end
-  \item Especially difficult to write good post-processing functions (see next slide)
-  \end{itemize}
-\item Performance improvements and parallelisation needed for large protocols
+\item Comprehensive cardiac protocol suite
+\item Summer intern working on Python implementation
+\item Possible Rhodes scholar starting in October
+\item Push SED-ML in the right direction
+\item Parameter sweeping (SED-ML, MSRC)
+\item Various other MSc and DTC proposals
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Limitations in APD calculation}
-\begin{center}
-\includegraphics<1>{faber_rudy_2000_s1s2_curve}
-\only<2>{\vspace{-.5cm}}
-\includegraphics<2>[height=.9\textheight]{faber_rudy_2000_COR_comparison}
-\end{center}
-\only<3>{\vspace{-1.5cm}Nygren 1998 (atrial model)}
-\includegraphics<3>[height=.8\textheight]{nygren_s1s2_V}
+
+\begin{frame}{Feedback welcome}
+\begin{itemize}
+\item On the text syntax
+\item On any extra features needed
+\item On usability
+\item On future directions
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Conclusions and plans}
+
+\begin{frame}{Conclusions}
 \begin{itemize}
 \item Functional curation offers great scope for transforming our approach to modelling
 \item Initial prototype is promising
 \item Lots to do to demonstrate this fully
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Software Carpentry Workshop}
+\begin{itemize}
+\item 9-10 May 2013
+\item For first and second year DTC students
+\item Teaching basics of good scientific programming
   \begin{itemize}
-  \item (With Gary) Explore more cardiac protocols
-  \item (With OCISB) Apply to cell-cycle models
-  \item (With MSRC) Apply to immunology and synthetic biology
-  \item (With Ozzy) Apply to cell-based Chaste simulations
-  \item (With Mark) Work on interface and data storage
-  \item (With ?) Improve performance
+  \item Python, Scipy, version control, testing, databases, doing it in Matlab
+  \item Based on \myhref{http://software-carpentry.org/}{software-carpentry.org}
   \end{itemize}
+\item Helpers required!
 \end{itemize}
 \end{frame}
 
@@ -426,13 +333,14 @@ Gary Mirams\\
 Chaste team\\
 Alan Garny, Steven Niederer
 
-Reference publication: \doi{10.1016/j.pbiomolbio.2011.06.003}
+Reference publication: \doi{10.1016/j.pbiomolbio.2011.06.003}\\
+Website: \myurl{https://chaste.cs.ox.ac.uk/trac/wiki/FunctionalCuration}
 
 \begin{center}
-\includegraphics[scale=.9]{chaste-266x60}\\ \vspace{.4cm}
+\includegraphics[scale=.9]{chaste-266x60}\\ \vspace{.3cm}
+\includegraphics[scale=.7]{logo2020science}\\ \vspace{.4cm}
 \includegraphics[width=.55\textwidth]{EPSRC1RGBLO} \hspace{.1cm}
 \includegraphics[scale=.55]{logo_msr}
-% TODO: Add 2020 Science
 \end{center}
 \end{frame}
 

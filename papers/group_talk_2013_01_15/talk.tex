@@ -49,7 +49,8 @@
 \newcommand{\ghead}[1]{{\tiny #1\\}}
 \newcommand{\doi}[1]{\myhref{http://dx.doi.org/#1}{doi:#1}}
 \newcommand{\csym}[1]{\textcolor{Blue}{\texttt{#1}}}
-
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\dt}{\ud t}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Further Adventures in Functional Curation}
@@ -87,6 +88,22 @@ Ideas:
 \section{Introduction to functional curation}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Motivation}
+\begin{itemize}
+\item Want ONE copy of my model (defined in ONE CellML file)
+\item Want to do a number of different complicated interventions, e.g.\ changing pacing rate (fairly easy in Chaste)
+\item Our FC system allows you to extend this to any model modifications
+  \begin{itemize}
+  \item e.g.\ clamp some concentrations (remove $\frac{\ud u}{\dt}$, set $u$ constant)
+  \item Previously had to modify generated C++ or CellML manually
+  \item Better to define modifications in one place, so can apply to any model at any time
+  \end{itemize}
+\item (And it runs the simulation, performs post-processing and plots graphs for you too!)
+\item ``In fact it does sound rather good'' - Gary Mirams
+\end{itemize}
+\end{frame}
+
 
 \begin{frame}{Setting the context}
 \begin{itemize}

@@ -80,3 +80,8 @@ AbstractValuePtr AssignmentStatement::operator()(Environment& rEnv) const
     }
     return boost::make_shared<NullValue>();
 }
+
+const std::vector<std::string>& AssignmentStatement::rGetNamesToAssign() const
+{
+    return mNamesToAssign;
+}

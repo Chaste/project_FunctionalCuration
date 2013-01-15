@@ -87,6 +87,12 @@ private:
         NdArray<double> max_slope = GET_ARRAY(r_outputs.Lookup("max_S1S2_slope"));
         TS_ASSERT_EQUALS(max_slope.GetNumElements(), 1u);
         TS_ASSERT_DELTA(*max_slope.Begin(), 0.212, 1e-3);
+
+        // Check we did the right number of timesteps (overridden protocol input)
+        NdArray<double> voltage = GET_ARRAY(r_outputs.Lookup("membrane_voltage"));
+        TS_ASSERT_EQUALS(voltage.GetNumDimensions(), 2u);
+        TS_ASSERT_EQUALS(voltage.GetShape()[0], s2_intervals.size());
+        TS_ASSERT_EQUALS(voltage.GetShape()[1], 2001u);
     }
 };
 

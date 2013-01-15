@@ -75,6 +75,11 @@ public:
      */
     AbstractValuePtr operator()(Environment& rEnv) const;
 
+    /**
+     * Get the names being assigned to.
+     */
+    const std::vector<std::string>& rGetNamesToAssign() const;
+
 private:
     /** The name(s) to assign. */
     std::vector<std::string> mNamesToAssign;

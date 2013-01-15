@@ -158,15 +158,17 @@ public:
     {
         SetContext(pImportElt);
         ProtocolPtr p_imported_proto = ImportProtocol(pImportElt);
-        // Set inputs for imported protocol
+        // Parse inputs for imported protocol
         std::vector<DOMElement*> inputs = XmlTools::FindElements(pImportElt, "setInput");
+        std::map<std::string, AbstractExpressionPtr> input_values;
+        typedef std::pair<std::string, AbstractExpressionPtr> StringExprPair;
         BOOST_FOREACH(DOMElement* p_input, inputs)
         {
             SetContext(p_input);
             PROTO_ASSERT(p_input->hasAttribute(X("name")), "A setInput element must specify which input to set.");
             std::string input_name = X2C(p_input->getAttribute(X("name")));
             AbstractExpressionPtr p_input_value = ParseNumberOrExpression(p_input);
-            p_imported_proto->SetInput(input_name, p_input_value);
+            input_values[input_name] = p_input_value;
         }
         SetContext(pImportElt);
         // Merge or store protocol
@@ -175,6 +177,10 @@ public:
             mpCurrentProtocolObject->AddNamespaceBindings(p_imported_proto->rGetNamespaceBindings());
             mpCurrentProtocolObject->AddImport(X2C(pImportElt->getAttribute(X("prefix"))), p_imported_proto,
                                                GetLocationInfo());
+            BOOST_FOREACH(StringExprPair input, input_values)
+            {
+                p_imported_proto->SetInput(input.first, input.second);
+            }
         }
         else if (pImportElt->hasAttribute(X("mergeDefinitions")))
         {
@@ -182,7 +188,22 @@ public:
             PROTO_ASSERT(merge == "true" || merge == "1",
                          "An import must define a prefix or merge definitions.");
             mpCurrentProtocolObject->AddNamespaceBindings(p_imported_proto->rGetNamespaceBindings());
-            mpCurrentProtocolObject->AddInputDefinitions(p_imported_proto->rGetInputStatements());
+            // Inputs are tricky, as we need to replace assignment statements for overridden inputs!
+            std::vector<AbstractStatementPtr> imported_inputs = p_imported_proto->rGetInputStatements(); // NB: copy so we can modify
+            for (unsigned i=0; i<imported_inputs.size(); ++i)
+            {
+                boost::shared_ptr<AssignmentStatement> p_assignment = boost::dynamic_pointer_cast<AssignmentStatement>(imported_inputs[i]);
+                if (p_assignment)
+                {
+                    const std::vector<std::string>& r_assigned_names = p_assignment->rGetNamesToAssign();
+                    std::map<std::string, AbstractExpressionPtr>::iterator iter = input_values.find(r_assigned_names.front());
+                    if (iter != input_values.end())
+                    {
+                        imported_inputs[i] = boost::make_shared<AssignmentStatement>(iter->first, iter->second);
+                    }
+                }
+            }
+            mpCurrentProtocolObject->AddInputDefinitions(imported_inputs);
             const std::map<std::string, ProtocolPtr>& r_imports = p_imported_proto->rGetImportedProtocols();
             typedef std::pair<std::string, ProtocolPtr> StringProtoPair;
             BOOST_FOREACH(StringProtoPair import, r_imports)

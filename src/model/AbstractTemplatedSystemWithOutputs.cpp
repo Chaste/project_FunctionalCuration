@@ -209,7 +209,8 @@ void AbstractTemplatedSystemWithOutputs<VECTOR>::SetNamespaceBindings(const std:
     {
         if (binding.second != "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#" &&
             binding.second != "http://www.cellml.org/cellml/1.0#" &&
-            binding.second != "https://chaste.cs.ox.ac.uk/nss/protocol/0.1#")
+            binding.second != "https://chaste.cs.ox.ac.uk/nss/protocol/0.1#" &&
+            binding.second != "http://www.w3.org/1998/Math/MathML")
         {
             WARNING("This implementation currently only supports using the oxmeta annotations to access model variables."
                     " The namespace '" << binding.second << "' is unsupported.");

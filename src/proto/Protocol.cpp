@@ -520,6 +520,24 @@ void Protocol::SetPngOutput(bool writePng)
 }
 
 
+/**
+ * Helper function to add units to an axis label if they're useful.
+ * We ignore blank and dimensionless units.
+ *
+ * @param label  the base label
+ * @param rUnits  the units name/description
+ * @return  the augmented label
+ */
+std::string GetAxisLabel(std::string label, const std::string& rUnits)
+{
+    if (rUnits != "" && rUnits != "dimensionless")
+    {
+        label += " (" + rUnits + ")";
+    }
+    return label;
+}
+
+
 void Protocol::GeneratePlots(const std::string& rFileNameBase) const
 {
     const Environment& r_outputs = rGetOutputsCollection();
@@ -592,7 +610,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                                 PROTO_ASSERT2(p_stepper->IsEndFixed(),
                                               "Unable to plot against a while loop at present.",
                                               p_plot_spec->GetLocationInfo());
-                                label_x = p_stepper->GetIndexName() + " (" + p_stepper->GetUnits() + ")";
+                                label_x = GetAxisLabel(p_stepper->GetIndexName(), p_stepper->GetUnits());
                                 NdArray<double>::Extents x_shape(1u);
                                 x_shape[0] = p_stepper->GetNumberOfOutputPoints();
                                 NdArray<double> x(x_shape);
@@ -612,14 +630,14 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
             PROTO_ASSERT2(!label_x.empty(), "Unable to find X axis label.", p_plot_spec->GetLocationInfo());
             PROTO_ASSERT2(output_x.GetNumElements() > 0u, "Unable to find X axis data.",
                           p_plot_spec->GetLocationInfo());
-            label_y = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
+            label_y = GetAxisLabel(p_plot_spec->rGetVariableDescriptions()[0], p_plot_spec->rGetVariableUnits()[0]);
         }
         else
         {
-            label_x = p_plot_spec->rGetVariableDescriptions()[0] + " (" + p_plot_spec->rGetVariableUnits()[0] + ")";
+            label_x = GetAxisLabel(p_plot_spec->rGetVariableDescriptions()[0], p_plot_spec->rGetVariableUnits()[0]);
             if (r_names.size() == 2u)
             {
-                label_y = p_plot_spec->rGetVariableDescriptions()[1] + " (" + p_plot_spec->rGetVariableUnits()[1] + ")";
+                label_y = GetAxisLabel(p_plot_spec->rGetVariableDescriptions()[1], p_plot_spec->rGetVariableUnits()[1]);
             }
             else
             {

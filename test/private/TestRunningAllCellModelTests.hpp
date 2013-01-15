@@ -118,7 +118,7 @@ public:
             for (unsigned protocol_idx = 0; protocol_idx<protocol_files.size(); ++protocol_idx)
             {
                 ProtocolFileFinder proto_xml(protocol_files[protocol_idx], proto_root);
-                std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.GetLeafNameNoExtension());
+                std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.rGetOriginalSource().GetLeafNameNoExtension());
 
                 try
                 {

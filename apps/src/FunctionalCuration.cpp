@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             FileFinder model(argv[1], RelativeTo::AbsoluteOrCwd);
             ProtocolFileFinder proto_xml(argv[2], RelativeTo::AbsoluteOrCwd);
 
-            std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.GetLeafNameNoExtension());
+            std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.rGetOriginalSource().GetLeafNameNoExtension());
 
             if (argc == 4)
             {

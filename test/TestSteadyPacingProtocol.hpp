@@ -48,6 +48,21 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestSteadyPacingProtocol : public CxxTest::TestSuite
 {
 public:
+    void TestSteadyStateCompact() throw (Exception)
+    {
+        std::string dirname = "TestSteadyStateCompact";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/SteadyStateRunner.txt", RelativeTo::ChasteSourceRoot);
+
+        ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
+
+        // Assume we get to steady state quickly
+        runner.GetProtocol()->SetInput("max_paces", CONST(100));
+
+        // Run
+        runner.RunProtocol();
+    }
+
     void TestSteadyPacingProtocolRunning() throw(Exception, std::bad_alloc)
     {
         std::string dirname = "TestSteadyPacingProtocolOutputs";

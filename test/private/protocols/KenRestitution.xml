@@ -147,10 +147,6 @@
         <plot>
             <title>Raw APDs</title>
             <data>apd80</data>
-          <!-- How do I do this?!?  
-            <x>pacing_cycle_lengths</x>
-            <y>apd90</y> 
-          -->
         </plot>
     </plots>
     

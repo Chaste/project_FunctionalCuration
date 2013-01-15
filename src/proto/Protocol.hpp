@@ -202,10 +202,10 @@ public:
     std::vector<AbstractStatementPtr>& rGetPostProcessing();
 
     /** Get specifications of which variables should be considered as the outputs of this protocol. */
-    std::vector<boost::shared_ptr<OutputSpecification> >& rGetOutputSpecifications();
+    std::vector<OutputSpecificationPtr>& rGetOutputSpecifications();
 
     /** Get specifications of what plots to produce by default. */
-    std::vector<boost::shared_ptr<PlotSpecification> >& rGetPlotSpecifications();
+    std::vector<PlotSpecificationPtr>& rGetPlotSpecifications();
 
     /** Get the model being simulated in this protocol. */
     boost::shared_ptr<AbstractSystemWithOutputs> GetModel();

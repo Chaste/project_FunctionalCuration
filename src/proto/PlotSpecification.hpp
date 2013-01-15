@@ -78,15 +78,26 @@ public:
     /** Get the names of the variables to plot. */
     const std::vector<std::string>& rGetVariableNames() const;
 
+    /** Get the descriptions of the variables to plot - used for axis labels. */
+    const std::vector<std::string>& rGetVariableDescriptions() const;
+
+    /** Get the names of the variable units to plot. */
+    const std::vector<std::string>& rGetVariableUnits() const;
+
+    /** Get the graph display title. */
+    const std::string& rGetDisplayTitle() const;
+
+    /**
+     * Set the plot display title.
+     * @param rTitle  the new title
+     */
+    void SetDisplayTitle(const std::string& rTitle);
+
     /**
      * Store the variable descriptions.
-     * @param rVariableDescriptions  the descriptions of the variables for axes labels
+     * @param rVariableDescriptions  the descriptions of the variables for axis labels
      */
     void SetVariableDescriptions(const std::vector<std::string>& rVariableDescriptions);
-
-
-    /** Get the descriptions of the variable units to plot - used for axes labels. */
-    const std::vector<std::string>& rGetVariableDescriptions() const;
 
     /**
      * Store the names of the variable units.
@@ -94,13 +105,12 @@ public:
      */
     void SetVariableUnits(const std::vector<std::string>& rVariableUnits);
 
-
-    /** Get the names of the variable units to plot. */
-    const std::vector<std::string>& rGetVariableUnits() const;
-
 private:
-    /** The graph title. */
+    /** The graph title; also used for the plot file name. */
     std::string mTitle;
+
+    /** The title to actually display on the plot. */
+    std::string mDisplayTitle;
 
     /** The names of the variables to plot. */
     std::vector<std::string> mVariableNames;

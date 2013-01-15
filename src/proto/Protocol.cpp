@@ -777,7 +777,7 @@ void EscapeQuotes(std::string& rString)
 }
 
 
-void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
+void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
                                const std::string& rDataFileName,
                                const unsigned numTraces,
                                const unsigned numPointsInTrace,
@@ -805,7 +805,7 @@ void Protocol::PlotWithGnuplot(boost::shared_ptr<PlotSpecification> pPlotSpec,
     }
 
     // Escape single-quote characters in the plot title & axis labels
-    std::string display_title = pPlotSpec->rGetTitle();
+    std::string display_title = pPlotSpec->rGetDisplayTitle();
     EscapeQuotes(display_title);
     EscapeQuotes(xLabel);
     EscapeQuotes(yLabel);
@@ -973,13 +973,13 @@ std::vector<AbstractStatementPtr>& Protocol::rGetPostProcessing()
 }
 
 
-std::vector<boost::shared_ptr<OutputSpecification> >& Protocol::rGetOutputSpecifications()
+std::vector<OutputSpecificationPtr>& Protocol::rGetOutputSpecifications()
 {
     return mOutputSpecifications;
 }
 
 
-std::vector<boost::shared_ptr<PlotSpecification> >& Protocol::rGetPlotSpecifications()
+std::vector<PlotSpecificationPtr>& Protocol::rGetPlotSpecifications()
 {
     return mPlotSpecifications;
 }

@@ -40,7 +40,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 PlotSpecification::PlotSpecification(const std::string& rTitle,
                                      const std::string& rXVariable,
                                      const std::string& rYVariable)
-    : mTitle(rTitle)
+    : mTitle(rTitle),
+      mDisplayTitle(rTitle)
 {
     mVariableNames = boost::assign::list_of(rXVariable)(rYVariable);
 }
@@ -48,6 +49,7 @@ PlotSpecification::PlotSpecification(const std::string& rTitle,
 PlotSpecification::PlotSpecification(const std::string& rTitle,
                                      const std::string& rDataVariable)
     : mTitle(rTitle),
+      mDisplayTitle(rTitle),
       mVariableNames(1, rDataVariable)
 {}
 
@@ -79,4 +81,14 @@ void PlotSpecification::SetVariableUnits(const std::vector<std::string>& rVariab
 const std::vector<std::string>& PlotSpecification::rGetVariableUnits() const
 {
     return mVariableUnits;
+}
+
+void PlotSpecification::SetDisplayTitle(const std::string& rTitle)
+{
+    mDisplayTitle = rTitle;
+}
+
+const std::string& PlotSpecification::rGetDisplayTitle() const
+{
+    return mDisplayTitle;
 }

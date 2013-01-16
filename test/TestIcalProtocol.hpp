@@ -70,7 +70,7 @@ public:
 
         std::string dirname = "TestICaLProtocolOutputs_Import";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_ical.xml", RelativeTo::ChasteSourceRoot);
-        DoTestShortIcal(dirname, proto_xml_file);
+        DoTestShortIcal(dirname, proto_xml_file, false);
     }
 
 private:

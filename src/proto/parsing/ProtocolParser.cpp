@@ -958,10 +958,10 @@ public:
      *
      * @param pDefnElt  the outputVariables element
      */
-    std::vector<boost::shared_ptr<OutputSpecification> > ParseOutputVariables(DOMElement* pDefnElt)
+    std::vector<OutputSpecificationPtr> ParseOutputVariables(DOMElement* pDefnElt)
     {
         SetContext(pDefnElt);
-        std::vector<boost::shared_ptr<OutputSpecification> > variable_specs;
+        std::vector<OutputSpecificationPtr> variable_specs;
         std::vector<DOMElement*> spec_elts = XmlTools::GetChildElements(pDefnElt);
         variable_specs.reserve(spec_elts.size());
         BOOST_FOREACH(DOMElement* p_spec_elt, spec_elts)
@@ -1002,7 +1002,7 @@ public:
             {
                 desc = X2C(p_spec_elt->getAttribute(X("description")));
             }
-            boost::shared_ptr<OutputSpecification> p_spec(new OutputSpecification(var_ref, var_name, desc, units, type));
+            OutputSpecificationPtr p_spec(new OutputSpecification(var_ref, var_name, desc, units, type));
             TransferContext(p_spec_elt, p_spec);
             variable_specs.push_back(p_spec);
         }
@@ -1014,9 +1014,9 @@ public:
      *
      * @param pDefnElt  the plots element
      */
-    std::vector<boost::shared_ptr<PlotSpecification> > ParsePlots(DOMElement* pDefnElt)
+    std::vector<PlotSpecificationPtr> ParsePlots(DOMElement* pDefnElt)
     {
-        std::vector<boost::shared_ptr<PlotSpecification> > plots;
+        std::vector<PlotSpecificationPtr> plots;
         std::vector<DOMElement*> plot_elts = XmlTools::GetChildElements(pDefnElt);
         plots.reserve(plot_elts.size());
         BOOST_FOREACH(DOMElement* p_plot_elt, plot_elts)
@@ -1026,20 +1026,27 @@ public:
                 continue;
             }
             SetContext(p_plot_elt);
-            boost::shared_ptr<PlotSpecification> p_plot;
+            PlotSpecificationPtr p_plot;
             std::vector<DOMElement*> children = XmlTools::GetChildElements(p_plot_elt);
-            PROTO_ASSERT(children.size() == 2 || children.size() == 3,
-                         "A plot element must have 2 or 3 children.");
+            PROTO_ASSERT(children.size() >= 2 && children.size() <= 4,
+                         "A plot element must have 2-4 children, not " << children.size() << ".");
             std::string title = X2C(children.front()->getTextContent());
-            if (children.size() == 2)
+            const std::string elt_name = X2C(children[1]->getLocalName());
+            if (elt_name == "data")
             {
-                p_plot.reset(new PlotSpecification(title, X2C(children.back()->getTextContent())));
+                p_plot.reset(new PlotSpecification(title, X2C(children[1]->getTextContent())));
             }
             else
             {
+                PROTO_ASSERT(elt_name == "x", "Unexpected element '" << elt_name << "' in plot.");
                 std::string x_var = X2C(children[1]->getTextContent());
                 std::string y_var = X2C(children[2]->getTextContent());
                 p_plot.reset(new PlotSpecification(title, x_var, y_var));
+            }
+            // Check for a key variable
+            if (X2C(children.back()->getLocalName()) == "key")
+            {
+                p_plot->SetKeyVariableName(X2C(children.back()->getTextContent()));
             }
             TransferContext(p_plot_elt, p_plot);
             plots.push_back(p_plot);

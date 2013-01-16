@@ -92,3 +92,13 @@ const std::string& PlotSpecification::rGetDisplayTitle() const
 {
     return mDisplayTitle;
 }
+
+const std::string& PlotSpecification::rGetKeyVariableName() const
+{
+    return mKeyVariableName;
+}
+
+void PlotSpecification::SetKeyVariableName(const std::string& rName)
+{
+    mKeyVariableName = rName;
+}

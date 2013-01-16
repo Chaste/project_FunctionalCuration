@@ -87,6 +87,9 @@ public:
     /** Get the graph display title. */
     const std::string& rGetDisplayTitle() const;
 
+    /** Get the name of the vector containing values for the plot key; empty if none set. */
+    const std::string& rGetKeyVariableName() const;
+
     /**
      * Set the plot display title.
      * @param rTitle  the new title
@@ -105,6 +108,12 @@ public:
      */
     void SetVariableUnits(const std::vector<std::string>& rVariableUnits);
 
+    /**
+     * Set the variable (a 1d array) that contains values to use for the plot key.
+     * @param rName  the name of the key vector
+     */
+    void SetKeyVariableName(const std::string& rName);
+
 private:
     /** The graph title; also used for the plot file name. */
     std::string mTitle;
@@ -120,6 +129,9 @@ private:
 
     /** The units of the variables to plot. */
     std::vector<std::string> mVariableUnits;
+
+    /** The name of the variable containing the plot key; empty if none set. */
+    std::string mKeyVariableName;
 };
 
 #endif // PLOTSPECIFICATION_HPP_

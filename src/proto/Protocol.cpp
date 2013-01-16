@@ -365,7 +365,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
         std::string index_file_name = rFileNameBase + "-contents.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(index_file_name);
         (*p_file) << "Variable id,Variable name,Units,Number of dimensions,File name,Type,Dimensions" << std::endl;
-        BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
+        BOOST_FOREACH(OutputSpecificationPtr p_spec, mOutputSpecifications)
         {
             const std::string& r_name = p_spec->rGetOutputName();
             AbstractValuePtr p_output;
@@ -406,7 +406,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
         std::string file_name = rFileNameBase + "-default-plots.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         (*p_file) << "Plot title,File name,First variable,Optional second variable" << std::endl;
-        BOOST_FOREACH(boost::shared_ptr<PlotSpecification> p_spec, mPlotSpecifications)
+        BOOST_FOREACH(PlotSpecificationPtr p_spec, mPlotSpecifications)
         {
             bool all_variables_exist = true;
             std::vector<std::string> units;
@@ -419,7 +419,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
                     AbstractValuePtr p_output = r_outputs.Lookup(r_name);
                     units.push_back(p_output->GetUnits());
                     // Look up the output description for this plot
-                    BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_output_spec, mOutputSpecifications)
+                    BOOST_FOREACH(OutputSpecificationPtr p_output_spec, mOutputSpecifications)
                     {
                         if (r_name == p_output_spec->rGetOutputName())
                         {
@@ -451,7 +451,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
     }
 
     // Output data, one file per variable
-    BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
+    BOOST_FOREACH(OutputSpecificationPtr p_spec, mOutputSpecifications)
     {
         const std::string& r_name = p_spec->rGetOutputName();
         AbstractValuePtr p_output;
@@ -572,6 +572,25 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                 // Error for missing output was already printed by caller
             }
         }
+        // Check that the key vector is present as well, if specified
+        if (!p_plot_spec->rGetKeyVariableName().empty())
+        {
+            const std::string& r_name = p_plot_spec->rGetKeyVariableName();
+            try
+            {
+                AbstractValuePtr p_key = r_outputs.Lookup(r_name);
+                if (!p_key->IsArray() || !GET_ARRAY(p_key).GetNumDimensions() == 1u)
+                {
+                    std::cerr << "Cannot plot non-vector key variable '" << r_name << "'." << std::endl;
+                    missing_array = true;
+                }
+            }
+            catch (const Exception& e)
+            {
+                missing_array = true;
+                std::cerr << "Plot requests key vector '" << r_name << "' which is not specified as an output." << std::endl;
+            }
+        }
         // Don't plot if any required output is missing
         if (missing_array)
         {
@@ -584,7 +603,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
         if (r_names.size() == 1u)
         {
             // Find the output specification for this variable
-            BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_output_spec, mOutputSpecifications)
+            BOOST_FOREACH(OutputSpecificationPtr p_output_spec, mOutputSpecifications)
             {
                 if (r_names.front() == p_output_spec->rGetOutputName())
                 {
@@ -598,15 +617,15 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                                   "A raw output reference must be a prefixed name, not '" << r_ref << "'.",
                                   p_output_spec->GetLocationInfo());
                     std::string prefix = r_ref.substr(0, colon);
-                    BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
+                    BOOST_FOREACH(AbstractSimulationPtr p_sim, mSimulations)
                     {
                         if (prefix == p_sim->GetOutputsPrefix())
                         {
-                            std::vector<boost::shared_ptr<AbstractStepper> >& r_steppers = p_sim->rGetSteppers();
+                            std::vector<AbstractStepperPtr>& r_steppers = p_sim->rGetSteppers();
                             if (!r_steppers.empty() && r_steppers.back())
                             {
                                 // Create a new array containing the stepper data
-                                boost::shared_ptr<AbstractStepper> p_stepper = r_steppers.back();
+                                AbstractStepperPtr p_stepper = r_steppers.back();
                                 PROTO_ASSERT2(p_stepper->IsEndFixed(),
                                               "Unable to plot against a while loop at present.",
                                               p_plot_spec->GetLocationInfo());
@@ -796,11 +815,11 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     // Decide whether to plot with points or lines
     std::string points_or_lines;
     if (numPointsInTrace > 100)
-    {   // Magic number choice here - if there are over 100 data points we visualize as a continuous line.
+    {   // Magic number choice here - if there are over 100 data points we visualise as a continuous line.
         points_or_lines = "lines";
     }
     else
-    {   // otherwise we visualize as points joined by straight lines.
+    {   // otherwise we visualise as points joined by straight lines.
         points_or_lines = "linespoints pointtype 7";
     }
 
@@ -832,18 +851,58 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     *p_gnuplot_script << "set title '" << display_title << "'" << std::endl;
     *p_gnuplot_script << "set xlabel '" << xLabel << "'" << std::endl;
     *p_gnuplot_script << "set ylabel '" << yLabel << "'" << std::endl;
-    //*p_gnuplot_script << "set xtics 400" << std::endl;
     *p_gnuplot_script << "set grid" << std::endl;
     *p_gnuplot_script << "set autoscale" << std::endl;
-    *p_gnuplot_script << "set key off" << std::endl;
     *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
+
+    // Add a key if requested
+    const std::string& r_key_name = pPlotSpec->rGetKeyVariableName();
+    std::vector<double> key_values;
+    if (r_key_name.empty())
+    {
+        *p_gnuplot_script << "set key off" << std::endl;
+    }
+    else
+    {
+        AbstractValuePtr p_key = rGetOutputsCollection().Lookup(r_key_name);
+        // Look up the output description for the key to get its description
+        std::string key_desc;
+        BOOST_FOREACH(OutputSpecificationPtr p_output_spec, mOutputSpecifications)
+        {
+            if (r_key_name == p_output_spec->rGetOutputName())
+            {
+                key_desc = p_output_spec->rGetOutputDescription();
+                break;
+            }
+        }
+        std::string key_title = GetAxisLabel(key_desc, p_key->GetUnits());
+        *p_gnuplot_script << "set key outside invert title \"" + key_title + "\"" << std::endl;
+        // Get the key values for use in setting curve titles below
+        assert(p_key->IsArray());
+        NdArray<double> key = GET_ARRAY(p_key);
+        key_values.reserve(key.GetNumElements());
+        for (NdArray<double>::ConstIterator iter = key.Begin(); iter != key.End(); ++iter)
+        {
+            key_values.push_back(*iter);
+        }
+        if (key_values.size() != numTraces)
+        {
+            std::cerr << "Plot key vector '" << r_key_name << "' has " << key_values.size()
+                      << " entries, but there are " << numTraces << " traces." << std::endl;
+            key_values.clear();
+        }
+    }
 
     // The actual plot command...
     *p_gnuplot_script  << "plot ";
     for (unsigned i=0; i<numTraces; ++i)
     {
-        *p_gnuplot_script << "\"" << output_dir << rDataFileName << "\" using 1:" << i+2
-                          << " with " << points_or_lines;
+        *p_gnuplot_script << "\"" << output_dir << rDataFileName << "\" using 1:" << i+2;
+        if (!key_values.empty())
+        {
+            *p_gnuplot_script << " title \"" << key_values[i] << "\"";
+        }
+        *p_gnuplot_script << " with " << points_or_lines;
         if (i < numTraces-1)
         {
             *p_gnuplot_script << ",\\"; // Escape the newline that is written below

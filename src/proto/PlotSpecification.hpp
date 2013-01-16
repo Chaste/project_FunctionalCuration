@@ -90,6 +90,10 @@ public:
     /** Get the name of the vector containing values for the plot key; empty if none set. */
     const std::string& rGetKeyVariableName() const;
 
+    /** Get the terminal command to use for Gnuplot. */
+    const std::string& rGetGnuplotTerminal() const;
+
+
     /**
      * Set the plot display title.
      * @param rTitle  the new title
@@ -114,6 +118,14 @@ public:
      */
     void SetKeyVariableName(const std::string& rName);
 
+    /**
+     * Override the default parameters for the Gnuplot terminal command, used to set up output format,
+     * image size and font size.
+     *
+     * @param rTerminal  everything that should come after "set terminal "
+     */
+    void SetGnuplotTerminal(const std::string& rTerminal);
+
 private:
     /** The graph title; also used for the plot file name. */
     std::string mTitle;
@@ -132,6 +144,9 @@ private:
 
     /** The name of the variable containing the plot key; empty if none set. */
     std::string mKeyVariableName;
+
+    /** The arguments to use for the Gnuplot terminal command. */
+    std::string mGnuplotTerminal;
 };
 
 #endif // PLOTSPECIFICATION_HPP_

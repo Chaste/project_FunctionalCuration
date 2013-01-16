@@ -102,3 +102,13 @@ void PlotSpecification::SetKeyVariableName(const std::string& rName)
 {
     mKeyVariableName = rName;
 }
+
+const std::string& PlotSpecification::rGetGnuplotTerminal() const
+{
+    return mGnuplotTerminal;
+}
+
+void PlotSpecification::SetGnuplotTerminal(const std::string& rTerminal)
+{
+    mGnuplotTerminal = rTerminal;
+}

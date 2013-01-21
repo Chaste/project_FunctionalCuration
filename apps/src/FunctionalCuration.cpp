@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         }
         if (argc<3 || argc>4)
         {
-            ExecutableSupport::PrintError("Usage: FunctionalCuration [--png] model.cellml proto.xml [output_dir]", true);
+            ExecutableSupport::PrintError("Usage: FunctionalCuration [--png] model.cellml proto.xml|proto.txt [output_dir]", true);
             exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
         }
         else

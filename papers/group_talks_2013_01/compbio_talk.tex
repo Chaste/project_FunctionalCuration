@@ -178,12 +178,6 @@ Ideas:
 \item Definition of simulations to perform
 \item Post-processing operations on simulation results
 \item Description of what to plot
-%\item ``Extra bits''
-%  \begin{itemize}
-%  \item Inputs and outputs of the whole protocol
-%  \item Library of functions and/or variables
-%  \item Imports of other protocols
-%  \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -216,32 +210,23 @@ Ideas:
 \end{frame}
 
 
-\begin{frame}{Examples}
-% Show these in Eclipse
+\begin{frame}{Examples in electrophysiology}
+% Could show these in Eclipse
 \begin{itemize}
 \item S1-S2 restitution
 \item ICaL voltage clamp
 \item Running to steady state
+\item Finding refractory period
 \item Graph state variables
 \item Ken's restitution measure
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{Name resolution}
-\begin{center}
-\vspace{-.5cm}
-\includegraphics{Name_resolution}
-\end{center}
-\end{frame}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Other activities}
+\section{Use for cell-based Chaste}
+\subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Cell-based Chaste}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{Application to cell-based Chaste}
 \begin{itemize}
@@ -251,6 +236,21 @@ Ideas:
 \item Execution may be nested in outer loops, e.g.\ for parameter sweep
 \item Result post-processing may be performed
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Case study}
+\centering
+\begin{minipage}{0.4\textwidth}
+\includegraphics[height=.8\textheight]{VariableWnt}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{itemize}
+\item Cell division locations in intestinal crypt
+\item Compare three submodels for cell cycle
+\item Parameter sweep over crypt height
+\end{itemize}
+\end{minipage}
 \end{frame}
 
 
@@ -274,25 +274,16 @@ Ideas:
 \item Setting `biological' parameters that don't have direct representations in all models
 \item Describing the coupling of component models
 \item Cell birth \& death imply non-regular result arrays
-  \subitem{Move to ragged arrays as supported by HDF5, SciPy, etc.?}
-\item What post-processing should be in the protocol language, and what requires dedicated code?
-  \subitem{A language targeted at protocol exchange should be supportable by multiple tools}
+  \subitem{Move to ragged arrays as supported by HDF5, SciPy, etc.}
+\item What post-processing should be in the protocol language?
+  \begin{itemize}
+  \item What is best as dedicated code or workflow?
+  \item A language targeted at protocol exchange should be supportable by multiple tools
+  \end{itemize}
+  % Could talk about difference between prototyping something, and deposition in a standard format in a repository when a protocol is widespread/mature.
 \end{itemize}
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Simplified experiments}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}{Generalising model populations / sensitivity}
-\begin{itemize}
-\item `SimpleSensitivity' Chaste project with John Walmsley
-\item Simple data file input describing parameterisations for each experiment
-\item Code handles (parallel) looping over experiments and setting up model; simulation and post-processing left to user code
-% Show the test in Eclipse
-\item Could provide an alternative front-end to functional curation framework
-\end{itemize}
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions and future directions}
@@ -303,10 +294,28 @@ Ideas:
 \begin{itemize}
 \item Comprehensive cardiac protocol suite
 \item Summer intern working on Python implementation
-\item Possible Rhodes scholar starting in October
 \item Push SED-ML in the right direction
 \item Parameter fitting (SED-ML, MSRC)
-\item Various other MSc and DTC proposals
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Parameter estimation in SED-ML}
+\begin{itemize}
+\item Discussion document on \myhref{https://docs.google.com/document/d/1rrs0fYuKFr4fgL1b7eGwSnaLhRPW6NdXwAaJY0ZN_WY/edit}{Google Docs}
+\item New kind of Task class for parameter estimation
+  \begin{itemize}
+  \item Algorithm referencing KiSAO, with parameters
+  \item Objective function: least squares, MLE, \ldots
+  \item Identify model parameters to be fit, with bounds/prior
+    \subitem{And list of relevant experiments}
+  \item Define the experiments to fit against
+    \begin{itemize}
+    \item Referencing data formats (dataSource)
+    \item Mapping to simulated results (from dataGenerator)
+    \item Weighting/scaling/error on data
+    \end{itemize}
+  \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -360,5 +369,18 @@ Website: \myurl{https://chaste.cs.ox.ac.uk/trac/wiki/FunctionalCuration}
 \includegraphics[scale=.55]{logo_msr}
 \end{center}
 \end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+
+\begin{frame}{Name resolution}
+\begin{center}
+\vspace{-.5cm}
+\includegraphics{Name_resolution}
+\end{center}
+\end{frame}
+
 
 \end{document}

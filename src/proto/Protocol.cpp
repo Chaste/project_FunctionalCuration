@@ -46,6 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Exception.hpp"
 #include "ExecutableSupport.hpp"
+#include "Warnings.hpp"
 
 #include "ProtoHelperMacros.hpp"
 #include "VectorStreaming.hpp"
@@ -919,7 +920,11 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     p_gnuplot_script->close();
 
     // Run Gnuplot on the script written above to generate image files.
-    EXPECT0(system, "gnuplot " + output_dir + script_name);
+    int ret = system(("gnuplot " + output_dir + script_name).c_str());
+    if (ret != 0)
+    {
+        WARNING("Unable to generate plot '" << pPlotSpec->rGetTitle() << "' due to missing Gnuplot.");
+    }
 }
 
 

@@ -36,26 +36,18 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTRUNNINGALLCELLMODELTESTS_HPP_
 #define TESTRUNNINGALLCELLMODELTESTS_HPP_
 
+#include <cxxtest/TestSuite.h>
 
-#include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
-#include <boost/shared_ptr.hpp>
+#include <vector>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
-#include <cxxtest/TestSuite.h>
+#include "FileFinder.hpp"
 
-#include "OutputFileHandler.hpp"
-
-#include "ProtocolRunner.hpp"
-#include "ProtoHelperMacros.hpp"
-#include "PetscTools.hpp"
+#include "ProtocolFileFinder.hpp"
+#include "MultiProtocolRunner.hpp"
 
 #include "PetscSetupAndFinalize.hpp"
-
-#include "Debug.hpp"
-#include "UsefulFunctionsForProtocolTesting.hpp"
-
-typedef N_Vector VECTOR;
 
 /**
  * This test attempts to run all of the protocols listed for all of the cellml models in the FunctionalCuration/cellml folder.
@@ -68,70 +60,36 @@ public:
 
     void TestProtocolsForManyCellModels() throw(Exception, std::bad_alloc)
     {
-        FileFinder proto_root("projects/FunctionalCuration/test", RelativeTo::ChasteSourceRoot);
-        std::vector<std::string> protocol_files;
-        if (CommandLineArguments::Instance()->OptionExists("--protocols"))
-        {
-            protocol_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--protocols");
-        }
-        else
-        {
-            protocol_files.push_back("protocols/ICaL.xml");
-            protocol_files.push_back("protocols/S1S2.xml");
-            protocol_files.push_back("protocols/SteadyPacing.xml");
-            protocol_files.push_back("protocols/SteadyStateRunner.xml");
-            protocol_files.push_back("private/protocols/INa_IV_curve.xml");
-            protocol_files.push_back("private/protocols/Hypokalaemia.xml");
-            protocol_files.push_back("private/protocols/IK1_IV_curve.xml");
-            protocol_files.push_back("private/protocols/IKr_IV_curve.xml");
-            protocol_files.push_back("private/protocols/IKs_IV_curve.xml");
-        }
+        MultiProtocolRunner runner;
 
-        FileFinder model_root("projects/FunctionalCuration/cellml", RelativeTo::ChasteSourceRoot);
-        std::vector<std::string> cellml_files;
-        if (CommandLineArguments::Instance()->OptionExists("--models"))
+        // Set up default protocols list
         {
-            cellml_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--models");
-        }
-        else
-        {
-            cellml_files = GetAListOfCellMLFiles();
-        }
-
-        // Collectively ensure the root output folder exists, then isolate processes
-        {
-            OutputFileHandler("FunctionalCuration", false);
-            PetscTools::IsolateProcesses(true);
-        }
-
-        for (unsigned i=0; i<cellml_files.size(); ++i)
-        {
-            if (PetscTools::IsParallel() && i % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
+            FileFinder proto_root("projects/FunctionalCuration/test", RelativeTo::ChasteSourceRoot);
+            std::vector<ProtocolFileFinder> protocols;
+            std::vector<std::string> proto_names = boost::assign::list_of(std::string("protocols/ICaL.xml"))
+                                                                         ("protocols/S1S2.xml")
+                                                                         ("protocols/SteadyPacing.xml")
+                                                                         ("protocols/SteadyStateRunner.xml")
+                                                                         ("private/protocols/INa_IV_curve.xml")
+                                                                         ("private/protocols/Hypokalaemia.xml")
+                                                                         ("private/protocols/IK1_IV_curve.xml")
+                                                                         ("private/protocols/IKr_IV_curve.xml")
+                                                                         ("private/protocols/IKs_IV_curve.xml");
+            BOOST_FOREACH(const std::string& r_proto, proto_names)
             {
-                // Let someone else do this model
-                continue;
+                protocols.push_back(ProtocolFileFinder(r_proto, proto_root));
             }
-            std::cout << "\nRunning protocols for " << cellml_files[i] << std::endl << std::flush;
-
-            // RUN ALL PROTOCOLS IN THE LIST
-            FileFinder model(cellml_files[i] + ".cellml", model_root);
-            for (unsigned protocol_idx = 0; protocol_idx<protocol_files.size(); ++protocol_idx)
-            {
-                ProtocolFileFinder proto_xml(protocol_files[protocol_idx], proto_root);
-                std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.rGetOriginalSource().GetLeafNameNoExtension());
-
-                try
-                {
-                    ProtocolRunner runner(model, proto_xml, output_folder);
-                    runner.RunProtocol();
-                }
-                catch (Exception& e)
-                {
-                    std::cerr << "A protocol failed : " << e.GetMessage() << std::endl;
-                    WARNING("Model " << cellml_files[i] << " and Protocol " << protocol_files[protocol_idx] << " failed.");
-                }
-            }
+            runner.SetDefaultProtocols(protocols);
         }
+
+        // Set default models list to be all CellML files in the project folder
+        {
+            FileFinder model_root("projects/FunctionalCuration/cellml", RelativeTo::ChasteSourceRoot);
+            runner.SetDefaultModels(model_root.FindMatches("*.cellml"));
+        }
+
+        // Run protocols, in parallel if available
+        runner.RunProtocols();
     }
 };
 

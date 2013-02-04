@@ -37,27 +37,19 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @file
  *
  * This executable presents a simple interface to the functional curation backend.
- * It takes (paths to) model and protocol files, runs the protocol on the model,
+ * It takes (paths to) model and protocol files, runs the protocol(s) on the model(s),
  * and stores the CSV format results where requested.
- *
- * \todo Do we actually need to initialise PETSc?
  */
-
-#include <string>
-#include <cstdlib> // For setenv()
 
 #include "ExecutableSupport.hpp"
 #include "Exception.hpp"
-#include "PetscTools.hpp"
-#include "PetscException.hpp"
 
-#include "FileFinder.hpp"
-#include "ProtocolFileFinder.hpp"
-#include "ProtocolRunner.hpp"
+#include "MultiProtocolRunner.hpp"
 
 int main(int argc, char *argv[])
 {
     // This sets up PETSc and prints out copyright information, etc.
+    // It also sets up CommandLineArguments.
     ExecutableSupport::StandardStartup(&argc, &argv);
 
     int exit_code = ExecutableSupport::EXIT_OK;
@@ -66,47 +58,22 @@ int main(int argc, char *argv[])
     // you clean up PETSc before quitting.
     try
     {
-        bool png_output = (argc > 1 && std::string(argv[1]) == "--png");
-        if (png_output)
+        if (argc < 3)
         {
-            // Strip the option from args
-            argc--;
-            argv++;
-        }
-        if (argc<3 || argc>4)
-        {
-            ExecutableSupport::PrintError("Usage: FunctionalCuration [--png] model.cellml proto.xml|proto.txt [output_dir]", true);
+            ExecutableSupport::PrintError("Usage: FunctionalCuration [--png] model.cellml proto.xml|proto.txt [output_dir]\n"
+                                          "OR: FunctionalCuration [--png] [--output-dir output_dir] --protocols ... --models ...",
+                                          true);
             exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
         }
         else
         {
-            FileFinder model(argv[1], RelativeTo::AbsoluteOrCwd);
-            ProtocolFileFinder proto_xml(argv[2], RelativeTo::AbsoluteOrCwd);
-
-            std::string output_folder("FunctionalCuration/" + model.GetLeafNameNoExtension() + "/" + proto_xml.rGetOriginalSource().GetLeafNameNoExtension());
-
-            if (argc == 4)
-            {
-                output_folder = argv[3];
-
-                if (FileFinder::IsAbsolutePath(output_folder))
-                {
-                    // Change CHASTE_TEST_OUTPUT if output_folder is an absolute path, since we can only
-                    // create output under CHASTE_TEST_OUTPUT.
-                    FileFinder folder(output_folder);
-                    output_folder = folder.GetLeafName();
-                    std::string test_output = folder.GetParent().GetAbsolutePath();
-                    setenv("CHASTE_TEST_OUTPUT", test_output.c_str(), 1/*Overwrite*/);
-                }
-            }
-            ProtocolRunner runner(model, proto_xml, output_folder);
-            runner.SetPngOutput(png_output);
-            runner.RunProtocol();
+            MultiProtocolRunner runner;
+            runner.RunProtocols();
         }
     }
-    catch (const Exception& e)
+    catch (const Exception& r_e)
     {
-        ExecutableSupport::PrintError(e.GetMessage());
+        ExecutableSupport::PrintError(r_e.GetMessage());
         exit_code = ExecutableSupport::EXIT_ERROR;
     }
 

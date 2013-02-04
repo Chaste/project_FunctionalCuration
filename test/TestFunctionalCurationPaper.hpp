@@ -364,12 +364,8 @@ public:
         ////////////////////////////////////////////////////////////////////////////////////
         // Also make plots of some experimental data we got by digitising some paper graphs.
         ////////////////////////////////////////////////////////////////////////////////////
-        if (!PetscTools::AmTopMost())
-        {
-            // Note: AmTopMost still identifies a single process even when processes are isolated.
-            // Only one process should plot the experimental data.
-            return;
-        }
+        // Only one process should plot the experimental data.
+        PetscTools::IsolateProcesses(false);
 
         std::vector<std::string> exp_data;
         exp_data.push_back("sicouri_dog_ventricle");
@@ -388,29 +384,37 @@ public:
             // Copy the data from
             FileFinder finder("projects/FunctionalCuration/test/data/" + exp_data[i], RelativeTo::ChasteSourceRoot);
             TS_ASSERT_EQUALS(finder.IsDir(), true);
-            mpHandler.reset(new OutputFileHandler("FunctionalCuration/" + exp_data[i], true)); // Clean this dir
-            EXPECT0(system, "cp " + finder.GetAbsolutePath() + "* " + mpHandler->GetOutputDirectoryFullPath());
+            // Creating and cleaning the output folder must be done as a collective call
+            mpHandler.reset(new OutputFileHandler("FunctionalCuration/" + exp_data[i], true));
+            if (PetscTools::AmMaster())
+            {
+                FileFinder dest = mpHandler->FindFile("");
+                BOOST_FOREACH(const FileFinder& r_data_file, finder.FindMatches("*"))
+                {
+                    r_data_file.CopyTo(dest);
+                }
 
-            if (i<3)
-            {   // This is S1-S2 data
-                try
-                {
-                    GenerateGnuplotsS1S2Curve(exp_data[i], exp_data[i]);
+                if (i<3)
+                {   // This is S1-S2 data
+                    try
+                    {
+                        GenerateGnuplotsS1S2Curve(exp_data[i], exp_data[i]);
+                    }
+                    catch (Exception& e)
+                    {
+                        OUR_WARN(e.GetMessage(), exp_data[i], "S1S2");
+                    }
                 }
-                catch (Exception& e)
-                {
-                    OUR_WARN(e.GetMessage(), exp_data[i], "S1S2");
-                }
-            }
-            else
-            {   // This is ICaL data
-                try
-                {
-                    GenerateGnuplotsIVCurves(exp_data[i], exp_data[i]);
-                }
-                catch (Exception& e)
-                {
-                    OUR_WARN(e.GetMessage(), exp_data[i], "ICaL");
+                else
+                {   // This is ICaL data
+                    try
+                    {
+                        GenerateGnuplotsIVCurves(exp_data[i], exp_data[i]);
+                    }
+                    catch (Exception& e)
+                    {
+                        OUR_WARN(e.GetMessage(), exp_data[i], "ICaL");
+                    }
                 }
             }
         }

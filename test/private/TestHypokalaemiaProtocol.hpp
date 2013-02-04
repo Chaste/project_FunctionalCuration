@@ -79,7 +79,7 @@ public:
     void TestHypokalaemiaProtocolRunning() throw(Exception, std::bad_alloc)
     {
         PetscTools::IsolateProcesses(true);
-        if (PetscTools::AmTopMost()) // Only one process should run this
+        if (PetscTools::GetMyRank() == 0u) // Only one process should run this
         {
             std::string dirname = "TestHypokalaemiaProtocolOutputs";
             FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
@@ -124,6 +124,7 @@ public:
                 resting.IncrementIndices(resting_indices);
             }
         }
+        PetscTools::IsolateProcesses(false);
     }
 
     void TestProtocolsForManyCellModels() throw(Exception, std::bad_alloc)
@@ -136,7 +137,7 @@ public:
 
         // Collectively ensure the root output folder exists, then isolate processes
         {
-            PetscTools::IsolateProcesses(false);
+            PetscTools::IsolateProcesses(false); // Just in case previous test threw
             OutputFileHandler("FunctionalCuration", false);
             PetscTools::IsolateProcesses(true);
         }

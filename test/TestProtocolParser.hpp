@@ -568,9 +568,9 @@ public:
             TS_ASSERT_EQUALS(di.GetShape()[1], 1u);
             for (unsigned i=0; i<num_runs; ++i)
             {
-                TS_ASSERT_DELTA(*(apd.Begin()+i*2), 337.1231, 0.001);
-                TS_ASSERT_DELTA(*(apd.Begin()+i*2+1), 337.1246, 0.0013);
-                TS_ASSERT_DELTA(*(di.Begin()+i), 262.8769, 0.001);
+                TS_ASSERT_DELTA(*(apd.Begin()+i*2), 337.1231, 0.002);
+                TS_ASSERT_DELTA(*(apd.Begin()+i*2+1), 337.1246, 0.002);
+                TS_ASSERT_DELTA(*(di.Begin()+i), 262.8769, 0.002);
             }
         }
 

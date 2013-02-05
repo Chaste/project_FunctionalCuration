@@ -78,7 +78,7 @@ public:
             FileFinder ref_output(filename, data_folder);
             FileFinder test_output = handler.FindFile(filename);
             NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-            TS_ASSERT(comp.CompareFiles(1e-4));
+            TS_ASSERT(comp.CompareFiles(5e-4));
         }
     }
 };

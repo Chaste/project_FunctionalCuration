@@ -821,7 +821,7 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     }
     else
     {   // otherwise we visualise as points joined by straight lines.
-        points_or_lines = "linespoints pointtype 7";
+        points_or_lines = "linespoints";
     }
 
     // Escape single-quote characters in the plot title & axis labels

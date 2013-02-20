@@ -1,0 +1,11 @@
+
+# LaTeX stuff
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.blg
+*.spl
+*.bbl

@@ -50,7 +50,7 @@ using namespace xercesc;
  * Base class for parsers of our XML protocol language and of SED-ML, providing the core
  * XML handling and parsing of MathML expressions.
  */
-class MathmlParser : boost::noncopyable
+class MathmlParser : private boost::noncopyable
 {
 public:
     /**

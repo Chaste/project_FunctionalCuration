@@ -53,7 +53,7 @@ class Environment;  // Avoid circular includes
  * There are only three kinds of statement: assignments, function returns, and assertions.
  * Most computation is done by expressions.
  */
-class AbstractStatement : boost::noncopyable, public LocatableConstruct
+class AbstractStatement : private boost::noncopyable, public LocatableConstruct
 {
 public:
     /**

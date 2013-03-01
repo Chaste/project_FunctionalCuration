@@ -50,7 +50,7 @@ typedef boost::shared_ptr<AbstractExpression> AbstractExpressionPtr;
 /**
  * Abstract base class for expressions in the protocol language.
  */
-class AbstractExpression : boost::noncopyable, public LocatableConstruct
+class AbstractExpression : private boost::noncopyable, public LocatableConstruct
 {
 public:
     /**

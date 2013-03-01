@@ -44,7 +44,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Parser for a protocol definition XML file.
  */
-class ProtocolParser : boost::noncopyable
+class ProtocolParser : private boost::noncopyable
 {
 public:
     /**

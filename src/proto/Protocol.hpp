@@ -61,7 +61,7 @@ typedef boost::shared_ptr<Protocol> ProtocolPtr;
 /**
  * This class encapsulates a complete protocol description, at least as far as the C++ code is concerned.
  */
-class Protocol : boost::noncopyable
+class Protocol : private boost::noncopyable
 {
 public:
     /**

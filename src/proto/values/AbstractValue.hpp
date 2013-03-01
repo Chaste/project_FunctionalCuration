@@ -49,7 +49,7 @@ typedef boost::shared_ptr<AbstractValue> AbstractValuePtr;
  * parameter indicator, and a null value.  This class supplies test methods to determine which kind of
  * value is being dealt with.
  */
-class AbstractValue : boost::noncopyable
+class AbstractValue : private boost::noncopyable
 {
 public:
     /** Default constructor. */

@@ -46,7 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * A collection of saved model states that can be applied back to the model.
  */
-class ModelStateCollection : boost::noncopyable
+class ModelStateCollection : private boost::noncopyable
 {
 public:
     /**

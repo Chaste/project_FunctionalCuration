@@ -823,6 +823,11 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     {   // otherwise we visualise as points joined by straight lines.
         points_or_lines = "linespoints";
     }
+    if (!pPlotSpec->rGetStyle().empty())
+    {
+        // The plot can override this setting
+        points_or_lines = pPlotSpec->rGetStyle();
+    }
 
     // Escape single-quote characters in the plot title & axis labels
     std::string display_title = pPlotSpec->rGetDisplayTitle();
@@ -897,6 +902,12 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
                       << " entries, but there are " << numTraces << " traces." << std::endl;
             key_values.clear();
         }
+    }
+
+    // Any special-case setup
+    BOOST_FOREACH(const std::string& rCommand, pPlotSpec->rGetGnuplotExtraCommands())
+    {
+        *p_gnuplot_script << rCommand << std::endl;
     }
 
     // The actual plot command...

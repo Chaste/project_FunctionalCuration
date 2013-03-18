@@ -93,6 +93,12 @@ public:
     /** Get the terminal command to use for Gnuplot. */
     const std::string& rGetGnuplotTerminal() const;
 
+    /** Get any extra commands to include in the Gnuplot script. */
+    const std::vector<std::string>& rGetGnuplotExtraCommands() const;
+
+    /** Get the Gnuplot line/point style to use. */
+    const std::string& rGetStyle() const;
+
 
     /**
      * Set the plot display title.
@@ -126,6 +132,22 @@ public:
      */
     void SetGnuplotTerminal(const std::string& rTerminal);
 
+    /**
+     * Set extra commands to include in the Gnuplot script.  These will be inserted after the default
+     * setup but before the 'plot' command, so it is possible to use this to (for instance) override
+     * the default axis labels, etc.
+     *
+     * @param rCommands  the Gnuplot commands to include
+     */
+    void SetGnuplotExtraCommands(const std::vector<std::string>& rCommands);
+
+    /**
+     * Set the Gnuplot line/point style to use.
+     *
+     * @param rStyle  the style setting
+     */
+    void SetStyle(const std::string& rStyle);
+
 private:
     /** The graph title; also used for the plot file name. */
     std::string mTitle;
@@ -147,6 +169,12 @@ private:
 
     /** The arguments to use for the Gnuplot terminal command. */
     std::string mGnuplotTerminal;
+
+    /** Any extra commands to include in the Gnuplot script. */
+    std::vector<std::string> mGnuplotExtraSettings;
+
+    /** The Gnuplot line/point style to use. */
+    std::string mStyle;
 };
 
 #endif // PLOTSPECIFICATION_HPP_

@@ -112,3 +112,23 @@ void PlotSpecification::SetGnuplotTerminal(const std::string& rTerminal)
 {
     mGnuplotTerminal = rTerminal;
 }
+
+const std::vector<std::string>& PlotSpecification::rGetGnuplotExtraCommands() const
+{
+    return mGnuplotExtraSettings;
+}
+
+const std::string& PlotSpecification::rGetStyle() const
+{
+    return mStyle;
+}
+
+void PlotSpecification::SetGnuplotExtraCommands(const std::vector<std::string>& rCommands)
+{
+    mGnuplotExtraSettings = rCommands;
+}
+
+void PlotSpecification::SetStyle(const std::string& rStyle)
+{
+    mStyle = rStyle;
+}

@@ -56,7 +56,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PetscSetupAndFinalize.hpp"
 
-#include "Debug.hpp"
 #include "UsefulFunctionsForProtocolTesting.hpp"
 
 typedef N_Vector VECTOR;
@@ -162,6 +161,19 @@ private:
             runner.GetProtocol()->SetInput("steady_state_beats", CONST(10));
         }
 
+        BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, runner.GetProtocol()->rGetPlotSpecifications())
+        {
+            if (p_plot_spec->rGetTitle() == "S1-S2 curve")
+            {
+                p_plot_spec->SetDisplayTitle(GetTitleFromDirectory(rCellMLFileBaseName));
+                p_plot_spec->SetGnuplotTerminal("postscript eps enhanced size 12.75cm, 8cm font 18");
+                std::vector<std::string> extra_setup;
+                extra_setup.push_back("set xtics 400");
+                p_plot_spec->SetGnuplotExtraCommands(extra_setup);
+                p_plot_spec->SetStyle("linespoints pointtype 7");
+            }
+        }
+
         runner.RunProtocol();
         AbstractValuePtr p_V = runner.GetProtocol()->rGetOutputsCollection().Lookup("membrane_voltage", "RunS1S2Protocol");
         mNumDifferentS2Intervals = GET_ARRAY(p_V).GetShape()[0];
@@ -183,17 +195,17 @@ private:
         std::string data_file_name = data_prefix + "S1-S2_curve_gnuplot_data.csv";
 
         *p_gnuplot_script  << "# Second plot is of the resulting restitution curve." << std::endl;
-        *p_gnuplot_script  << "set terminal postscript eps size 12.75cm, 8cm font 18" << std::endl;
+        *p_gnuplot_script  << "set terminal postscript eps size 12.75cm, 8cm font 18" << std::endl; // This is different
         *p_gnuplot_script  << "set output \"" << output_dir << "S1S2.eps\"" << std::endl;
         *p_gnuplot_script  << "set title \"" << GetTitleFromDirectory(rDirectory) << "\"" << std::endl;
         *p_gnuplot_script  << "set xlabel \"Diastolic Interval (ms)\"" << std::endl;
-        *p_gnuplot_script  << "set xtics 400" << std::endl;
+        *p_gnuplot_script  << "set xtics 400" << std::endl; // This line is additional to the default script
         *p_gnuplot_script  << "set ylabel \"APD90 (ms)\"" << std::endl;
         *p_gnuplot_script  << "set grid" << std::endl;
         *p_gnuplot_script  << "set autoscale" << std::endl;
         *p_gnuplot_script  << "set key off" << std::endl;
         *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
-        *p_gnuplot_script  << "plot \"" + data_file_name + "\" using 1:2 with linespoints pointtype 7";
+        *p_gnuplot_script  << "plot \"" + data_file_name + "\" using 1:2 with linespoints pointtype 7"; // This is now different to default
         *p_gnuplot_script << std::endl << std::flush;
 
         p_gnuplot_script->close();
@@ -217,6 +229,17 @@ private:
         try
         {
             ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+
+            BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, runner.GetProtocol()->rGetPlotSpecifications())
+            {
+                p_plot_spec->SetDisplayTitle(GetTitleFromDirectory(rCellMLFileBaseName));
+                p_plot_spec->SetGnuplotTerminal("postscript eps enhanced size 12.75cm, 8cm font 18");
+                std::vector<std::string> extra_setup;
+                extra_setup.push_back("set xrange [-60:80]");
+                p_plot_spec->SetGnuplotExtraCommands(extra_setup);
+                p_plot_spec->SetStyle("linespoints pointtype 7");
+            }
+
             runner.RunProtocol();
             // Fill in mStepCalcium for benefit of gnuplot output
             AbstractValuePtr p_Cao = runner.GetProtocol()->rGetLibrary().Lookup("default_Cao", "RunICaLVoltageClampProtocol");
@@ -250,14 +273,14 @@ private:
         std::string data_file_name = data_prefix + "IV_curve_gnuplot_data.csv";
 
         *p_gnuplot_script  << "# Second plot is of the resulting restitution curve." << std::endl;
-        *p_gnuplot_script  << "set terminal postscript eps enhanced size 12.75cm, 8cm font 18" << std::endl;
+        *p_gnuplot_script  << "set terminal postscript eps enhanced size 12.75cm, 8cm font 18" << std::endl; // This is different
         *p_gnuplot_script  << "set output \"" << output_dir << "ICaL_IV.eps\"" << std::endl;
         *p_gnuplot_script  << "set title \"" << GetTitleFromDirectory(rDirectory) << "\"" << std::endl;
         *p_gnuplot_script  << "set xlabel \"Test Voltage (mV)\"" << std::endl;
         *p_gnuplot_script  << "set ylabel \"Maximum Current ({/Symbol m}A/cm^{2})\"" << std::endl;
         *p_gnuplot_script  << "set grid" << std::endl;
         *p_gnuplot_script  << "set autoscale" << std::endl;
-        *p_gnuplot_script  << "set xrange [-60:80]" << std::endl;
+        *p_gnuplot_script  << "set xrange [-60:80]" << std::endl; // This is additional to the default script
         *p_gnuplot_script  << "set key off" << std::endl;
         *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
 

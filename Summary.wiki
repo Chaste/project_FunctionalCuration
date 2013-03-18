@@ -8,7 +8,7 @@ described in a protocol language extending [http://www.sed-ml.org/ SED-ML].  For
 details see the FunctionalCuration wiki pages.
 
 The inaugural paper on Functional Curation is
-"[./FunctionalCurationPaper High throughput functional curation of cellular electrophysiology models]",
+"[./FunctionalCuration High throughput functional curation of cellular electrophysiology models]",
 published in ''Prog Biophys Mol Biol'' in 2011, and the linked wiki page gives details of how to
 reproduce the results from that paper, having installed the necessary Chaste components and dependencies
 as set out below.
@@ -53,7 +53,7 @@ are in `cellml`.  Some additional interesting locations are:
  * `src/proto/library`  contains protocol libraries with functions available to all protocols
  * `src/proto/parsing/protocol.rnc`  is a schema for the protocol XML language
 
-See the [./FunctionalCurationPaper sub-page for our main paper] for details of how to reproduce
+See the [./FunctionalCuration sub-page for our main paper] for details of how to reproduce
 its results.  There are also many tests covering the lower-level functionality available for use by
 protocols.  Run all the default tests with:
 {{{

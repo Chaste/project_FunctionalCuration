@@ -285,7 +285,7 @@ private:
     }
 
     /*
-     * Creates the Gnuplots of the ICaL IV curves for the reference experimental data.
+     * This method creates the Gnuplots of the ICaL IV curves for the reference experimental data.
      * Originally the protocol versions also used this method, but plot generation is now built in to the main code.
      */
     void GenerateGnuplotsIVCurves(const std::string& rDirectory,

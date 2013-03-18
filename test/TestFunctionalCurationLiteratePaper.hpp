@@ -36,6 +36,51 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTFUNCTIONALCURATIONPAPER_HPP_
 #define TESTFUNCTIONALCURATIONPAPER_HPP_
 
+/*= High throughput functional curation of cellular electrophysiology models =
+ *
+ * This test reproduces the results from our
+ * [http://dx.doi.org/10.1016/j.pbiomolbio.2011.06.003 reference publication on Functional Curation]
+ * (J. Cooper, G. Mirams, S. Niederer; Prog Biophys Mol Biol; 107(1):11-20, 2011).
+ *
+ * It is kept up-to-date to run using the latest version of the framework, and tested automatically
+ * each week to ensure that the results are, to within tolerances, essentially unchanged from those published.
+ *
+ * (Aside: the reference data included in this project do not all exactly match those used in the paper.
+ * For one model subsequent investigation has revealed the results in the paper to be slightly
+ * incorrect.  Tightening of tolerances and refinement of sampling intervals have also
+ * improved the quality of the results for several models, especially under the ICaL protocol,
+ * beyond the default comparison tolerance of 0.5%.  Another model (Faber-Rudy) shows extremely
+ * high sensitivity to code generation settings in the peak transmembrane potential, which in
+ * turn affects the APD90 calculation in the S1-S2 protocol.  However, all these results have been
+ * verified manually to match the original publication qualitatively.)
+ *
+ * You can run these simulations using the following command from within the Chaste source tree:
+ * {{{
+ * scons cl=1 b=GccOptNative ts=projects/FunctionalCuration/test/TestFunctionalCurationPaper.hpp
+ * }}}
+ *
+ * If you have multiple cores available, these may be used to speed up simulation.  For instance, to use
+ * 8 cores, run
+ * {{{
+ * scons cl=1 b=GccOptNative_8 ts=projects/FunctionalCuration/test/TestFunctionalCurationPaper.hpp
+ * }}}
+ *
+ * Output will appear in `/tmp/$USER/testoutput/FunctionalCuration` by default (unless the
+ * environment variable `CHASTE_TEST_OUTPUT` is set to point elsewhere; it defaults to
+ * `/tmp/$USER/testoutput`.  This location should be on local disk).  The test should pass
+ * (printing an 'OK' line towards the end) to show that the protocol results generated are
+ * consistent with those in the paper.  (We also compare against some additional reference results,
+ * for model/protocol combinations analysed after the paper was published.)
+ *
+ * Note that some warnings will be printed at the end of the test output.  These are generally
+ * expected, for model/protocol combinations where we cannot run the protocol to completion
+ * (for instance, some models lack extracellular calcium and so the ICaL protocol is not appropriate).
+ */
+
+/* -----
+ *
+ * The test starts by including required headers.
+ */
 
 #include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/shared_ptr.hpp>
@@ -60,20 +105,18 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef N_Vector VECTOR;
 
+/* This class contains the main functionality for the test.
+ * It begins with private utility methods; the main method which runs the protocols (`TestProtocolsForManyCellModels`)
+ * is at the end.
+ */
 class TestFunctionalCurationPaper : public CxxTest::TestSuite
 {
 private:
-    /** How many different S2 intervals are used. */
-    unsigned mNumDifferentS2Intervals;
-
-    /** The calcium concentrations to step to from holding for the L-type Calcium current protocol. */
-    std::vector<double> mStepCalcium;
-
     /** Keep track of the current directory */
     boost::shared_ptr<OutputFileHandler> mpHandler;
 
     /**
-     * Compare the final results against historical data, to ensure that code changes aren't
+     * This method compares the final results against historical data, to ensure that code changes aren't
      * introducing errors.
      *
      * @param rModelName  the name of the model, and hence the CellML file
@@ -122,7 +165,7 @@ private:
     }
 
     /**
-     * Sets up #mpHandler to point to correct model and protocol subfolder.
+     * Set up #mpHandler to point to the correct model and protocol subfolder.
      *
      * @param rCellMLFileBaseName  The name of the cellML file (without .cellml on the end).
      * @param rProtocolName  The protocol name.
@@ -138,13 +181,14 @@ private:
     }
 
     /**
-     * @param rCellMLFileBaseName  the cellml file to dynamically load and use.
-     * @param s1PacingCycleLength  the S1 duration to use
+     * Run the S1-S2 protocol on a single model.
+     *
+     * @param rCellMLFileBaseName  the CellML file to dynamically load and use.
+     * @param s1PacingCycleLength  the S1 duration to use (to correspond with experimental data for the particular species)
      */
     void RunS1S2Protocol(std::string& rCellMLFileBaseName, double s1PacingCycleLength)
     {
         std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "S1S2");
-
 
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
@@ -152,7 +196,7 @@ private:
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.GetProtocol()->SetInput("s1_interval", CONST(s1PacingCycleLength));
 
-        // Special case for non-conservative models which break after lots of paces
+        // Special case for non-conservative models which break after lots of paces.
         std::set<std::string> non_conservative_models =
                 boost::assign::list_of("jafri_rice_winslow_model_1998")
                                       ("winslow_model_1999");
@@ -161,6 +205,7 @@ private:
             runner.GetProtocol()->SetInput("steady_state_beats", CONST(10));
         }
 
+        // Augment the plot specification for the S1-S2 curve to match presentation settings used in the original paper.
         BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, runner.GetProtocol()->rGetPlotSpecifications())
         {
             if (p_plot_spec->rGetTitle() == "S1-S2 curve")
@@ -175,12 +220,37 @@ private:
         }
 
         runner.RunProtocol();
-        AbstractValuePtr p_V = runner.GetProtocol()->rGetOutputsCollection().Lookup("membrane_voltage", "RunS1S2Protocol");
-        mNumDifferentS2Intervals = GET_ARRAY(p_V).GetShape()[0];
     }
 
     /**
-     * Creates the gnuplot S1-S2 restitution curves
+     * Run the ICaL protocol on the given model.
+     *
+     * @param rCellMLFileBaseName  the CellML file to dynamically load and use.
+     */
+    void RunICaLVoltageClampProtocol(std::string& rCellMLFileBaseName)
+    {
+        std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "ICaL");
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
+
+        ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+
+        // Augment the (single) plot specification to match presentation settings used in the original paper.
+        BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, runner.GetProtocol()->rGetPlotSpecifications())
+        {
+            p_plot_spec->SetDisplayTitle(GetTitleFromDirectory(rCellMLFileBaseName));
+            p_plot_spec->SetGnuplotTerminal("postscript eps enhanced size 12.75cm, 8cm font 18");
+            std::vector<std::string> extra_setup;
+            extra_setup.push_back("set xrange [-60:80]");
+            p_plot_spec->SetGnuplotExtraCommands(extra_setup);
+            p_plot_spec->SetStyle("linespoints pointtype 7");
+        }
+
+        runner.RunProtocol();
+    }
+
+    /* This method creates the S1-S2 restitution curves for the reference experimental data using Gnuplot.
+     * Originally the protocol versions also used this method, but plot generation is now built in to the main code.
      */
     void GenerateGnuplotsS1S2Curve(const std::string& rDirectory,
                                    const std::string& rFilenamePrefix)
@@ -214,51 +284,9 @@ private:
         EXPECT0(system, "gnuplot " + output_dir + filename);
     }
 
-    /**
-     * Run the ICaL protocol on the given model.
-     *
-     * @param rCellMLFileBaseName  the cellml file to dynamically load and use.
-     * @return  whether the ICaL protocol was completed successfully
-     */
-    bool RunICaLVoltageClampProtocol(std::string& rCellMLFileBaseName)
-    {
-        std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "ICaL");
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
-
-        try
-        {
-            ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
-
-            BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, runner.GetProtocol()->rGetPlotSpecifications())
-            {
-                p_plot_spec->SetDisplayTitle(GetTitleFromDirectory(rCellMLFileBaseName));
-                p_plot_spec->SetGnuplotTerminal("postscript eps enhanced size 12.75cm, 8cm font 18");
-                std::vector<std::string> extra_setup;
-                extra_setup.push_back("set xrange [-60:80]");
-                p_plot_spec->SetGnuplotExtraCommands(extra_setup);
-                p_plot_spec->SetStyle("linespoints pointtype 7");
-            }
-
-            runner.RunProtocol();
-            // Fill in mStepCalcium for benefit of gnuplot output
-            AbstractValuePtr p_Cao = runner.GetProtocol()->rGetLibrary().Lookup("default_Cao", "RunICaLVoltageClampProtocol");
-            double default_Cao = GET_SIMPLE_VALUE(p_Cao);
-            mStepCalcium = boost::assign::list_of(.5*default_Cao)(default_Cao)(1.5*default_Cao);
-//            std::cout << "[Ca_o] = " << default_Cao << " mM" << std::endl << std::flush;
-        }
-        catch (Exception& e)
-        {
-            OUR_WARN(e.GetMessage(), rCellMLFileBaseName, "ICaL");
-            return false;
-        }
-
-        // Successful run
-        return true;
-    }
-
-    /**
-     * Creates the gnuplots of the ICaL IV curves.
+    /*
+     * Creates the Gnuplots of the ICaL IV curves for the reference experimental data.
+     * Originally the protocol versions also used this method, but plot generation is now built in to the main code.
      */
     void GenerateGnuplotsIVCurves(const std::string& rDirectory,
                                   const std::string& rFilenamePrefix)
@@ -285,11 +313,11 @@ private:
         *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
 
         *p_gnuplot_script  << "plot ";
-        unsigned num_cols = mStepCalcium.size();
+        unsigned num_cols = 3u;
         for (unsigned i=1; i<=num_cols; ++i)
         {
             *p_gnuplot_script << "\"" + data_file_name + "\" using 1:" << i+1
-                              << " with linespoints pointtype 7 title \"[Cao] = " << mStepCalcium[i-1] << "\"";
+                              << " with linespoints pointtype 7 \"";
             if (i != num_cols)
             {
                 *p_gnuplot_script << ",\\";
@@ -304,9 +332,9 @@ private:
         EXPECT0(system, "gnuplot " + output_dir + filename);
     }
 
-
-
 public:
+    /* The main test method which runs both protocols on all available CellML files.
+     */
     void TestProtocolsForManyCellModels() throw(Exception, std::bad_alloc)
     {
         std::vector<std::string> cellml_files = GetAListOfCellMLFiles();
@@ -318,11 +346,28 @@ public:
         std::vector<std::string> ical_outputs = boost::assign::list_of("outputs_min_LCC")("outputs_final_membrane_voltage");
         std::vector<std::string> s1s2_outputs = boost::assign::list_of("outputs_APD90")("outputs_DI");
 
-        // Collectively ensure the root output folder exists, then isolate processes
+        /* We use Chaste's process isolation facility to process models in parallel, if running on multiple processes.
+         * The main output folder needs to be created with a collective call (so we don't have multiple processes
+         * trying to make the same folder) but thereafter each protocol run can be done completely independently.
+         */
         {
             OutputFileHandler("FunctionalCuration", false);
             PetscTools::IsolateProcesses(true);
         }
+
+        // Models corresponding to particular species
+        std::set<std::string> dog_models = boost::assign::list_of("decker_2009")
+                                                                 ("hund_rudy_2004")
+                                                                 ("livshitz_rudy_2007")
+                                                                 ("fox_mcharg_gilmour_2002")
+                                                                 ("winslow_model_1999");
+        std::set<std::string> human_models = boost::assign::list_of("fink_noble_giles_model_2008")
+                                                                   ("grandi_pasqualini_bers_2010_ss")
+                                                                   ("iyer_2004_s1s2_curve")
+                                                                   ("iyer_model_2007_s1s2_curve")
+                                                                   ("priebe_beuckelmann_1998_s1s2_curve")
+                                                                   ("ten_tusscher_model_2004_epi_s1s2_curve")
+                                                                   ("ten_tusscher_model_2006_epi_s1s2_curve");
 
         for (unsigned i=0; i<cellml_files.size(); ++i)
         {
@@ -333,36 +378,21 @@ public:
             }
             std::cout << "\nRunning protocols for " << cellml_files[i] << std::endl << std::flush;
 
-            // Figure out if it is a dog model (different S1 to match experimental data)
-            double s1_freq = 1000;
-            if (  cellml_files[i] == "decker_2009"
-               || cellml_files[i] == "hund_rudy_2004"
-               || cellml_files[i] == "livshitz_rudy_2007"
-               || cellml_files[i] == "fox_mcharg_gilmour_2002"
-               || cellml_files[i] == "winslow_model_1999" )
+            // Figure out which S1 interval to use, to compare against different experimental data sets.
+            double s1_freq = 1000; // ms
+            if (dog_models.find(cellml_files[i]) != dog_models.end())
             {
                 s1_freq = 2000;
             }
-
-            // If it is a human model compare with this Morgan data for 600ms pacing.
-            if (  cellml_files[i] == "fink_noble_giles_model_2008"
-               || cellml_files[i] == "grandi_pasqualini_bers_2010_ss"
-               || cellml_files[i] == "iyer_2004_s1s2_curve"
-               || cellml_files[i] == "iyer_model_2007_s1s2_curve"
-               || cellml_files[i] == "priebe_beuckelmann_1998_s1s2_curve"
-               || cellml_files[i] == "ten_tusscher_model_2004_epi_s1s2_curve"
-               || cellml_files[i] == "ten_tusscher_model_2006_epi_s1s2_curve" )
+            if (human_models.find(cellml_files[i]) != human_models.end())
             {
                 s1_freq = 600;
             }
 
-            // Protocols and graphs must be done together so that
-            // mpHandler points to the correct protocol subfolder.
-
+            // Run each protocol and compare against historical data.
             try
             {
                 RunS1S2Protocol(cellml_files[i], s1_freq);
-                GenerateGnuplotsS1S2Curve(cellml_files[i], "outputs");
             }
             catch (Exception& e)
             {
@@ -370,24 +400,19 @@ public:
             }
             CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6); // 0.5% rel tol
 
-            if (RunICaLVoltageClampProtocol(cellml_files[i]))
+            try {
+                RunICaLVoltageClampProtocol(cellml_files[i]);
+            }
+            catch (Exception &e)
             {
-                try
-                {
-                    GenerateGnuplotsIVCurves(cellml_files[i], "outputs");
-                }
-                catch (Exception &e)
-                {
-                    OUR_WARN(e.GetMessage(), cellml_files[i], "ICaL");
-                }
+                OUR_WARN(e.GetMessage(), cellml_files[i], "ICaL");
             }
             CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5); // 0.5% rel tol
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////
-        // Also make plots of some experimental data we got by digitising some paper graphs.
-        ////////////////////////////////////////////////////////////////////////////////////
-        // Only one process should plot the experimental data.
+        /* Finally, the master process makes comparison plots of some experimental data we got
+         * by digitising paper graphs.
+         */
         PetscTools::IsolateProcesses(false);
 
         std::vector<std::string> exp_data;
@@ -397,14 +422,11 @@ public:
 
         // Also specify the calcium experimental data.
         exp_data.push_back("sun_rat_ventricle");
-        mStepCalcium.clear();
-        mStepCalcium.push_back(0.1);
-        mStepCalcium.push_back(0.3);
-        mStepCalcium.push_back(1.0);
+        // Note that this uses calcium concentrations of 0.1, 0.3, and 1.0 uM.
 
         for (unsigned i=0; i<exp_data.size(); ++i)
         {
-            // Copy the data from
+            // Copy the data from here
             FileFinder finder("projects/FunctionalCuration/test/data/" + exp_data[i], RelativeTo::ChasteSourceRoot);
             TS_ASSERT_EQUALS(finder.IsDir(), true);
             // Creating and cleaning the output folder must be done as a collective call

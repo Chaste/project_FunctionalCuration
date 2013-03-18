@@ -243,6 +243,9 @@ void CopyFile(const OutputFileHandler& rDestDir,
 /**
  * Get all of the .cellml files in the directory of the FunctionalCuration project (for dynamic loading)
  * they are returned without ".cellml" on the end, so they can also be used for folder names.
+ *
+ * \todo Use Boost Filesystem for this.
+ *
  * @return vector of cellml file names
  */
 std::vector<std::string> GetAListOfCellMLFiles(void)

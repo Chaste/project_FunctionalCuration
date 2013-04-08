@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CombinedSimulation.hpp"
 
 #include <string>
+#include <iostream>
 #include <boost/foreach.hpp>
 
 CombinedSimulation::CombinedSimulation(const std::vector<AbstractSimulationPtr>& rChildSims,

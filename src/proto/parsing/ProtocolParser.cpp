@@ -41,6 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/foreach.hpp>
 
 #include "XmlTools.hpp"
+#include "AbstractCvodeCell.hpp"
 
 #include "MathmlParser.hpp"
 #include "ProtocolLanguage.hpp"

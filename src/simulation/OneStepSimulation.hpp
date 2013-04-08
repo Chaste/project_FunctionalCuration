@@ -37,6 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ONESTEPSIMULATION_HPP_
 
 #include "AbstractSimulation.hpp"
+#include "Exception.hpp"
 
 /**
  * This simulation class just runs one step of whatever algorithm is built in to the model.

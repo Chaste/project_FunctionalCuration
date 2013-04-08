@@ -72,7 +72,7 @@ public:
     }
 
     /**
-     * Delete the encapulated vector, if required.
+     * Delete the encapsulated vector, if required.
      */
     ~ModelState()
     {

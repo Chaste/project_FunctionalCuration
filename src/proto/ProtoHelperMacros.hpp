@@ -42,6 +42,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <boost/make_shared.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include "ValueTypes.hpp"
 #include "ValueExpression.hpp"

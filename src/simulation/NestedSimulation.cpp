@@ -35,6 +35,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "NestedSimulation.hpp"
 
+#include <boost/foreach.hpp>
+#include <iostream>
 
 NestedSimulation::NestedSimulation(boost::shared_ptr<AbstractSimulation> pNestedSimulation,
                                    boost::shared_ptr<AbstractStepper> pStepper,

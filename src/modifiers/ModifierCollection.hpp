@@ -41,12 +41,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractSimulationModifier.hpp"
 #include "AbstractStepper.hpp"
-#include "AbstractCardiacCellInterface.hpp"
+#include "AbstractSystemWithOutputs.hpp"
 
 /**
  * A collection of modifiers to be applied during a simulation.
- * 
- * This is essentially a thin wrapper around a vector of AbstractModifier objects,
+ *
+ * This is essentially a thin wrapper around a vector of AbstractSimulationModifier objects,
  * providing the same operator() interface so that a simulation engine doesn't need
  * to do the iteration itself.
  */
@@ -55,7 +55,7 @@ class ModifierCollection
 public:
     /**
      * Create a collection of modifiers.
-     * 
+     *
      * @param rModifiers  the objects making up the collection
      */
     ModifierCollection(const std::vector<AbstractSimulationModifierPtr>& rModifiers);
@@ -63,14 +63,14 @@ public:
     /**
      * Create an empty collection with room for numModifiers objects.
      * These slots must then be assigned using operator[].
-     * 
+     *
      * @param numModifiers  number of modifiers in this collection
      */
     ModifierCollection(unsigned numModifiers);
 
     /**
      * Access an individual modifier in this collection.
-     * 
+     *
      * @param i  the index of the modifier to access.
      */
     AbstractSimulationModifierPtr& operator[](unsigned i);
@@ -103,7 +103,7 @@ public:
 private:
     /** To reduce typing. */
     typedef std::vector<AbstractSimulationModifierPtr> Collection;
-    
+
     /** The underlying collection of modifiers. */
     Collection mModifiers;
 };

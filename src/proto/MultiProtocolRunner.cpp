@@ -38,6 +38,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <string>
 #include <cstdlib> // For setenv()
+#include <iostream>
 #include <boost/foreach.hpp>
 
 #include "CommandLineArguments.hpp"

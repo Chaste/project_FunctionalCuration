@@ -83,8 +83,13 @@ public:
     void AddModifier(AbstractSimulationModifierPtr pModifier);
 
     /**
+     * @return  the number of modifiers in this collection.
+     */
+    unsigned GetNumModifiers() const;
+
+    /**
      * Apply each modifier in this collection in turn, starting with the first.
-     * 
+     *
      * @param pModel  the model to modify
      * @param pStepper  controls the current loop of the simulation
      */

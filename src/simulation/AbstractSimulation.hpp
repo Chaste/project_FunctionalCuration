@@ -89,19 +89,19 @@ public:
      */
     EnvironmentPtr Run();
 
-    /** Get method for #mpModel. */
+    /** @return #mpModel. */
     boost::shared_ptr<AbstractSystemWithOutputs> GetModel()
     {
         return mpModel;
     }
 
-    /** Get method for #mpSteppers. */
+    /** @return #mpSteppers. */
     StepperCollection GetSteppers()
     {
         return mpSteppers;
     }
 
-    /** Get method for what #mpSteppers points to. */
+    /** @return what #mpSteppers points to. */
     std::vector<AbstractStepperPtr>& rGetSteppers()
     {
         return *mpSteppers;
@@ -157,6 +157,13 @@ public:
      * (If not, an unset FileFinder will be returned.)
      */
     FileFinder GetOutputFolder() const;
+
+    /**
+     * Set whether to use automatic parallelisation of nested loops.
+     *
+     * @param paralleliseLoops  whether to parallelise loops whenever safe
+     */
+    void SetParalleliseLoops(bool paralleliseLoops);
 
 protected:
     /**
@@ -248,6 +255,12 @@ protected:
 
     /** Where to write tracing/debug output, if desired. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
+
+    /** Whether to use automatic parallelisation of nested loops. */
+    bool mParalleliseLoops;
+
+    /** Whether to fill result arrays with zero when they're created. */
+    bool mZeroInitialiseArrays;
 
 private:
     /** The namespace prefix to use for outputs from this simulation. */

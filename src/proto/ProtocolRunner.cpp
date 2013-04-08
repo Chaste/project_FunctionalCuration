@@ -72,6 +72,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     }
 
     // Do the conversion
+    ///\todo #2341 consider parallel behaviour
     CellMLToSharedLibraryConverter converter(true, "projects/FunctionalCuration");
     converter.CreateOptionsFile(mHandler, model_name, options);
     DynamicCellModelLoaderPtr p_loader = converter.Convert(copied_model);

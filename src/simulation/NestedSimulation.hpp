@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NESTEDSIMULATION_HPP_
 #define NESTEDSIMULATION_HPP_
 
+#include <set>
 #include "AbstractSimulation.hpp"
 
 /**
@@ -53,8 +54,8 @@ public:
      * @param pModifiers  details any modifications to be made to the cell or
      *     simulation parameters as the simulation progresses
      */
-    NestedSimulation(boost::shared_ptr<AbstractSimulation> pNestedSimulation,
-                     boost::shared_ptr<AbstractStepper> pStepper,
+    NestedSimulation(AbstractSimulationPtr pNestedSimulation,
+                     AbstractStepperPtr pStepper,
                      boost::shared_ptr<ModifierCollection> pModifiers=boost::shared_ptr<ModifierCollection>());
 
     /**
@@ -81,6 +82,35 @@ protected:
 private:
     /** The simulation nested inside this one. */
     boost::shared_ptr<AbstractSimulation> mpNestedSimulation;
+
+    /** What to multiply loop indices by to obtain an overall iteration count. */
+    std::vector<unsigned> mParallelMultipliers;
+
+    /**
+     * Determine whether the iterations of this simulation are provably independent, and so can be
+     * farmed out to separate processes.  We do this by analysing the modifiers on this simulation
+     * and that nested inside it, to determine whether each loop resets the model to a state
+     * determined outside this entire nested simulation.  If it does, then it doesn't matter what
+     * outer loops do - we can parallelise at this level.
+     *
+     * \todo #2341 We also need to worry about modifiers or loop conditions that might use partial
+     * results, since the required data might not be available!
+     * While loops can do this, but don't get parallelised.
+     * Can SetVariable modifiers access partial results?  Yes - it uses the stepper environment, which is the simulation environment.
+     * Only FunctionalStepper can compute values in the Step method - other steppers pre-compute all points when the simulation starts.
+     *
+     * @param rStatesSaved  the names of model states saved by simulations wrapping this one
+     * @return whether the iterations of this loop of the simulation can be farmed out to separate processes.
+     */
+    bool CanParallelise(std::set<std::string>& rStatesSaved) const;
+
+    /**
+     * Set that this simulation can be parallelised, and what to multiply each loop index by to obtain
+     * an overall iteration count, and hence determine if the current process should perform this iteration.
+     *
+     * @param rMultipliers  the multipliers
+     */
+    void SetParallelMultipliers(const std::vector<unsigned>& rMultipliers);
 };
 
 #endif /*NESTEDSIMULATION_HPP_*/

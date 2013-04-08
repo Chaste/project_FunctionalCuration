@@ -35,6 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractSimulation.hpp"
 
+#include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/make_shared.hpp>
@@ -60,7 +61,9 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutpu
       mpModifiers(pModifiers),
       mpSteppers(pSteppers),
       mpEnvironment(new Environment),
-      mpResultsEnvironment(new Environment)
+      mpResultsEnvironment(new Environment),
+      mParalleliseLoops(false),
+      mZeroInitialiseArrays(false)
 {
     if (!mpSteppers)
     {
@@ -257,6 +260,10 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults,
                 }
                 std::copy(output_shape.begin(), output_shape.end(), shape.begin() + num_local_dims);
                 NdArray<double> result(shape);
+                if (mZeroInitialiseArrays)
+                {
+                    std::fill(result.Begin(), result.End(), 0.0);
+                }
                 result_array = result;
                 AbstractValuePtr p_result = boost::make_shared<ArrayValue>(result);
                 p_result->SetUnits(p_output->GetUnits());
@@ -313,8 +320,14 @@ void AbstractSimulation::ResizeOutputs()
         {
             NdArray<double> array = GET_ARRAY(mpResultsEnvironment->Lookup(r_name, GetLocationInfo()));
             NdArray<double>::Extents shape = array.GetShape();
+            NdArray<double>::Indices old_end = array.End().rGetIndices();
             shape[0] = mpStepper->GetNumberOfOutputPoints();
             array.Resize(shape);
+            if (mZeroInitialiseArrays)
+            {
+                NdArray<double>::Iterator old_end_it(old_end, array);
+                std::fill(old_end_it, array.End(), 0.0);
+            }
         }
     }
 }
@@ -346,4 +359,10 @@ void AbstractSimulation::CreateResultViews()
             }
         }
    }
+}
+
+
+void AbstractSimulation::SetParalleliseLoops(bool paralleliseLoops)
+{
+    mParalleliseLoops = paralleliseLoops;
 }

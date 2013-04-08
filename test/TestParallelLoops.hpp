@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2005-2012, University of Oxford.
+Copyright (c) 2005-2013, University of Oxford.
 All rights reserved.
 
 University of Oxford means the Chancellor, Masters and Scholars of the
@@ -33,58 +33,34 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "ModelResetModifier.hpp"
-#include "AbstractParameterisedSystem.hpp"
-#include "VectorHelperFunctions.hpp"
+#ifndef TESTPARALLELLOOPS_HPP_
+#define TESTPARALLELLOOPS_HPP_
 
-template<typename VECTOR>
-ModelResetModifier<VECTOR>::ModelResetModifier(ApplyWhen when,
-                                               const std::string& rName,
-                                               boost::shared_ptr<ModelStateCollection> pStateCollection)
-    : AbstractSimulationModifier(when),
-      mpStateCollection(pStateCollection),
-      mStateName(rName)
+#include <cxxtest/TestSuite.h>
+
+#include <string>
+
+#include "ProtocolRunner.hpp"
+#include "ProtocolFileFinder.hpp"
+
+#include "FileFinder.hpp"
+
+#include "PetscSetupAndFinalize.hpp"
+
+class TestParallelLoops : public CxxTest::TestSuite
 {
-}
-
-
-template<typename VECTOR>
-void ModelResetModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
-                                             boost::shared_ptr<AbstractStepper> pStepper)
-{
-    boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > p_system = boost::dynamic_pointer_cast<AbstractParameterisedSystem<VECTOR> >(pModel);
-    assert(p_system);
-    // Do the reset
-    if (mStateName.empty())
+public:
+    void TestCompactSyntax() throw (Exception)
     {
-        p_system->ResetToInitialConditions();
-        pModel->SetFreeVariable(0.0); ///\todo hack!
+        std::string dirname = "TestParallelLoops";
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_parallel_nested.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, proto_file, dirname);
+        runner.GetProtocol()->SetParalleliseLoops();
+        runner.RunProtocol();
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
     }
-    else
-    {
-        mpStateCollection->SetModelState(p_system, mStateName);
-    }
-}
+};
 
-
-template<typename VECTOR>
-std::string ModelResetModifier<VECTOR>::GetStateName() const
-{
-    return mStateName;
-}
-
-
-template<typename VECTOR>
-bool ModelResetModifier<VECTOR>::IsReset() const
-{
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Explicit instantiation
-//////////////////////////////////////////////////////////////////////
-
-#ifdef CHASTE_CVODE
-template class ModelResetModifier<N_Vector>;
-#endif
-template class ModelResetModifier<std::vector<double> >;
+#endif // TESTPARALLELLOOPS_HPP_

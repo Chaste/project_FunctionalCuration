@@ -95,6 +95,22 @@ public:
     virtual void ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                             boost::shared_ptr<AbstractStepper> pStepper);
 
+    /**
+     * @return  when this modifier will be applied.
+     */
+    ApplyWhen GetWhenApplied() const;
+
+    /**
+     * @return  if this is a save or reset state modifier, the associated state name.
+     * Otherwise returns the empty string.
+     */
+    virtual std::string GetStateName() const;
+
+    /**
+     * @return  whether this is a reset state modifier.
+     */
+    virtual bool IsReset() const;
+
 protected:
     /**
      * Method subclasses must supply which really implements the modification.

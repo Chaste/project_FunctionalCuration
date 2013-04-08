@@ -57,6 +57,12 @@ void StateSaverModifier<VECTOR>::ReallyApply(boost::shared_ptr<AbstractSystemWit
 }
 
 
+template<typename VECTOR>
+std::string StateSaverModifier<VECTOR>::GetStateName() const
+{
+    return mStateName;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Explicit instantiation
 //////////////////////////////////////////////////////////////////////

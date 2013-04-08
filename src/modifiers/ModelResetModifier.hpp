@@ -61,6 +61,16 @@ public:
                        const std::string& rName="",
                        boost::shared_ptr<ModelStateCollection> pStateCollection=boost::shared_ptr<ModelStateCollection>());
 
+    /**
+     * @return  the state name to reset to.
+     */
+    std::string GetStateName() const;
+
+    /**
+     * @return  true.
+     */
+    bool IsReset() const;
+
 private:
     /**
      * Apply this modification to the model.

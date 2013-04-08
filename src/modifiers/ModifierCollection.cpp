@@ -59,6 +59,12 @@ void ModifierCollection::AddModifier(AbstractSimulationModifierPtr pModifier)
 }
 
 
+unsigned ModifierCollection::GetNumModifiers() const
+{
+    return mModifiers.size();
+}
+
+
 void ModifierCollection::operator()(boost::shared_ptr<AbstractSystemWithOutputs> pModel,
                                     AbstractStepperPtr pStepper)
 {
@@ -77,4 +83,3 @@ void ModifierCollection::ApplyAtEnd(boost::shared_ptr<AbstractSystemWithOutputs>
         (*it)->ApplyAtEnd(pModel, pStepper);
     }
 }
-

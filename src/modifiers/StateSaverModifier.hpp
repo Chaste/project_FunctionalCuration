@@ -59,6 +59,12 @@ public:
                        const std::string& rName,
                        boost::shared_ptr<ModelStateCollection> pStateCollection);
 
+    /**
+     * @return  if this is a save or reset state modifier, the associated state name.
+     * Otherwise returns the empty string.
+     */
+    std::string GetStateName() const;
+
 private:
     /**
      * Apply this modification to the model.

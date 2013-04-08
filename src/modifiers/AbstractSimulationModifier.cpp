@@ -67,3 +67,21 @@ void AbstractSimulationModifier::ApplyAtEnd(boost::shared_ptr<AbstractSystemWith
         ReallyApply(pModel, pStepper);
     }
 }
+
+
+AbstractSimulationModifier::ApplyWhen AbstractSimulationModifier::GetWhenApplied() const
+{
+    return mWhen;
+}
+
+
+std::string AbstractSimulationModifier::GetStateName() const
+{
+    return "";
+}
+
+
+bool AbstractSimulationModifier::IsReset() const
+{
+    return false;
+}

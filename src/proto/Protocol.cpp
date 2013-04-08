@@ -47,6 +47,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Exception.hpp"
 #include "ExecutableSupport.hpp"
 #include "Warnings.hpp"
+#include "PetscTools.hpp"
 
 #include "ProtoHelperMacros.hpp"
 #include "VectorStreaming.hpp"
@@ -63,7 +64,8 @@ Protocol::Protocol()
     : mpInputs(new Environment(true)),
       mpLibrary(new Environment),
       mpModelStateCollection(new ModelStateCollection),
-      mWritePng(false)
+      mWritePng(false),
+      mParalleliseLoops(false)
 {
     mpLibrary->SetDelegateeEnvironment(mpInputs->GetAsDelegatee());
 }
@@ -157,6 +159,12 @@ void Protocol::InitialiseLibrary(bool reinit)
 }
 
 
+void Protocol::SetParalleliseLoops(bool paralleliseLoops)
+{
+    mParalleliseLoops = paralleliseLoops && PetscTools::IsParallel();
+}
+
+
 void Protocol::Run()
 {
     std::cout << "Running protocol..." << std::endl;
@@ -177,6 +185,7 @@ void Protocol::Run()
             const std::string prefix = p_sim->GetOutputsPrefix();
             std::cout << "Running simulation " << simulation_number << " " << prefix << "..." << std::endl;
             p_sim->InitialiseSteppers();
+            p_sim->SetParalleliseLoops(mParalleliseLoops);
             p_sim->Run();
             if (mpOutputHandler)
             {
@@ -184,7 +193,7 @@ void Protocol::Run()
                 DebugProto::SetTraceFolder(*mpOutputHandler);
                 // Remove the simulation output folder if empty
                 FileFinder sim_debug_output = p_sim->GetOutputFolder();
-                if (sim_debug_output.IsPathSet() && sim_debug_output.IsDir() && sim_debug_output.IsEmpty())
+                if (sim_debug_output.IsPathSet() && sim_debug_output.IsDir() && sim_debug_output.IsEmpty() && PetscTools::AmMaster())
                 {
                     sim_debug_output.Remove();
                 }
@@ -357,6 +366,10 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
     if (!mpOutputHandler)
     {
         EXCEPTION("SetOutputFolder must be called prior to using WriteToFile.");
+    }
+    if (!PetscTools::AmMaster())
+    {
+        return;
     }
     ///\todo Improve format?
     const Environment& r_outputs = rGetOutputsCollection();

@@ -124,6 +124,13 @@ public:
     void SetPngOutput(bool writePng);
 
     /**
+     * Set whether to use automatic parallelisation of nested simulation loops.
+     *
+     * @param paralleliseLoops  whether to parallelise whenever safe
+     */
+    void SetParalleliseLoops(bool paralleliseLoops=true);
+
+    /**
      * Get the number of protocol outputs defined.
      *
      * @param simulation  which simulation to get the number of outputs of, by index
@@ -359,6 +366,9 @@ private:
 
     /** Whether to write plots to .png as well as .eps. */
     bool mWritePng;
+
+    /** Whether to use automatic parallelisation of nested simulation loops. */
+    bool mParalleliseLoops;
 
     /**
      * Check that the supplied model does have outputs, and cast it.

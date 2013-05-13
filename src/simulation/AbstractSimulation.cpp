@@ -61,9 +61,9 @@ AbstractSimulation::AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutpu
       mpModifiers(pModifiers),
       mpSteppers(pSteppers),
       mpEnvironment(new Environment),
-      mpResultsEnvironment(new Environment),
       mParalleliseLoops(false),
-      mZeroInitialiseArrays(false)
+      mZeroInitialiseArrays(false),
+      mpResultsEnvironment(new Environment)
 {
     if (!mpSteppers)
     {

@@ -52,7 +52,7 @@ AbstractValuePtr Find::operator()(const Environment& rEnv) const
     // Get & check arguments
     std::vector<AbstractValuePtr> actual_params = EvaluateChildren(rEnv);
     const AbstractValuePtr p_operand = actual_params[0];
-    PROTO_ASSERT(p_operand->IsArray(), "First argument to index should be an array.");
+    PROTO_ASSERT(p_operand->IsArray(), "First argument to find should be an array.");
     NdArray<double> operand = GET_ARRAY(p_operand);
 
     // Create output array large enough if all entries are non-zero

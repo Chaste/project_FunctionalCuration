@@ -40,6 +40,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 
 #include "Environment.hpp"
+#include "OutputFileHandler.hpp"
+#include "FileFinder.hpp"
 
 /**
  * Base class for models in the protocol system.   It allows querying what outputs are available,
@@ -118,6 +120,20 @@ public:
     const std::string& rGetShortName(const std::string& rVariableReference) const;
 
 
+    /**
+     * Set where to write any debug/raw outputs to, if desired.
+     *
+     * @param pHandler  handler for the output folder
+     */
+    void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
+
+    /**
+     * @return the folder to which to write any debug/raw outputs, if it has been set.
+     * (If not, an unset FileFinder will be returned.)
+     */
+    FileFinder GetOutputFolder() const;
+
+
     /** Default constructor sets the free variable to an 'unset' value. */
     AbstractSystemWithOutputs();
 
@@ -143,6 +159,9 @@ protected:
      * in this case) wrapper Environment.
      */
     std::map<std::string, std::string> mNameMap;
+
+    /** Where to write any debug/raw output to, if required. */
+    boost::shared_ptr<OutputFileHandler> mpOutputHandler;
 };
 
 #endif /*ABSTRACTSYSTEMWITHOUTPUTS_HPP_*/

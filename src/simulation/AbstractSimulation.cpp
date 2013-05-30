@@ -101,6 +101,10 @@ void AbstractSimulation::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> p
 {
     assert(pModel);
     mpModel = pModel;
+    if (mpOutputHandler)
+    {
+        mpModel->SetOutputFolder(mpOutputHandler);
+    }
     const std::map<std::string, EnvironmentPtr>& r_model_envs = mpModel->rGetEnvironmentMap();
     BOOST_FOREACH(StringEnvPair binding, r_model_envs)
     {
@@ -154,6 +158,10 @@ std::string AbstractSimulation::GetOutputsPrefix() const
 void AbstractSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler)
 {
     mpOutputHandler = pHandler;
+    if (mpModel)
+    {
+        mpModel->SetOutputFolder(pHandler);
+    }
 }
 
 

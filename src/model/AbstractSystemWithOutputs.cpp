@@ -84,6 +84,23 @@ const std::string& AbstractSystemWithOutputs::rGetShortName(const std::string& r
 }
 
 
+void AbstractSystemWithOutputs::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler)
+{
+    mpOutputHandler = pHandler;
+}
+
+
+FileFinder AbstractSystemWithOutputs::GetOutputFolder() const
+{
+    FileFinder folder;
+    if (mpOutputHandler)
+    {
+        folder = mpOutputHandler->FindFile("");
+    }
+    return folder;
+}
+
+
 AbstractSystemWithOutputs::AbstractSystemWithOutputs()
     : mFreeVariable(0.0) ///\todo hack!
 {

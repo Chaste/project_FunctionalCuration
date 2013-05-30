@@ -161,12 +161,14 @@ void Protocol::InitialiseLibrary(bool reinit)
 
 void Protocol::SetParalleliseLoops(bool paralleliseLoops)
 {
-    mParalleliseLoops = paralleliseLoops && PetscTools::IsParallel();
+    // The last clause checks that process isolation isn't already active
+    mParalleliseLoops = paralleliseLoops && PetscTools::IsParallel() && !PetscTools::IsSequential();
 }
 
 
 void Protocol::Run()
 {
+    ///\todo #2341 If mParalleliseLoops, run everything except simulations only on the master
     std::cout << "Running protocol..." << std::endl;
     if (mpOutputHandler)
     {

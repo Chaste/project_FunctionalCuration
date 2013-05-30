@@ -87,10 +87,10 @@ void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
 void NestedSimulation::Run(EnvironmentPtr pResults)
 {
     // The outermost loop checks if we are able to parallelise this nested simulation
-    ///\todo #2341 consider checking if we're already split by a test isolating processes
     boost::shared_ptr<NestedSimulation> p_parallel_sim;
     if (mParalleliseLoops && mpStepper->IsEndFixed() && mpStepper == rGetSteppers().front())
     {
+        assert(!PetscTools::IsSequential()); // Paranoia
         unsigned num_levels = 0u;
         unsigned parallised_level = 0u;
         std::set<std::string> state_names;
@@ -156,6 +156,7 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
     }
     LoopEndHook();
 
+    /// \todo #2341 Ensure isolation stops and available results are replicated if an exception is thrown
     if (p_parallel_sim)
     {
         // Stop isolating processes

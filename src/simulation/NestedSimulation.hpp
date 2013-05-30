@@ -42,6 +42,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * A nested simulation that contains another simulation.  Each time round this
  * simulation's loop, we run the contained simulation.
+ *
+ * \todo #2341 If we're trying to parallelise loops, only run on the master if parallelism isn't possible.
  */
 class NestedSimulation : public AbstractSimulation
 {

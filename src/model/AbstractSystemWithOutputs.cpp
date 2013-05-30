@@ -102,11 +102,18 @@ FileFinder AbstractSystemWithOutputs::GetOutputFolder() const
 
 
 AbstractSystemWithOutputs::AbstractSystemWithOutputs()
-    : mFreeVariable(0.0) ///\todo hack!
+    : mFreeVariable(0.0), ///\todo hack!
+      mHasImplicitReset(false)
 {
 }
 
 
 AbstractSystemWithOutputs::~AbstractSystemWithOutputs()
 {
+}
+
+
+bool AbstractSystemWithOutputs::HasImplicitReset() const
+{
+    return mHasImplicitReset;
 }

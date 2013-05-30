@@ -96,6 +96,13 @@ public:
 
 
     /**
+     * @return whether the model doesn't maintain internal state between successive calls to SolveModel,
+     * and thus implicitly has a reset modifier between calls.
+     */
+    bool HasImplicitReset() const;
+
+
+    /**
      * Set the bindings from prefix to namespace URI used by the protocol for accessing model
      * variables.  The Environment wrappers around this model can then be created and
      * retrieved with rGetEnvironmentMap.
@@ -162,6 +169,9 @@ protected:
 
     /** Where to write any debug/raw output to, if required. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
+
+    /** Whether there is an implicit reset modifier between calls to SolveModel. */
+    bool mHasImplicitReset;
 };
 
 #endif /*ABSTRACTSYSTEMWITHOUTPUTS_HPP_*/

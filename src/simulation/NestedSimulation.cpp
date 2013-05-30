@@ -186,26 +186,29 @@ void NestedSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHan
 
 bool NestedSimulation::CanParallelise(std::set<std::string>& rStatesSaved) const
 {
-    bool has_reset = false;
+    bool has_reset = mpModel->HasImplicitReset();
     // Check whether our own modifiers make it safe
-    for (unsigned i=0; i<mpModifiers->GetNumModifiers(); ++i)
+    if (!has_reset)
     {
-        AbstractSimulationModifierPtr p_modifier = (*mpModifiers)[i];
-        if (p_modifier->IsReset())
+        for (unsigned i=0; i<mpModifiers->GetNumModifiers(); ++i)
         {
-            if (p_modifier->GetWhenApplied() == AbstractSimulationModifier::EVERY_LOOP)
+            AbstractSimulationModifierPtr p_modifier = (*mpModifiers)[i];
+            if (p_modifier->IsReset())
             {
-                if (rStatesSaved.find(p_modifier->GetStateName()) == rStatesSaved.end())
+                if (p_modifier->GetWhenApplied() == AbstractSimulationModifier::EVERY_LOOP)
                 {
-                    has_reset = true;
+                    if (rStatesSaved.find(p_modifier->GetStateName()) == rStatesSaved.end())
+                    {
+                        has_reset = true;
+                    }
                 }
             }
-        }
-        else if (!p_modifier->GetStateName().empty())
-        {
-            // This is a save state modifier, so record the state name used for when testing inner loops
-            // and/or subsequent modifiers in this loop.
-            rStatesSaved.insert(p_modifier->GetStateName());
+            else if (!p_modifier->GetStateName().empty())
+            {
+                // This is a save state modifier, so record the state name used for when testing inner loops
+                // and/or subsequent modifiers in this loop.
+                rStatesSaved.insert(p_modifier->GetStateName());
+            }
         }
     }
     // Check whether our nested simulation's modifiers make it OK

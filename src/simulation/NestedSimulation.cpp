@@ -91,34 +91,27 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
     boost::shared_ptr<NestedSimulation> p_parallel_sim;
     if (mParalleliseLoops && mpStepper->IsEndFixed() && mpStepper == rGetSteppers().front())
     {
-        unsigned total_iterations = 1u;
         unsigned num_levels = 0u;
+        unsigned parallised_level = 0u;
         std::set<std::string> state_names;
         boost::shared_ptr<NestedSimulation> p_sim(this, NullDeleter());
         // Determine the nesting level at which we'll split processing across processes.
-        // We split at the outermost allowable level which yields more iterations than processes,
-        // so that local results are as contiguous as possible.
-        /// \todo #2341 switch to splitting at innermost level for better load balance
+        // We split at the innermost allowable level, leading to the smallest possible chunks of work for load balancing.
         while (p_sim)
         {
-            total_iterations *= p_sim->mpStepper->GetNumberOfOutputPoints();
             ++num_levels;
-            bool can_parallelise = p_sim->CanParallelise(state_names);
-            if (can_parallelise)
+            if (p_sim->CanParallelise(state_names))
             {
                 p_parallel_sim = p_sim;
-                if (total_iterations >= PetscTools::GetNumProcs())
-                {
-                    break;
-                }
+                parallised_level = num_levels;
             }
             p_sim = boost::dynamic_pointer_cast<NestedSimulation>(p_sim->mpNestedSimulation);
         }
         if (p_parallel_sim)
         {
             // Tell the level which can parallelise how to compute which process does what
-            std::vector<unsigned> loop_index_multipliers(num_levels, 1u);
-            for (unsigned i=num_levels-1; i != 0u; --i)
+            std::vector<unsigned> loop_index_multipliers(parallised_level, 1u);
+            for (unsigned i=parallised_level-1; i != 0u; --i)
             {
                 loop_index_multipliers[i-1] = loop_index_multipliers[i] * rGetSteppers()[i]->GetNumberOfOutputPoints();
             }

@@ -1,0 +1,63 @@
+
+namespace oxmeta = "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#"
+
+inputs {
+    s1_interval = 1000
+    steady_state_beats = 1000 # Assume we get to steady state by this point
+    min_s2 = 50  # ms
+    step_s2 = 10 # ms
+}
+
+units {
+    mV = milli volt
+    ms = milli second
+}
+
+model interface {
+    input oxmeta:membrane_stimulus_current_end units ms = 100000000000
+    input oxmeta:membrane_stimulus_current_offset units ms = 0
+    input oxmeta:membrane_stimulus_current_period units ms = 1000
+    
+    output oxmeta:membrane_voltage units mV
+    output oxmeta:time units ms
+    
+    define oxmeta:membrane_stimulus_current = \
+        if (oxmeta:time >= oxmeta:membrane_stimulus_current_offset && oxmeta:time <= oxmeta:membrane_stimulus_current_end &&
+            ((oxmeta:time - oxmeta:membrane_stimulus_current_offset)
+             - (MathML:floor((oxmeta:time - oxmeta:membrane_stimulus_current_offset) /
+                             oxmeta:membrane_stimulus_current_period) * oxmeta:membrane_stimulus_current_period)
+             <= oxmeta:membrane_stimulus_current_duration))
+        then oxmeta:membrane_stimulus_current_amplitude else 0 :: dimensionless * oxmeta:membrane_stimulus_current_amplitude
+}
+
+tasks {
+    # Do a pre-run to get the model to steady-state with the desired S1 stimulus
+    simulation timecourse {
+        range time units ms vector [0, s1_interval * steady_state_beats]
+        modifiers {
+            # Set stimulus period to S1 interval, offset 0ms
+            at start set oxmeta:membrane_stimulus_current_period = s1_interval # ms
+            at start set oxmeta:membrane_stimulus_current_offset = 0           # ms
+            at end save as initial_state
+        }
+    }
+    
+    # Now loop over S2 intervals
+    simulation sim = nested {
+        range count units dimensionless while sim:has_ap[-1] && sim:have_second_ap[-1] == 0 && count < 100
+        nests protocol "SaraInner.txt" {
+            s2_interval = min_s2 + count * step_s2
+            select output have_second_ap
+            select output has_ap
+        }? # Debug the inner protocol
+    }
+}
+
+post-processing {
+    success = sim:have_second_ap[-1]
+    refractory_period = min_s2 + step_s2 * (sim:have_second_ap.NUM_ELEMENTS - 1)
+}
+
+outputs {
+    second_ap_found = sim:have_second_ap units dimensionless "Second AP found"
+}

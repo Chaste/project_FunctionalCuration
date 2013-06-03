@@ -1,0 +1,54 @@
+
+namespace oxmeta = "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#"
+
+inputs {
+    s2_interval = 1000
+    duration = 2000    # How long to simulate for
+}
+
+import "../../../src/proto/library/BasicLibrary.xml"
+import "../../../src/proto/library/CardiacLibrary.xml"
+
+units {
+    mV = milli volt
+    ms = milli second
+}
+
+tasks {
+    simulation sim = timecourse {
+        range time units ms uniform 0:duration
+        modifiers {
+            # Set the gap between stimuli to the S2 interval
+            at start set oxmeta:membrane_stimulus_current_period = s2_interval
+            # And only do one S2 stimulus
+            at start set oxmeta:membrane_stimulus_current_end = s2_interval * 1.5
+        }
+    }
+}
+
+post-processing {
+    # Sanity check for presence of an AP
+    max_dVdt = Max(Grad(sim:time, sim:membrane_voltage))[0]
+    has_ap = max_dVdt > 10
+
+    # Find start and end times for APD90
+    t_ap_starts, t_ap_ends = if has_ap then ApStartAndEnd(sim:membrane_voltage, sim:time, 90, default, 10) else ([0],[1])
+    # We need to ignore 'fake' APs where the second starts before the first ends
+    # The inner map gives us a vector with 1 for each AP starting after the first ends, and 0 elsewhere
+    # The Max gives us a 1-element vector with the maximum of this, and we take its 0'th entry to get a single value
+    have_second_ap = Max(map(lambda start_time: start_time >= t_ap_ends[0], t_ap_starts))[0]
+    # Compute raw APD90s
+    apd90 = if has_ap then Apd(sim:membrane_voltage, sim:time, 90, default, 10) else [0]
+}
+
+outputs {
+    V = sim:membrane_voltage "Transmembrane potential"
+    t = sim:time "Time"
+    apd90 units ms "Action Potential Duration 90%"
+    has_ap units boolean "Whether there was an AP at all"
+    have_second_ap units boolean "Whether there was a second AP"
+}
+
+plots {
+    plot "Voltage timecourse" { V against t }
+}

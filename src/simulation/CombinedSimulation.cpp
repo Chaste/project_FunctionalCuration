@@ -105,3 +105,13 @@ void CombinedSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pH
         p_child_sim->SetOutputFolder(pHandler);
     }
 }
+
+
+void CombinedSimulation::ZeroInitialiseResults()
+{
+    AbstractSimulation::ZeroInitialiseResults();
+    BOOST_FOREACH(AbstractSimulationPtr p_child_sim, mChildSims)
+    {
+        p_child_sim->ZeroInitialiseResults();
+    }
+}

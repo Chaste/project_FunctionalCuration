@@ -35,11 +35,15 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractSimulation.hpp"
 
+#include <cstring> // For memcpy
 #include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/assign/list_of.hpp>
+
+#include "PetscTools.hpp"
+#include "Warnings.hpp"
 
 #include "AbstractSystemWithOutputs.hpp"
 #include "BacktraceException.hpp"
@@ -179,6 +183,87 @@ FileFinder AbstractSimulation::GetOutputFolder() const
 // Methods for creating and collecting simulation results
 //
 
+/**
+ * Replicate distributed results arrays so each process has the full data.
+ *
+ * @param pResults  the results environment
+ * @param rLoc  the location information of the caller, for use if an error occurs
+ */
+void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
+{
+    // Check that all processes have some partial results, and do nothing if not.
+    ///\todo #2341 this is a safety check for cell-based Chaste, which can run a non-parallelisable simulation only on master.
+    /// A nicer solution might be to replicate the full results set to other processes too.
+    {
+        unsigned num_local_results = pResults->GetNumberOfDefinitions();
+        unsigned max_local_results = 0u;
+        int mpi_ret = MPI_Allreduce(&num_local_results, &max_local_results, 1u, MPI_UNSIGNED, MPI_MAX, PetscTools::GetWorld());
+        assert(mpi_ret == MPI_SUCCESS);
+        if (PetscTools::ReplicateBool(num_local_results < max_local_results))
+        {
+            WARNING("Not replicating results since not all processes have all names defined.");
+            return;
+        }
+    }
+    // Replicate all results defined in this environment
+    BOOST_FOREACH(const std::string& r_output_name, pResults->GetDefinedNames())
+    {
+        AbstractValuePtr p_output = pResults->Lookup(r_output_name, rLoc);
+        PROTO_ASSERT2(p_output->IsArray(), "Model produced non-array output " << r_output_name << ".", rLoc);
+        NdArray<double> array = GET_ARRAY(p_output);
+        double* p_data = &(*array.Begin());
+        double* p_result = new double[array.GetNumElements()];
+        int mpi_ret = MPI_Allreduce(p_data, p_result, array.GetNumElements(), MPI_DOUBLE, MPI_SUM, PetscTools::GetWorld());
+        assert(mpi_ret == MPI_SUCCESS);
+        memcpy(p_data, p_result, array.GetNumElements() * sizeof(double));
+    }
+    // Check for any results sub-environments, and replicate them too, recursively.
+    BOOST_FOREACH(const std::string& r_sub_prefix, pResults->rGetSubEnvironmentNames())
+    {
+        EnvironmentPtr p_sub_results
+            = boost::const_pointer_cast<Environment>(pResults->GetDelegateeEnvironment(r_sub_prefix));
+        assert(p_sub_results);
+        ReplicateResults(p_sub_results, rLoc);
+    }
+}
+
+
+/**
+ * A little helper class that optionally isolates processes, and ensures that
+ * if isolation happened it is stopped at the end of the scope (i.e. when the
+ * object is destroyed).
+ */
+class IsolateHere
+{
+public:
+    /**
+     * Create an isolation scope.
+     * @param isolate  whether to isolate processes
+     */
+    IsolateHere(bool isolate)
+        : mDidIsolate(isolate)
+    {
+        if (isolate)
+        {
+            PetscTools::IsolateProcesses(true);
+        }
+    }
+    /**
+     * Stop isolating processes, iff we started.
+     */
+    ~IsolateHere()
+    {
+        if (mDidIsolate)
+        {
+            PetscTools::IsolateProcesses(false);
+        }
+    }
+private:
+    /** Whether we isolated processes. */
+    bool mDidIsolate;
+};
+
+
 EnvironmentPtr AbstractSimulation::Run()
 {
     EnvironmentPtr p_results;
@@ -187,10 +272,41 @@ EnvironmentPtr AbstractSimulation::Run()
     {
         p_results = mpResultsEnvironment;
     }
-    Run(p_results);
+    // If we're parallelising, figure out where to run.
+    // If the simulation supports multiple processes, then run on all available ones.
+    // Otherwise, if the model has an implicit reset then only run on master, since cell-based Chaste breaks otherwise.
+    // For normal models run independently on all processes, to avoid breaking save/reset state and set-variable dependencies.
+    bool run_sim = !mParalleliseLoops;
+    bool replicate_results = false;
+    if (mParalleliseLoops)
+    {
+        ZeroInitialiseResults();
+        // Note that CanParallelise() can have side effects, so must come first and happen once.
+        bool can_parallelise = CanParallelise();
+        run_sim = can_parallelise || PetscTools::AmMaster() || !mpModel->HasImplicitReset();
+        replicate_results = can_parallelise || mpModel->HasImplicitReset();
+    }
+    {
+        IsolateHere isolater(mParalleliseLoops);
+        if (run_sim)
+        {
+            Run(p_results);
+        }
+    }
     if (store_results)
     {
         ResizeOutputs();
+    }
+    /// \todo #2341 Ensure available results are replicated if an exception is thrown by Run(p_results)?
+    if (mParalleliseLoops)
+    {
+        // Replicate the results so each process has a full set
+        if (p_results && replicate_results)
+        {
+            ReplicateResults(p_results, GetLocationInfo());
+        }
+        // Include an explicit barrier to ensure synchronised exit from this method
+        PetscTools::Barrier("AbstractSimulation::Run");
     }
     return mpResultsEnvironment;
 }
@@ -373,4 +489,16 @@ void AbstractSimulation::CreateResultViews()
 void AbstractSimulation::SetParalleliseLoops(bool paralleliseLoops)
 {
     mParalleliseLoops = paralleliseLoops;
+}
+
+
+bool AbstractSimulation::CanParallelise()
+{
+    return false;
+}
+
+
+void AbstractSimulation::ZeroInitialiseResults()
+{
+    mZeroInitialiseArrays = true;
 }

@@ -168,7 +168,6 @@ void Protocol::SetParalleliseLoops(bool paralleliseLoops)
 
 void Protocol::Run()
 {
-    ///\todo #2341 If mParalleliseLoops, run everything except simulations only on the master
     std::cout << "Running protocol..." << std::endl;
     if (mpOutputHandler)
     {
@@ -208,45 +207,53 @@ void Protocol::Run()
     {
         errors.push_back(e);
     }
-    // Post-process the results
-    EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
-    if (errors.empty())
+    if (!mParalleliseLoops || PetscTools::AmMaster())
     {
-        std::cout << "Running post-processing..." << std::endl;
-        try
+        // Post-process the results
+        EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
+        if (errors.empty())
         {
-            p_post_proc_env->ExecuteStatements(mPostProcessing);
+            std::cout << "Running post-processing..." << std::endl;
+            try
+            {
+                p_post_proc_env->ExecuteStatements(mPostProcessing);
+            }
+            catch (const Exception& e)
+            {
+                errors.push_back(e);
+            }
         }
-        catch (const Exception& e)
+        // Transfer requested outputs to mOutputs[""]
+        std::cout << "Recording protocol outputs..." << std::endl;
+        EnvironmentPtr p_proto_outputs = mOutputs[""];
+        BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
         {
-            errors.push_back(e);
+            const std::string& r_loc = p_spec->GetLocationInfo();
+            const std::string& r_ref = p_spec->rGetOutputRef();
+            const std::string& r_name = p_spec->rGetOutputName();
+            try
+            {
+                AbstractValuePtr p_output = p_post_proc_env->Lookup(r_ref, r_loc);
+                if (p_spec->rGetOutputType() == "Post-processed")
+                {
+                    const std::string& r_units = p_spec->rGetOutputUnits();
+                    if (!r_units.empty())
+                    {
+                        p_output->SetUnits(r_units);
+                    }
+                }
+                p_proto_outputs->DefineName(r_name, p_output, r_loc);
+            }
+            catch (const Exception& e)
+            {
+                errors.push_back(e);
+            }
         }
     }
-    // Transfer requested outputs to mOutputs[""]
-    std::cout << "Recording protocol outputs..." << std::endl;
-    EnvironmentPtr p_proto_outputs = mOutputs[""];
-    BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
+    if (mParalleliseLoops)
     {
-        const std::string& r_loc = p_spec->GetLocationInfo();
-        const std::string& r_ref = p_spec->rGetOutputRef();
-        const std::string& r_name = p_spec->rGetOutputName();
-        try
-        {
-            AbstractValuePtr p_output = p_post_proc_env->Lookup(r_ref, r_loc);
-            if (p_spec->rGetOutputType() == "Post-processed")
-            {
-                const std::string& r_units = p_spec->rGetOutputUnits();
-                if (!r_units.empty())
-                {
-                    p_output->SetUnits(r_units);
-                }
-            }
-            p_proto_outputs->DefineName(r_name, p_output, r_loc);
-        }
-        catch (const Exception& e)
-        {
-            errors.push_back(e);
-        }
+        // Ensure all processes are in sync before the protocol finishes
+        PetscTools::Barrier("Protocol::Run");
     }
     if (mpOutputHandler)
     {
@@ -321,13 +328,21 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
     }
     if (mpOutputHandler)
     {
-        std::cout << "Writing results to file..." << std::endl;
-        WriteToFile(fileNameBase);
-        // Indicate successful completion
-        std::cout << "Done!" << std::endl;
-        out_stream p_file = mpOutputHandler->OpenOutputFile("success");
-        (*p_file) << "Protocol completed successfully." << std::endl;
-        p_file->close();
+        if (PetscTools::AmMaster())
+        {
+            std::cout << "Writing results to file..." << std::endl;
+            WriteToFile(fileNameBase);
+            // Indicate successful completion
+            std::cout << "Done!" << std::endl;
+            out_stream p_file = mpOutputHandler->OpenOutputFile("success");
+            (*p_file) << "Protocol completed successfully." << std::endl;
+            p_file->close();
+        }
+    }
+    if (mParalleliseLoops)
+    {
+        // Ensure all processes are in sync before the protocol finishes
+        PetscTools::Barrier("Protocol::RunAndWrite");
     }
 }
 

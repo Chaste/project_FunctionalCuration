@@ -42,8 +42,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * A nested simulation that contains another simulation.  Each time round this
  * simulation's loop, we run the contained simulation.
- *
- * \todo #2341 If we're trying to parallelise loops, only run on the master if parallelism isn't possible.
  */
 class NestedSimulation : public AbstractSimulation
 {
@@ -73,6 +71,12 @@ public:
      */
     void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
 
+    /**
+     * Ensure that all results arrays are initialised with zeros so that they can easily be replicated
+     * by doing a global sum.
+     */
+    virtual void ZeroInitialiseResults();
+
 protected:
     /**
      * Run a simulation, filling in the results.
@@ -80,6 +84,11 @@ protected:
      * @param pResults  an Environment to be filled in with results
      */
     void Run(EnvironmentPtr pResults);
+
+    /**
+     * @return  whether this simulation is capable of running on more than one process.
+     */
+    virtual bool CanParallelise();
 
 private:
     /** The simulation nested inside this one. */
@@ -104,7 +113,7 @@ private:
      * @param rStatesSaved  the names of model states saved by simulations wrapping this one
      * @return whether the iterations of this loop of the simulation can be farmed out to separate processes.
      */
-    bool CanParallelise(std::set<std::string>& rStatesSaved) const;
+    bool CanParalleliseHere(std::set<std::string>& rStatesSaved) const;
 
     /**
      * Set that this simulation can be parallelised, and what to multiply each loop index by to obtain

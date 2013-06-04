@@ -165,6 +165,12 @@ public:
      */
     void SetParalleliseLoops(bool paralleliseLoops);
 
+    /**
+     * Ensure that all results arrays are initialised with zeros so that they can easily be replicated
+     * by doing a global sum.
+     */
+    virtual void ZeroInitialiseResults();
+
 protected:
     /**
      * Run a simulation, filling in the results if requested.
@@ -227,6 +233,12 @@ protected:
      * when looking up names with our prefix.
      */
     void CreateResultViews();
+
+    /**
+     * @return  whether this simulation is capable of running on more than one process.
+     * Returns false unless overridden in a subclass.
+     */
+    virtual bool CanParallelise();
 
     /**
      * The model the protocol is being run on.

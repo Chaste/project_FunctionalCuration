@@ -79,6 +79,12 @@ public:
      */
     void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
 
+    /**
+     * Ensure that all results arrays are initialised with zeros so that they can easily be replicated
+     * by doing a global sum.
+     */
+    virtual void ZeroInitialiseResults();
+
 protected:
     /**
      * Run a simulation, filling in the results if requested.

@@ -37,8 +37,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/foreach.hpp>
 #include <iostream>
-#include <sstream>
-#include <cstring> // For memcpy
 #include "PetscTools.hpp"
 #include "NullDeleter.hpp"
 #include "BacktraceException.hpp"
@@ -54,79 +52,8 @@ NestedSimulation::NestedSimulation(AbstractSimulationPtr pNestedSimulation,
 }
 
 
-/**
- * Replicate distributed results arrays so each process has the full data.
- *
- * @param pResults  the results environment
- * @param rLoc  the location information of the caller, for use if an error occurs
- */
-void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
-{
-    BOOST_FOREACH(const std::string& r_output_name, pResults->GetDefinedNames())
-    {
-        AbstractValuePtr p_output = pResults->Lookup(r_output_name, rLoc);
-        PROTO_ASSERT2(p_output->IsArray(), "Model produced non-array output " << r_output_name << ".", rLoc);
-        NdArray<double> array = GET_ARRAY(p_output);
-        double* p_data = &(*array.Begin());
-        double* p_result = new double[array.GetNumElements()];
-        int mpi_ret = MPI_Allreduce(p_data, p_result, array.GetNumElements(), MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD);
-        assert(mpi_ret == MPI_SUCCESS);
-        memcpy(p_data, p_result, array.GetNumElements() * sizeof(double));
-    }
-    // Check for any results sub-environments, and replicate them too, recursively.
-    BOOST_FOREACH(const std::string& r_sub_prefix, pResults->rGetSubEnvironmentNames())
-    {
-        EnvironmentPtr p_sub_results
-            = boost::const_pointer_cast<Environment>(pResults->GetDelegateeEnvironment(r_sub_prefix));
-        assert(p_sub_results);
-        ReplicateResults(p_sub_results, rLoc);
-    }
-}
-
-
 void NestedSimulation::Run(EnvironmentPtr pResults)
 {
-    // The outermost loop checks if we are able to parallelise this nested simulation
-    boost::shared_ptr<NestedSimulation> p_parallel_sim;
-    if (mParalleliseLoops && mpStepper->IsEndFixed() && mpStepper == rGetSteppers().front())
-    {
-        assert(!PetscTools::IsSequential()); // Paranoia
-        unsigned num_levels = 0u;
-        unsigned parallised_level = 0u;
-        std::set<std::string> state_names;
-        boost::shared_ptr<NestedSimulation> p_sim(this, NullDeleter());
-        // Determine the nesting level at which we'll split processing across processes.
-        // We split at the innermost allowable level, leading to the smallest possible chunks of work for load balancing.
-        while (p_sim)
-        {
-            ++num_levels;
-            if (p_sim->CanParallelise(state_names))
-            {
-                p_parallel_sim = p_sim;
-                parallised_level = num_levels;
-            }
-            p_sim = boost::dynamic_pointer_cast<NestedSimulation>(p_sim->mpNestedSimulation);
-        }
-        if (p_parallel_sim)
-        {
-            // Tell the level which can parallelise how to compute which process does what
-            std::vector<unsigned> loop_index_multipliers(parallised_level, 1u);
-            for (unsigned i=parallised_level-1; i != 0u; --i)
-            {
-                loop_index_multipliers[i-1] = loop_index_multipliers[i] * rGetSteppers()[i]->GetNumberOfOutputPoints();
-            }
-            p_parallel_sim->SetParallelMultipliers(loop_index_multipliers);
-            // We need to initialise results arrays with zeros so we can easily replicate results at the end
-            while (p_sim)
-            {
-                p_sim->mpNestedSimulation->mZeroInitialiseArrays = true;
-                p_sim = boost::dynamic_pointer_cast<NestedSimulation>(p_sim->mpNestedSimulation);
-            }
-            // Use process isolation to parallelise in case the model contains communication barriers
-            PetscTools::IsolateProcesses();
-        }
-    }
-
     for (mpStepper->Reset(); !mpStepper->AtEnd(); mpStepper->Step())
     {
         if (!mParallelMultipliers.empty())
@@ -151,19 +78,6 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
         LoopBodyEndHook();
     }
     LoopEndHook();
-
-    /// \todo #2341 Ensure isolation stops and available results are replicated if an exception is thrown
-    if (p_parallel_sim)
-    {
-        // Stop isolating processes
-        PetscTools::IsolateProcesses(false);
-        PetscTools::Barrier("NestedSimulation::Run");
-        // Replicate the results so each process has a full set
-        if (pResults)
-        {
-            ReplicateResults(pResults, GetLocationInfo());
-        }
-    }
 }
 
 
@@ -181,7 +95,44 @@ void NestedSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHan
 }
 
 
-bool NestedSimulation::CanParallelise(std::set<std::string>& rStatesSaved) const
+bool NestedSimulation::CanParallelise()
+{
+    // The outermost loop checks if we are able to parallelise this nested simulation
+    boost::shared_ptr<NestedSimulation> p_parallel_sim;
+    if (mParalleliseLoops && mpStepper->IsEndFixed() && mpStepper == rGetSteppers().front())
+    {
+        unsigned num_levels = 0u;
+        unsigned parallised_level = 0u;
+        std::set<std::string> state_names;
+        boost::shared_ptr<NestedSimulation> p_sim(this, NullDeleter());
+        // Determine the nesting level at which we'll split processing across processes.
+        // We split at the innermost allowable level, leading to the smallest possible chunks of work for load balancing.
+        while (p_sim)
+        {
+            ++num_levels;
+            if (p_sim->CanParalleliseHere(state_names))
+            {
+                p_parallel_sim = p_sim;
+                parallised_level = num_levels;
+            }
+            p_sim = boost::dynamic_pointer_cast<NestedSimulation>(p_sim->mpNestedSimulation);
+        }
+        if (p_parallel_sim)
+        {
+            // Tell the level which can parallelise how to compute which process does what
+            std::vector<unsigned> loop_index_multipliers(parallised_level, 1u);
+            for (unsigned i=parallised_level-1; i != 0u; --i)
+            {
+                loop_index_multipliers[i-1] = loop_index_multipliers[i] * rGetSteppers()[i]->GetNumberOfOutputPoints();
+            }
+            p_parallel_sim->SetParallelMultipliers(loop_index_multipliers);
+        }
+    }
+    return p_parallel_sim;
+}
+
+
+bool NestedSimulation::CanParalleliseHere(std::set<std::string>& rStatesSaved) const
 {
     bool has_reset = mpModel->HasImplicitReset();
     // Check whether our own modifiers make it safe
@@ -242,4 +193,11 @@ bool NestedSimulation::CanParallelise(std::set<std::string>& rStatesSaved) const
 void NestedSimulation::SetParallelMultipliers(const std::vector<unsigned>& rMultipliers)
 {
     mParallelMultipliers = rMultipliers;
+}
+
+
+void NestedSimulation::ZeroInitialiseResults()
+{
+    AbstractSimulation::ZeroInitialiseResults();
+    mpNestedSimulation->ZeroInitialiseResults();
 }

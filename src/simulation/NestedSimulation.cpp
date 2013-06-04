@@ -129,7 +129,6 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
 
     for (mpStepper->Reset(); !mpStepper->AtEnd(); mpStepper->Step())
     {
-        std::string proc_info;
         if (!mParallelMultipliers.empty())
         {
             // Figure out if we should do this iteration
@@ -142,13 +141,10 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
             {
                 continue; // Someone else will do it
             }
-            std::stringstream proc_info_stream;
-            proc_info_stream << " on process " << PetscTools::GetMyRank();
-            proc_info = proc_info_stream.str();
         }
         std::cout << "Nested simulation " << mpStepper->GetIndexName() << " step "
-                  << mpStepper->GetCurrentOutputNumber() << " value " << mpStepper->GetCurrentOutputPoint()
-                  << proc_info << "..." << std::endl;
+                  << mpStepper->GetCurrentOutputNumber() << " (value " << mpStepper->GetCurrentOutputPoint()
+                  << ") on process " << PetscTools::GetMyRank() << "..." << std::endl;
         LoopBodyStartHook();
         // Run the nested simulation, which will add any outputs produced
         mpNestedSimulation->Run(pResults);

@@ -185,7 +185,8 @@ void Protocol::Run()
         BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
         {
             const std::string prefix = p_sim->GetOutputsPrefix();
-            std::cout << "Running simulation " << simulation_number << " " << prefix << "..." << std::endl;
+            std::cout << "Running simulation " << simulation_number << " " << prefix
+                      << " on process " << PetscTools::GetMyRank() << "..." << std::endl;
             p_sim->InitialiseSteppers();
             p_sim->SetParalleliseLoops(mParalleliseLoops);
             p_sim->Run();

@@ -178,8 +178,8 @@ public:
 
         // We can do reverse views too
         view2d_indices = boost::assign::list_of(R(2))             // Last element from dim 0
-                                               (R(R::END, -2, 1)) // Dim 1 reversed step 2 (elts 3, 1)
-                                               (R(2, -1, 0));     // Whole of dim 2 reversed
+                                               (R(R::END, -2, 0)) // Dim 1 reversed step 2 (elts 3, 1)
+                                               (R(-1, -1, -3));   // Whole of dim 2 reversed
         view2d = arr[view2d_indices];
         TS_ASSERT_EQUALS(view2d.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(view2d.GetNumElements(), 1u*2u*2u);
@@ -260,9 +260,9 @@ public:
 
         // Check we can take a view missing 'internal' dimensions
         RangeSpec view_indices = boost::assign::list_of(R(0, 2, R::END))  // First & last elements from dim 0
-                                                       (R(R::END, -2, 1)) // Dim 1 reversed step 2 (elts 3, 1)
+                                                       (R(R::END, -2, 0)) // Dim 1 reversed step 2 (elts 3, 1)
                                                        (R(-1))            // Last element of dim 2
-                                                       (R(2, -1, 0));     // First 2 elements of dim 3 reversed
+                                                       (R(1, -1, -8));    // First 2 elements of dim 3 reversed
         Array view = arr[view_indices];
         TS_ASSERT_EQUALS(view.GetNumDimensions(), 3u);
         TS_ASSERT_EQUALS(view.GetNumElements(), 2u*2u*2u);

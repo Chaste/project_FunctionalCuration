@@ -215,7 +215,7 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
         RangeIndex begin = r.mBegin;
         if (begin == Range::END)
         {
-            if (r.mStep < 0) begin = mpInternalData->mExtents[dim];
+            if (r.mStep < 0) begin = mpInternalData->mExtents[dim] - 1;
             else begin = 0u;
         }
         else if (begin < 0)
@@ -228,15 +228,16 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
         RangeIndex end = r.mEnd;
         if (end == Range::END)
         {
-            if (r.mStep < 0) end = 0u;
+            if (r.mStep < 0) end = -1; // NB: Half-open interval so end point not included
             else end = mpInternalData->mExtents[dim];
         }
         else if (end < 0)
         {
             end = mpInternalData->mExtents[dim] + end;
-            ASSERT_MSG(end >= 0, "Cannot end a range at a negative index; got "
-                       << end << " even after subtracting from dimension " << dim << " size"
-                       << mpInternalData->mExtents[dim] << ".");
+            ASSERT_MSG(end >= 0 || (end == -1 && r.mStep < 0),
+                       "Cannot end a range at a negative index; got " << end <<
+                       " even after subtracting from dimension " << dim <<
+                       " size" << mpInternalData->mExtents[dim] << ".");
         }
 
         if (r.mStep != 0) // Not a degenerate range
@@ -250,11 +251,6 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
             ASSERT_MSG(r.mStep * (end-begin) > 0, "Range for dimension " << dim << " is inconsistent: "
                        << "step is " << r.mStep << " but (end-begin) is " << end-begin << ".");
             extents.push_back((Index)ceil((end - begin) / (double)r.mStep));
-            if (r.mStep < 0)
-            {
-                assert(begin > 0); // This is covered by the assertions above, but let's be explicit
-                begin--; // Avoid having to have different behaviour when indexing below
-            }
         }
         else
         {
@@ -264,6 +260,7 @@ NdArray<DATA> NdArray<DATA>::operator[](const std::vector<Range>& rRanges)
             ASSERT_MSG(end == begin, "When the step is zero the start and end of a range must be equal; "
                        << end << " != " << begin << " for dimension " << dim << ".");
         }
+        assert(begin >= 0); // This is guaranteed by tests above, but let's be explicit
         begins[dim] = begin;
     }
     // Create the view array

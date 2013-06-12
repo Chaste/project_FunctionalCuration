@@ -36,7 +36,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NestedSimulation.hpp"
 
 #include <boost/foreach.hpp>
+#include <boost/make_shared.hpp>
 #include <iostream>
+#include <sstream>
 #include "PetscTools.hpp"
 #include "NullDeleter.hpp"
 #include "BacktraceException.hpp"
@@ -72,6 +74,16 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
         std::cout << "Nested simulation " << mpStepper->GetIndexName() << " step "
                   << mpStepper->GetCurrentOutputNumber() << " (value " << mpStepper->GetCurrentOutputPoint()
                   << ") on process " << PetscTools::GetMyRank() << "..." << std::endl;
+        if (GetTrace() && mpOutputHandler)
+        {
+            // Set a run-specific subfolder for the nested simulation to save debug results in
+            std::stringstream run_dir;
+            run_dir << "run_" << mpStepper->GetCurrentOutputNumber();
+            boost::shared_ptr<OutputFileHandler> p_this_run = boost::make_shared<OutputFileHandler>(mpOutputHandler->FindFile(run_dir.str()));
+            mpNestedSimulation->SetOutputFolder(p_this_run);
+            // Get it to trace too, for saner semantics
+            mpNestedSimulation->SetTrace();
+        }
         LoopBodyStartHook();
         // Run the nested simulation, which will add any outputs produced
         mpNestedSimulation->Run(pResults);

@@ -60,6 +60,12 @@ public:
         runner.RunProtocol();
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
+
+        // Test that tracing nested simulations works, by checking that some "raw results" folders are present (or not)
+        TS_ASSERT(FileFinder(dirname + "/simulation_two_level_no/run_0/run_1", RelativeTo::ChasteTestOutput).Exists());
+        TS_ASSERT(FileFinder(dirname + "/simulation_three_level_yes1/run_2/run_0/run_1", RelativeTo::ChasteTestOutput).Exists());
+        TS_ASSERT(FileFinder(dirname + "/simulation_three_level_yes2/run_2/run_1", RelativeTo::ChasteTestOutput).Exists());
+        TS_ASSERT(!FileFinder(dirname + "/simulation_three_level_yes2/run_2/run_0/run_1", RelativeTo::ChasteTestOutput).Exists());
     }
 };
 

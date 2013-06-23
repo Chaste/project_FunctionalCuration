@@ -98,7 +98,6 @@ void ProtocolFileFinder::ConvertIfNeeded()
     if (GetExtension() != ".xml")
     {
         mOriginalFinder = *this; // The same line above doesn't get executed if the finder has been re-targeted
-        EXCEPT_IF_NOT(system(NULL));
         // Call a Python script to convert the protocol, and obtain the resulting path from it
         OutputFileHandler handler("ProtocolConverter", false);
         FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);

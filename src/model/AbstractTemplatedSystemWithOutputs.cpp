@@ -114,7 +114,7 @@ EnvironmentCPtr AbstractTemplatedSystemWithOutputs<VECTOR>::GetOutputs()
     EnvironmentPtr p_outputs(new Environment);
 
     bool computed_derived_quantities = false;
-    VECTOR derived_quantities;
+    VECTOR derived_quantities = CreateEmptyVector<VECTOR>();
     const std::string loc_info("Model " + p_this->GetSystemName());
     const unsigned num_normal_outputs = mOutputsInfo.size();
 

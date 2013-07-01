@@ -199,6 +199,7 @@ void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
         unsigned max_local_results = 0u;
         int mpi_ret = MPI_Allreduce(&num_local_results, &max_local_results, 1u, MPI_UNSIGNED, MPI_MAX, PetscTools::GetWorld());
         assert(mpi_ret == MPI_SUCCESS);
+        UNUSED_OPT(mpi_ret);
         if (PetscTools::ReplicateBool(num_local_results < max_local_results))
         {
             WARNING("Not replicating results since not all processes have all names defined.");
@@ -215,6 +216,7 @@ void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
         double* p_result = new double[array.GetNumElements()];
         int mpi_ret = MPI_Allreduce(p_data, p_result, array.GetNumElements(), MPI_DOUBLE, MPI_SUM, PetscTools::GetWorld());
         assert(mpi_ret == MPI_SUCCESS);
+        UNUSED_OPT(mpi_ret);
         memcpy(p_data, p_result, array.GetNumElements() * sizeof(double));
     }
     // Check for any results sub-environments, and replicate them too, recursively.

@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Environment.hpp"
 
 #include <sstream>
+#include <cassert>
 #include <boost/foreach.hpp>
 
 #include "BacktraceException.hpp"

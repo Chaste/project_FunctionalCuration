@@ -196,7 +196,7 @@ public:
     /** Get the statements defining the protocol inputs. */
     std::vector<AbstractStatementPtr>& rGetInputStatements();
 
-    /**Get the library of definitions in this protocol. */
+    /** Get the library of definitions in this protocol. */
     Environment& rGetLibrary();
 
     /** Get the statements comprising the library part of the protocol. */

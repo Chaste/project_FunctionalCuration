@@ -272,9 +272,11 @@ public:
         ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_find_index.txt", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
+        std::vector<AbstractStatementPtr>& r_library = p_proto->rGetLibraryStatements();
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
         EnvironmentPtr p_env(new Environment);
         Environment& env = *p_env; // Save typing!
+        env.ExecuteStatements(r_library);
         env.ExecuteStatements(r_program);
     }
 

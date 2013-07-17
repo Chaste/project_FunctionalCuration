@@ -116,6 +116,7 @@ public:
         }
 
         // Check the graphs
+        ///\todo (#1999) this only works for gnuplot 4.2
         std::vector<std::string> graph_names = boost::assign::list_of("Simple_uniform_timecourse_-_c1")
             ("Simple_repetition_-_c2")("Uniform_timecourse_by_repeatedTask_-_c3")
             ("Setting_model_variable_-_c4")("Test_functional_range_-_c5")
@@ -126,6 +127,7 @@ public:
             FileFinder new_graph = handler.FindFile(r_graph_name + ".eps");
             FileComparison comp(ref_graph, new_graph);
             comp.SetIgnoreCommentLines(false);
+            comp.SetIgnoreLinesBeginningWith("%");
             comp.IgnoreLinesContaining("CreationDate");
             comp.IgnoreLinesContaining("Title");
             comp.IgnoreLinesContaining("Author");

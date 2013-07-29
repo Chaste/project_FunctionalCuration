@@ -101,7 +101,7 @@ void ProtocolFileFinder::ConvertIfNeeded()
         // Call a Python script to convert the protocol, and obtain the resulting path from it
         OutputFileHandler handler("ProtocolConverter", false);
         FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
-        FileFinder converter("ParseCompactSyntax.py", this_file);
+        FileFinder converter("CompactSyntaxParser.py", this_file);
         std::string cmd = "/usr/bin/env python \"" + converter.GetAbsolutePath()
                 + "\" \"" + mOriginalFinder.GetAbsolutePath()
                 + "\" \"" + handler.GetOutputDirectoryFullPath() + '"';

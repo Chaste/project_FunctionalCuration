@@ -54,6 +54,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BacktraceException.hpp"
 #include "ExceptionSet.hpp"
 #include "DebugProto.hpp"
+#include "ProtocolTimer.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
 typedef std::pair<std::string, std::string> StringPair;
@@ -168,6 +169,8 @@ void Protocol::SetParalleliseLoops(bool paralleliseLoops)
 
 void Protocol::Run()
 {
+    ProtocolTimer::BeginEvent(ProtocolTimer::RUN_PROTOCOL);
+    ProtocolTimer::BeginEvent(ProtocolTimer::SETUP);
     std::cout << "Running protocol..." << std::endl;
     if (mpOutputHandler)
     {
@@ -177,6 +180,8 @@ void Protocol::Run()
     // If we get an error at any stage, we want to ensure as many partial results as possible
     // are stored, but still report the error(s)
     std::vector<Exception> errors;
+    ProtocolTimer::EndEvent(ProtocolTimer::SETUP);
+    ProtocolTimer::BeginEvent(ProtocolTimer::SIMULATE);
     // Run the simulation(s)
     try
     {
@@ -207,6 +212,8 @@ void Protocol::Run()
     {
         errors.push_back(e);
     }
+    ProtocolTimer::EndEvent(ProtocolTimer::SIMULATE);
+    ProtocolTimer::BeginEvent(ProtocolTimer::POSTPROCESS);
     if (!mParalleliseLoops || PetscTools::AmMaster())
     {
         // Post-process the results
@@ -264,6 +271,8 @@ void Protocol::Run()
         THROW_EXCEPTIONS(errors);
     }
     std::cout << "Finished running protocol." << std::endl;
+    ProtocolTimer::EndEvent(ProtocolTimer::POSTPROCESS);
+    ProtocolTimer::EndEvent(ProtocolTimer::RUN_PROTOCOL);
 }
 
 
@@ -293,6 +302,7 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 
 void Protocol::RunAndWrite(const std::string fileNameBase)
 {
+    ProtocolTimer::BeginEvent(ProtocolTimer::ALL);
     // Record provenance info
     if (mpOutputHandler)
     {
@@ -344,6 +354,7 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
         // Ensure all processes are in sync before the protocol finishes
         PetscTools::Barrier("Protocol::RunAndWrite");
     }
+    ProtocolTimer::EndEvent(ProtocolTimer::ALL);
 }
 
 
@@ -381,6 +392,7 @@ std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec,
 
 void Protocol::WriteToFile(const std::string& rFileNameBase) const
 {
+    ProtocolTimer::BeginEvent(ProtocolTimer::WRITE_OUTPUTS);
     if (!mpOutputHandler)
     {
         EXCEPTION("SetOutputFolder must be called prior to using WriteToFile.");
@@ -535,6 +547,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
         }
         p_file->close();
     }
+    ProtocolTimer::EndEvent(ProtocolTimer::WRITE_OUTPUTS);
 
     GeneratePlots(rFileNameBase);
 
@@ -572,6 +585,7 @@ std::string GetAxisLabel(std::string label, const std::string& rUnits)
 
 void Protocol::GeneratePlots(const std::string& rFileNameBase) const
 {
+    ProtocolTimer::BeginEvent(ProtocolTimer::WRITE_PLOTS);
     const Environment& r_outputs = rGetOutputsCollection();
 
     // \todo #1999 LOADS OF TESTS!!
@@ -808,6 +822,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
             PlotWithGnuplot(p_plot_spec, file_name, total_num_traces, x_length, label_x, label_y, true);
         }
     }
+    ProtocolTimer::EndEvent(ProtocolTimer::WRITE_PLOTS);
 }
 
 

@@ -47,6 +47,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractDynamicallyLoadableEntity.hpp"
 
 #include "ProtocolParser.hpp"
+#include "ProtocolTimer.hpp"
 
 
 typedef N_Vector VECTOR;
@@ -57,6 +58,9 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
                                bool optimiseModel)
     : mHandler(rOutputFolder)
 {
+    ProtocolTimer::Enable();
+    ProtocolTimer::BeginEvent(ProtocolTimer::ALL);
+    ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_MODEL);
     std::cout << "Running protocol '" << rProtoXmlFile.rGetOriginalSource().GetAbsolutePath() << "' on model '"
               << rModelFile.GetAbsolutePath() << "' and writing output to "
               << mHandler.GetOutputDirectoryFullPath() << std::endl;
@@ -82,8 +86,10 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     assert(dynamic_cast<AbstractDynamicallyLoadableEntity*>(p_cell.get()));
     boost::shared_ptr<AbstractSystemWithOutputs> p_model = boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(p_cell);
     assert(p_model);
+    ProtocolTimer::EndEvent(ProtocolTimer::LOAD_MODEL);
 
     // Load the XML protocol
+    ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_PROTO);
     ProtocolParser parser;
     mpProtocol = parser.ParseFile(rProtoXmlFile);
     mpProtocol->SetOutputFolder(mHandler);
@@ -93,6 +99,8 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     p_cell->SetTolerances(/*rel*/1e-6, /*abs*/1e-8); // Guard against changes to defaults
     p_cell->SetAutoReset(false); // Speedier simulations
     mpProtocol->SetModel(p_model);
+    ProtocolTimer::EndEvent(ProtocolTimer::LOAD_PROTO);
+    ProtocolTimer::EndEvent(ProtocolTimer::ALL);
 }
 
 void ProtocolRunner::SetPngOutput(bool writePng)
@@ -104,6 +112,8 @@ void ProtocolRunner::SetPngOutput(bool writePng)
 void ProtocolRunner::RunProtocol()
 {
     mpProtocol->RunAndWrite("outputs");
+    ProtocolTimer::Headings();
+    ProtocolTimer::Report();
 }
 
 

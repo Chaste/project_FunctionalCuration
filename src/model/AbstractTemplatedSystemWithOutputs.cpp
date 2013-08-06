@@ -121,7 +121,7 @@ EnvironmentCPtr AbstractTemplatedSystemWithOutputs<VECTOR>::GetOutputs()
     // Add 'normal' outputs to the environment (single values per output step)
     for (unsigned i=0; i<num_normal_outputs; i++)
     {
-        double value;
+        double value = DOUBLE_UNSET;
         switch (mOutputsInfo[i].second)
         {
             case FREE:

@@ -38,6 +38,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/foreach.hpp>
 #include "OutputFileHandler.hpp"
 #include "BacktraceException.hpp"
+#include "ProtocolTimer.hpp"
 
 
 NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
@@ -61,6 +62,9 @@ void NestedProtocol::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pMode
 
 void NestedProtocol::Run(EnvironmentPtr pResults)
 {
+    // Temporarily disable the event handler, so the nested protocol doesn't record its own timings!
+    bool timer_enabled = ProtocolTimer::IsEnabled();
+    ProtocolTimer::Disable();
     // Set protocol inputs, temporarily making the environment in which they are evaluated
     // delegate to our environment (bit of a hack really!)
     typedef std::pair<const std::string, AbstractExpressionPtr> StringExprPair;
@@ -105,4 +109,9 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
         p_selected_outputs->DefineName(r_output_name, p_value, GetLocationInfo());
     }
     AddIterationOutputs(pResults, p_selected_outputs);
+    // Re-enable the event handler if it was in use
+    if (timer_enabled)
+    {
+        ProtocolTimer::Enable();
+    }
 }

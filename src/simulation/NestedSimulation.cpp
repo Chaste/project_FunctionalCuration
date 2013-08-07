@@ -79,7 +79,7 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
             // Set a run-specific subfolder for the nested simulation to save debug results in
             std::stringstream run_dir;
             run_dir << "run_" << mpStepper->GetCurrentOutputNumber();
-            boost::shared_ptr<OutputFileHandler> p_this_run = boost::make_shared<OutputFileHandler>(mpOutputHandler->FindFile(run_dir.str()));
+            boost::shared_ptr<OutputFileHandler> p_this_run = boost::make_shared<OutputFileHandler>(mpOutputHandler->FindFile(run_dir.str()), false);
             mpNestedSimulation->SetOutputFolder(p_this_run);
             // Get it to trace too, for saner semantics
             mpNestedSimulation->SetTrace();

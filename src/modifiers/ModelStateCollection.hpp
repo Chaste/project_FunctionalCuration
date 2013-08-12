@@ -67,10 +67,10 @@ public:
     void SetModelState(boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > pModel,
                        const std::string& rName);
 
-private:
     /** Opaque model state type. */
     class AbstractModelState;
 
+private:
     /** The states stored in this collection. */
     std::map<std::string, boost::shared_ptr<AbstractModelState> > mStates;
 };

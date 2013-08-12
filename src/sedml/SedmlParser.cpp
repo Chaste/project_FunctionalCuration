@@ -70,6 +70,17 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace xercesc;
 
+
+#ifdef __INTEL_COMPILER
+// icpc breaks on the normal foreach in this case!
+#define ICPC_FOREACH(item, list, name) \
+    std::vector<DOMElement*> name = list; \
+    BOOST_FOREACH(item, name)
+#else
+#define ICPC_FOREACH(item, list, name) BOOST_FOREACH(item, list)
+#endif
+
+
 SedmlParser::SedmlParser()
     : mSedmlNs("http://sed-ml.org/")
 {
@@ -177,8 +188,7 @@ void SedmlParser::ParseSimulations(const DOMElement* pRootElt)
     PROTO_ASSERT(list_of_sims.size() < 2u, "Only one listOfSimulations element may be present.");
     if (list_of_sims.size() == 1)
     {
-        std::vector<DOMElement*> simulations = XmlTools::GetChildElements(list_of_sims.front());
-        BOOST_FOREACH(const DOMElement* p_sim, simulations)
+        BOOST_FOREACH(const DOMElement* p_sim, XmlTools::GetChildElements(list_of_sims.front()))
         {
             SetContext(p_sim);
             const std::string id(GetRequiredAttr(p_sim, "id"));
@@ -299,7 +309,7 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
     else if (task_type == "combinedTask")
     {
         std::vector<AbstractSimulationPtr> child_sims;
-        BOOST_FOREACH(const DOMElement* p_subtask_list, XmlTools::FindElements(pDefnElt, "listOfSubTasks"))
+        ICPC_FOREACH(const DOMElement* p_subtask_list, XmlTools::FindElements(pDefnElt, "listOfSubTasks"), subtasks)
         {
             BOOST_FOREACH(const DOMElement* p_subtask, XmlTools::GetChildElements(p_subtask_list))
             {
@@ -382,7 +392,7 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
         // We're simulating the same model as our nested task
         p_sim->SetModel(p_nested_sim->GetModel());
         // Add modifiers according to the listOfChanges
-        BOOST_FOREACH(const DOMElement* p_change_elt, XmlTools::FindElements(pDefnElt, "listOfChanges/setValue"))
+        ICPC_FOREACH(const DOMElement* p_change_elt, XmlTools::FindElements(pDefnElt, "listOfChanges/setValue"), change_elts)
         {
             std::map<std::string, std::string> var_name_map;
             const std::string range_ref(GetOptionalAttr(p_change_elt, "range"));
@@ -409,7 +419,7 @@ AbstractSimulationPtr SedmlParser::ParseTask(const xercesc::DOMElement* pDefnElt
 std::map<std::string, AbstractStepperPtr> SedmlParser::ParseRanges(const xercesc::DOMElement* pTaskDefn)
 {
     std::map<std::string, AbstractStepperPtr> ranges;
-    BOOST_FOREACH(const DOMElement* p_range_list, XmlTools::FindElements(pTaskDefn, "listOfRanges"))
+    ICPC_FOREACH(const DOMElement* p_range_list, XmlTools::FindElements(pTaskDefn, "listOfRanges"), range_lists)
     {
         BOOST_FOREACH(const DOMElement* p_range, XmlTools::GetChildElements(p_range_list))
         {
@@ -468,7 +478,7 @@ void SedmlParser::ParseTasks(const DOMElement* pRootElt)
     mTasks.clear();
     mTaskDefinitions.clear();
     // Firstly set up the id->definition element mapping
-    BOOST_FOREACH(const DOMElement* p_task_list, XmlTools::FindElements(pRootElt, "listOfTasks"))
+    ICPC_FOREACH(const DOMElement* p_task_list, XmlTools::FindElements(pRootElt, "listOfTasks"), task_lists)
     {
         BOOST_FOREACH(const DOMElement* p_task, XmlTools::GetChildElements(p_task_list))
         {
@@ -585,7 +595,7 @@ AbstractExpressionPtr SedmlParser::ParseSedmlMath(const xercesc::DOMElement* pDe
     std::vector<std::string> fps;
 
     // Arguments to the function, mapping names from the rest of the protocol to local names in the MathML
-    BOOST_FOREACH(const DOMElement* p_var, XmlTools::FindElements(pDefnElt, "listOfVariables/variable"))
+    ICPC_FOREACH(const DOMElement* p_var, XmlTools::FindElements(pDefnElt, "listOfVariables/variable"), variables)
     {
         SetContext(p_var);
         const std::string var_id(GetRequiredAttr(p_var, "id"));
@@ -596,7 +606,7 @@ AbstractExpressionPtr SedmlParser::ParseSedmlMath(const xercesc::DOMElement* pDe
     }
 
     // Constant parameters for the calculation
-    BOOST_FOREACH(const DOMElement* p_param, XmlTools::FindElements(pDefnElt, "listOfParameters/parameter"))
+    ICPC_FOREACH(const DOMElement* p_param, XmlTools::FindElements(pDefnElt, "listOfParameters/parameter"), parameters)
     {
         body.push_back(ParseParameter(p_param));
     }
@@ -621,7 +631,7 @@ AbstractExpressionPtr SedmlParser::ParseSedmlMath(const xercesc::DOMElement* pDe
 
 void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
 {
-    BOOST_FOREACH(const DOMElement* p_data_gen, XmlTools::FindElements(pRootElt, "listOfDataGenerators/dataGenerator"))
+    ICPC_FOREACH(const DOMElement* p_data_gen, XmlTools::FindElements(pRootElt, "listOfDataGenerators/dataGenerator"), data_gens)
     {
         SetContext(p_data_gen);
         const std::string data_gen_id(GetRequiredAttr(p_data_gen, "id"));
@@ -664,7 +674,7 @@ void SedmlParser::ParseOutputs(const DOMElement* pRootElt)
             if (output_type == "plot2D")
             {
                 std::vector<PlotSpecificationPtr> plot_specs;
-                BOOST_FOREACH(DOMElement* p_curve, XmlTools::FindElements(p_output, "listOfCurves/curve"))
+                ICPC_FOREACH(DOMElement* p_curve, XmlTools::FindElements(p_output, "listOfCurves/curve"), curves)
                 {
                     SetContext(p_curve);
                     const std::string curve_id(GetRequiredAttr(p_curve, "id"));
@@ -688,7 +698,7 @@ void SedmlParser::ParseOutputs(const DOMElement* pRootElt)
             }
             else if (output_type == "report")
             {
-                BOOST_FOREACH(DOMElement* p_data, XmlTools::FindElements(p_output, "listOfDataSets/dataSet"))
+                ICPC_FOREACH(DOMElement* p_data, XmlTools::FindElements(p_output, "listOfDataSets/dataSet"), datasets)
                 {
                     SetContext(p_data);
                     const std::string ref(GetRequiredAttr(p_data, "dataReference"));

@@ -347,7 +347,7 @@
         : AbstractCvodeCell(
                 pOdeSolver,
                 27,
-                -1,
+                UNSIGNED_UNSET,
                 pIntracellularStimulus)
     {
         // Time units: millisecond

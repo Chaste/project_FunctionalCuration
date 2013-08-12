@@ -203,7 +203,7 @@ public:
          * @param rStrides  how far the internal pointer should be incremented to progress along each dimension
          * @param rExtents  the shape of the array being iterated over
          */
-        explicit IteratorImpl(VALUE* pEntry, const Indices& rIndices,
+        IteratorImpl(VALUE* pEntry, const Indices& rIndices,
                               const std::vector<RangeIndex>& rStrides,
                               const Extents& rExtents)
             : mPointer(pEntry),
@@ -217,7 +217,7 @@ public:
          * @param rIndices  indices into an array
          * @param rArray  the array being indexed
          */
-        explicit IteratorImpl(const Indices& rIndices, NdArray<DATA>& rArray)
+        IteratorImpl(const Indices& rIndices, NdArray<DATA>& rArray)
             : mPointer(&(rArray[rIndices])),
               mIndices(rIndices),
               mpStrides(&(rArray.mpInternalData->mIndicesMultipliers)),
@@ -247,7 +247,6 @@ public:
 
      private:
         friend class boost::iterator_core_access;
-        template <class> friend class IteratorImpl;
 
         /** Deference this iterator to obtain a reference to the array entry pointed at. */
         VALUE& dereference() const
@@ -305,6 +304,13 @@ public:
                 increment();
             }
         }
+
+#ifdef __INTEL_COMPILER
+    public:
+#else
+    private:
+        template <class> friend class IteratorImpl;
+#endif
 
         /** The array entry pointed to. */
         VALUE* mPointer;

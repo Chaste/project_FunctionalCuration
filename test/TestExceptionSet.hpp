@@ -59,20 +59,19 @@ public:
         }
         ExceptionSet overall_error(errors, "file", 0u);
 
-        TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Multiple errors occurred:\n");
+        TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Summary of errors that occurred (see earlier for details):\n");
         TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Error 0\n");
         TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Error 1\n");
         TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Error 2");
 
-        TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Multiple errors occurred:\n");
+        TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Summary of errors that occurred (see earlier for details):\n");
         TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Error 0\n");
         TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Error 1\n");
         TS_ASSERT_THROWS_CONTAINS(THROW_EXCEPTIONS(errors), "Error 2");
 
-        // Don't say there are multiple errors when there aren't
+        // It's a summary even for 1 error
         errors.resize(1u, errors.front());
-        ExceptionSet single_error(errors, __FILE__, __LINE__);
-        TS_ASSERT_EQUALS(single_error.GetShortMessage().find("Multiple errors occurred"), std::string::npos);
+        TS_ASSERT_THROWS_CONTAINS(THROW_REPORTED_EXCEPTIONS(errors), "Summary of errors that occurred (see earlier for details):\n");
     }
 };
 

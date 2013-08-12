@@ -60,7 +60,7 @@ ExceptionSet::ExceptionSet(const std::vector<Exception>& rComponentErrors,
                 short_message = short_message.substr(0, short_message.length()-1);
             }
             size_t last_line_start = short_message.rfind('\n');
-            message += "  " + short_message.substr(last_line_start);
+            message += "\n  " + short_message.substr(last_line_start+1);
         }
     }
     SetMessage(message, rFileName, lineNumber);

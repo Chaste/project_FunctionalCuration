@@ -210,6 +210,7 @@ void Protocol::Run()
     }
     catch (const Exception& e)
     {
+        std::cerr << e.GetMessage();
         errors.push_back(e);
     }
     ProtocolTimer::EndEvent(ProtocolTimer::SIMULATE);
@@ -227,6 +228,7 @@ void Protocol::Run()
             }
             catch (const Exception& e)
             {
+                std::cerr << e.GetMessage();
                 errors.push_back(e);
             }
         }
@@ -253,6 +255,7 @@ void Protocol::Run()
             }
             catch (const Exception& e)
             {
+                std::cerr << e.GetMessage();
                 errors.push_back(e);
             }
         }
@@ -266,9 +269,10 @@ void Protocol::Run()
     {
         DebugProto::StopTracing();
     }
+    PetscTools::ReplicateException(!errors.empty());
     if (!errors.empty())
     {
-        THROW_EXCEPTIONS(errors);
+        THROW_REPORTED_EXCEPTIONS(errors);
     }
     std::cout << "Finished running protocol." << std::endl;
     ProtocolTimer::EndEvent(ProtocolTimer::POSTPROCESS);

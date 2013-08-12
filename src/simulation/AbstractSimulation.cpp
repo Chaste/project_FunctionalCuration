@@ -288,6 +288,7 @@ EnvironmentPtr AbstractSimulation::Run()
         run_sim = can_parallelise || PetscTools::AmMaster() || !mpModel->HasImplicitReset();
         replicate_results = can_parallelise || mpModel->HasImplicitReset();
     }
+    try
     {
         IsolateHere isolater(mParalleliseLoops);
         if (run_sim)
@@ -295,10 +296,18 @@ EnvironmentPtr AbstractSimulation::Run()
             Run(p_results);
         }
     }
+    catch (const Exception& rE)
+    {
+        PetscTools::ReplicateException(true);
+        throw rE;
+    }
     if (store_results)
     {
         ResizeOutputs();
     }
+    PetscTools::ReplicateException(false);
+    // Note that replicating whether an exception has occurred also functions as a barrier, ensuring all
+    // processes are synchronised at the end of each simulation.
     /// \todo #2341 Ensure available results are replicated if an exception is thrown by Run(p_results)?
     if (mParalleliseLoops)
     {
@@ -307,8 +316,6 @@ EnvironmentPtr AbstractSimulation::Run()
         {
             ReplicateResults(p_results, GetLocationInfo());
         }
-        // Include an explicit barrier to ensure synchronised exit from this method
-        PetscTools::Barrier("AbstractSimulation::Run");
     }
     return mpResultsEnvironment;
 }

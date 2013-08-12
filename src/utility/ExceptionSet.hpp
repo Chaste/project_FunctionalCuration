@@ -52,10 +52,12 @@ public:
      * @param rComponentErrors  the errors making up this collection
      * @param rFileName  the source file throwing the collection
      * @param lineNumber  the line number where the collection is thrown
+     * @param includeBacktraces  whether to include backtraces if present, or just give the actual error messages
      */
     ExceptionSet(const std::vector<Exception>& rComponentErrors,
                  const std::string& rFileName,
-                 unsigned lineNumber);
+                 unsigned lineNumber,
+                 bool includeBacktraces=true);
 };
 
 /**
@@ -63,5 +65,11 @@ public:
  * @param errors  the errors making up this collection
  */
 #define THROW_EXCEPTIONS(errors)  throw ExceptionSet(errors, __FILE__, __LINE__)
+
+/**
+ * Convenience macro for reporting a collection of errors in brief (i.e. without backtraces).
+ * @param errors  the errors making up this collection
+ */
+#define THROW_REPORTED_EXCEPTIONS(errors)  throw ExceptionSet(errors, __FILE__, __LINE__, false)
 
 #endif // EXCEPTIONSET_HPP_

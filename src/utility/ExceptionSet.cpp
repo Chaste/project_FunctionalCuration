@@ -39,17 +39,29 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ExceptionSet::ExceptionSet(const std::vector<Exception>& rComponentErrors,
                            const std::string& rFileName,
-                           unsigned lineNumber)
+                           unsigned lineNumber,
+                           bool includeBacktraces)
     : Exception("", rFileName, lineNumber)
 {
-    std::string message;
-    if (rComponentErrors.size() > 1u)
-    {
-        message += "Multiple errors occurred:";
-    }
+    std::string message("Summary of errors that occurred (see earlier for details):");
+    // Note: individual errors start (and end) with a newline
     BOOST_FOREACH(const Exception& rErr, rComponentErrors)
     {
-        message += rErr.GetMessage();
+        if (includeBacktraces)
+        {
+            message += rErr.GetMessage();
+        }
+        else
+        {
+            // Extract the last line that isn't empty
+            std::string short_message("\n" + rErr.GetShortMessage());
+            while (*(short_message.rbegin()) == '\n')
+            {
+                short_message = short_message.substr(0, short_message.length()-1);
+            }
+            size_t last_line_start = short_message.rfind('\n');
+            message += "  " + short_message.substr(last_line_start);
+        }
     }
     SetMessage(message, rFileName, lineNumber);
 }

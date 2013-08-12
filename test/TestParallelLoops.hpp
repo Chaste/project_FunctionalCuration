@@ -44,6 +44,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolFileFinder.hpp"
 
 #include "FileFinder.hpp"
+#include "Warnings.hpp"
 
 #include "PetscSetupAndFinalize.hpp"
 
@@ -66,6 +67,9 @@ public:
         TS_ASSERT(FileFinder(dirname + "/simulation_three_level_yes1/run_2/run_0/run_1", RelativeTo::ChasteTestOutput).Exists());
         TS_ASSERT(FileFinder(dirname + "/simulation_three_level_yes2/run_2/run_1", RelativeTo::ChasteTestOutput).Exists());
         TS_ASSERT(!FileFinder(dirname + "/simulation_three_level_yes2/run_2/run_0/run_1", RelativeTo::ChasteTestOutput).Exists());
+
+        // Also check that replication works for more processes than iterations, by ensuring no warnings occurred
+        TS_ASSERT_EQUALS(Warnings::Instance()->GetNumWarnings(), 0u)
     }
 };
 

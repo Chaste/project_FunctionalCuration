@@ -41,6 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/pointer_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/scoped_array.hpp>
 
 #include "PetscTools.hpp"
 #include "Warnings.hpp"
@@ -184,6 +185,46 @@ FileFinder AbstractSimulation::GetOutputFolder() const
 //
 
 /**
+ * Broadcast a vector of varying length 'objects' from the master to all processes.
+ *
+ * @param rResult  the result vector.  On input this must be filled in with the data to broadcast for the master process;
+ *     it will be filled in by this method for other processes.
+ * @param numItems  how many objects are being communicated
+ * @param mpiType  the underlying MPI type that each object is a vector of
+ *     The template parameter RAW_TYPE is the C++ type corresponding to mpiType.
+ */
+template<typename TYPE, typename RAW_TYPE>
+void BroadcastVector(std::vector<TYPE>& rResult, unsigned numItems, MPI_Datatype mpiType)
+{
+    assert(rResult.size() == numItems || rResult.size() == 0u);
+    rResult.resize(numItems);
+    // First, broadcast how long each object is, in terms of number of data items
+    std::vector<unsigned> lengths(numItems);
+    if (PetscTools::AmMaster())
+    {
+        for (unsigned i=0; i<numItems; ++i)
+        {
+            lengths[i] = rResult[i].size();
+        }
+    }
+    MPI_Bcast(&lengths[0], numItems, MPI_UNSIGNED, 0, PetscTools::GetWorld());
+    // Now broadcast the objects themselves
+    for (unsigned i=0; i<numItems; ++i)
+    {
+        boost::scoped_array<RAW_TYPE> p_item(new RAW_TYPE[lengths[i]]); // MPI working memory
+        if (PetscTools::AmMaster())
+        {
+            std::copy(rResult[i].begin(), rResult[i].end(), p_item.get());
+        }
+        MPI_Bcast(p_item.get(), lengths[i], mpiType, 0, PetscTools::GetWorld());
+        // Copy the item into the result vector
+        rResult[i].resize(lengths[i]);
+        std::copy(p_item.get(), p_item.get() + lengths[i], rResult[i].begin());
+    }
+}
+
+
+/**
  * Replicate distributed results arrays so each process has the full data.
  *
  * @param pResults  the results environment
@@ -191,9 +232,8 @@ FileFinder AbstractSimulation::GetOutputFolder() const
  */
 void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
 {
-    // Check that all processes have some partial results, and do nothing if not.
-    ///\todo #2341 this is a safety check for cell-based Chaste, which can run a non-parallelisable simulation only on master.
-    /// A nicer solution might be to replicate the full results set to other processes too.
+    // Check whether all processes have some partial results; if not, the master must broadcast the names, units & shapes.
+    // (Note that the master is guaranteed to have a full set of metadata, since it always runs the first iteration.)
     {
         unsigned num_local_results = pResults->GetNumberOfDefinitions();
         unsigned max_local_results = 0u;
@@ -202,8 +242,37 @@ void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
         UNUSED_OPT(mpi_ret);
         if (PetscTools::ReplicateBool(num_local_results < max_local_results))
         {
-            WARNING("Not replicating results since not all processes have all names defined.");
-            return;
+            // Broadcast result metadata: result names, units & shapes
+            std::vector<std::string> names;
+            std::vector<std::string> units;
+            std::vector<NdArray<double>::Extents> shapes;
+            if (PetscTools::AmMaster())
+            {
+                names = pResults->GetDefinedNames();
+                BOOST_FOREACH(const std::string& r_name, names)
+                {
+                    AbstractValuePtr p_result = pResults->Lookup(r_name, rLoc);
+                    PROTO_ASSERT2(p_result->IsArray(), "Model produced non-array output " << r_name << ".", rLoc);
+                    units.push_back(p_result->GetUnits());
+                    shapes.push_back(GET_ARRAY(p_result).GetShape());
+                }
+            }
+            BroadcastVector<std::string, unsigned char>(names, max_local_results, MPI_UNSIGNED_CHAR);
+            BroadcastVector<std::string, unsigned char>(units, max_local_results, MPI_UNSIGNED_CHAR);
+            BroadcastVector<NdArray<double>::Extents, NdArray<double>::Index>(shapes, max_local_results, MPI_UNSIGNED);
+            // Now create zero-filled arrays for any results the local process doesn't have
+            std::vector<std::string> our_names = pResults->GetDefinedNames();
+            for (unsigned i=0; i<max_local_results; ++i)
+            {
+                if (std::find(our_names.begin(), our_names.end(), names[i]) == our_names.end())
+                {
+                    NdArray<double> result(shapes[i]);
+                    std::fill(result.Begin(), result.End(), 0.0);
+                    AbstractValuePtr p_result = boost::make_shared<ArrayValue>(result);
+                    p_result->SetUnits(units[i]);
+                    pResults->DefineName(names[i], p_result, rLoc);
+                }
+            }
         }
     }
     // Replicate all results defined in this environment
@@ -213,11 +282,11 @@ void ReplicateResults(EnvironmentPtr pResults, const std::string& rLoc)
         PROTO_ASSERT2(p_output->IsArray(), "Model produced non-array output " << r_output_name << ".", rLoc);
         NdArray<double> array = GET_ARRAY(p_output);
         double* p_data = &(*array.Begin());
-        double* p_result = new double[array.GetNumElements()];
-        int mpi_ret = MPI_Allreduce(p_data, p_result, array.GetNumElements(), MPI_DOUBLE, MPI_SUM, PetscTools::GetWorld());
+        boost::scoped_array<double> p_result(new double[array.GetNumElements()]);
+        int mpi_ret = MPI_Allreduce(p_data, p_result.get(), array.GetNumElements(), MPI_DOUBLE, MPI_SUM, PetscTools::GetWorld());
         assert(mpi_ret == MPI_SUCCESS);
         UNUSED_OPT(mpi_ret);
-        memcpy(p_data, p_result, array.GetNumElements() * sizeof(double));
+        memcpy(p_data, p_result.get(), array.GetNumElements() * sizeof(double));
     }
     // Check for any results sub-environments, and replicate them too, recursively.
     BOOST_FOREACH(const std::string& r_sub_prefix, pResults->rGetSubEnvironmentNames())

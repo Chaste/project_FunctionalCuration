@@ -421,7 +421,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
             {
                 p_output = r_outputs.Lookup(r_name);
             }
-            catch (const Exception& e)
+            catch (const Exception&)
             {
                 std::cerr << "Missing protocol output '" << r_name << "'; ignoring for now." << std::endl;
                 missing_outputs.insert(r_name);
@@ -476,7 +476,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
                         }
                     }
                 }
-                catch (const Exception& e)
+                catch (const Exception&)
                 {
                     std::cerr << "Plot requests protocol output '" << r_name << "', which has not been specified as an output." << std::endl;
                     missing_outputs.insert(r_name);
@@ -507,7 +507,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
         {
             p_output = r_outputs.Lookup(r_name);
         }
-        catch (const Exception& e)
+        catch (const Exception&)
         {
             continue;
         }
@@ -616,7 +616,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                     missing_array = true;
                 }
             }
-            catch (const Exception& e)
+            catch (const Exception&)
             {
                 missing_array = true;
                 // Error for missing output was already printed by caller
@@ -635,7 +635,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
                     missing_array = true;
                 }
             }
-            catch (const Exception& e)
+            catch (const Exception&)
             {
                 missing_array = true;
                 std::cerr << "Plot requests key vector '" << r_name << "' which is not specified as an output." << std::endl;

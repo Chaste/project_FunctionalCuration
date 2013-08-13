@@ -76,7 +76,7 @@ AbstractValuePtr ModelWrapperEnvironment<VECTOR>::Lookup(const std::string& rNam
         p_result.reset(new SimpleValue(value));
         p_result->SetUnits(units);
     }
-    catch (const Exception& e)
+    catch (const Exception&)
     {
     }
     if (!p_result)
@@ -114,7 +114,7 @@ void ModelWrapperEnvironment<VECTOR>::OverwriteDefinition(const std::string& rNa
             mpModel->SetAnyVariable(rName, value);
         }
     }
-    catch (const Exception& e)
+    catch (const Exception&)
     {
         PROTO_EXCEPTION2("Name " << rName << " is not defined in the model.", rCallerLocation);
     }

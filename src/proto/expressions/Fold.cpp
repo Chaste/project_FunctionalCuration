@@ -81,7 +81,7 @@ AbstractValuePtr Fold::operator()(const Environment& rEnv) const
     {
         p_dim = boost::make_shared<SimpleValue>(operand.GetNumDimensions() - 1);
     }
-    const NdArray<double>::Index dimension = static_cast<NdArray<double>::Index>(GET_SIMPLE_VALUE(p_dim));
+    const NdArray<double>::Index dimension = (NdArray<double>::Index)(GET_SIMPLE_VALUE(p_dim));
     PROTO_ASSERT(dimension < operand.GetNumDimensions(),
                  "Cannot fold over dimension " << dimension << " as the operand array only has "
                  << operand.GetNumDimensions() << " dimensions.");

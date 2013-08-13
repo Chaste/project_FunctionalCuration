@@ -669,7 +669,7 @@ void SedmlParser::ParseOutputs(const DOMElement* pRootElt)
         {
             SetContext(p_output);
             const std::string output_type(X2C(p_output->getLocalName()));
-            const std::string output_id(GetRequiredAttr(p_output, "id"));
+//            const std::string output_id(GetRequiredAttr(p_output, "id"));
             const std::string output_name(GetOptionalAttr(p_output, "name"));
             if (output_type == "plot2D")
             {

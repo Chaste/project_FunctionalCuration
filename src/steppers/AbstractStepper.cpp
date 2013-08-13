@@ -101,9 +101,9 @@ std::vector<double> AbstractStepper::EvaluateParameters(bool allowArray)
             NdArray<double> array = GET_ARRAY(p_value);
             PROTO_ASSERT(array.GetNumDimensions() <= 1,
                          "An array of stepper parameters must have only 1 dimension.");
-            for (NdArray<double>::ConstIterator it=array.Begin(); it!=array.End(); ++it)
+            for (NdArray<double>::ConstIterator array_it=array.Begin(); array_it!=array.End(); ++array_it)
             {
-                values.push_back(*it);
+                values.push_back(*array_it);
             }
         }
         else

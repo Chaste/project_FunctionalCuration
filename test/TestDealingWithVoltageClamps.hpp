@@ -125,7 +125,7 @@ public:
                 p_cell1->Solve(0,1,1); // Run for 1ms, max step 1ms.
                 std::cout << "Cell 1 passed, " << std::flush;
             }
-            catch (Exception &e)
+            catch (Exception&)
             {
                 std::cout << "Cell 1 failed, " << std::flush;
             }

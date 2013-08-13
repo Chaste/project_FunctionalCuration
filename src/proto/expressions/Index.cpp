@@ -100,7 +100,7 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         p_pad_value = boost::make_shared<SimpleValue>(DBL_MAX);
     }
     // Get & check simple value arguments
-    const NdArray<double>::Index dimension = static_cast<NdArray<double>::Index>(GET_SIMPLE_VALUE(p_dim));
+    const NdArray<double>::Index dimension = (NdArray<double>::Index)(GET_SIMPLE_VALUE(p_dim));
     const NdArray<double>::Index operand_dimensions = operand.GetNumDimensions();
     PROTO_ASSERT(dimension < operand_dimensions,
                  "The operand to index has " << operand_dimensions
@@ -132,7 +132,7 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         for (unsigned j=0; j<operand_dimensions; ++j)
         {
             NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
-            idxs[j] = indices[ij];
+            idxs[j] = (NdArray<double>::Index)indices[ij];
         }
         idxs[dimension] = 0;
         result_shape[idxs]++;
@@ -180,17 +180,17 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         for (unsigned j=0; j<operand_dimensions; ++j)
         {
             NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
-            idxs[j] = indices[ij];
+            idxs[j] = (NdArray<double>::Index)indices[ij];
         }
         double value = operand[idxs];
         // Now figure out where to put it
         idxs[dimension] = 0;
         double& r_next_index = next_index[idxs];
-        unsigned next_index = (unsigned) r_next_index;
+        unsigned this_next_index = (unsigned) r_next_index;
         // Only add if we're within the extent of the result
-        if (next_index < extent)
+        if (this_next_index < extent)
         {
-            idxs[dimension] = (shrink+pad < 0) ? extent-next_index-1 : next_index;
+            idxs[dimension] = (shrink+pad < 0) ? extent-this_next_index-1 : this_next_index;
             result[idxs] = value;
             r_next_index++;
         }

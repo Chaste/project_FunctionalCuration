@@ -66,7 +66,7 @@ void AbstractTemplatedSystemWithOutputs<VECTOR>::SolveModel(double endPoint)
 template<typename VECTOR>
 void AbstractTemplatedSystemWithOutputs<VECTOR>::ProcessOutputsInfo()
 {
-    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem * const>(this);
+    const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem *>(this);
     assert(p_this);
 
     this->mOutputNames.reserve(mOutputsInfo.size() + mVectorOutputsInfo.size());

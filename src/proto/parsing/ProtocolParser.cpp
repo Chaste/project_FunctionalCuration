@@ -571,11 +571,11 @@ public:
             else if (assignee_type == "apply")
             {
                 // Assignment to multiple names
-                DOMElement* p_operator = GetOperator(children[1]);
-                std::string op_name = X2C(p_operator->getLocalName());
-                PROTO_ASSERT(op_name == "csymbol", "Assignments to an apply must be to a tuple, not "
-                             << op_name << ".");
-                std::string symbol = GetCsymbolName(p_operator);
+                DOMElement* p_assignee_operator = GetOperator(children[1]);
+                std::string assignee_op_name = X2C(p_assignee_operator->getLocalName());
+                PROTO_ASSERT(assignee_op_name == "csymbol", "Assignments to an apply must be to a tuple, not "
+                             << assignee_op_name << ".");
+                std::string symbol = GetCsymbolName(p_assignee_operator);
                 PROTO_ASSERT(symbol == "tuple", "Assignments to an apply must be to a tuple, not "
                              << symbol << ".");
                 std::vector<DOMElement*> apply_children = XmlTools::GetChildElements(children[1]);

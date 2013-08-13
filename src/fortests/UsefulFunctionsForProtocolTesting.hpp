@@ -303,12 +303,12 @@ std::string GetTitleFromDirectory(const std::string& rDirectory)
     std::string plot_title = rDirectory;
     std::string find_this = "_";
     std::string put_this = " ";
-    plot_title[0] = toupper(plot_title[0]); // Capitalise the first letter.
+    plot_title[0] = (char)toupper(plot_title[0]); // Capitalise the first letter.
     size_t pos = plot_title.find(find_this); // Find the first underscore
     while ( pos != std::string::npos )
     {
         plot_title.replace(pos, find_this.size(), put_this); // replace "_" with " "
-        plot_title[pos+1] = toupper(plot_title[pos+1]); // Capitalise the next word
+        plot_title[pos+1] = (char)toupper(plot_title[pos+1]); // Capitalise the next word
         pos = plot_title.find(find_this); // Find the next underscore
     }
     return plot_title;

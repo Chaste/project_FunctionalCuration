@@ -204,7 +204,7 @@ public:
         TS_ASSERT_DIFFERS(arr.End(), copy.End());
         TS_ASSERT_EQUALS(arr.GetShape(), copy.GetShape());
         indices = arr.GetIndices();
-        for (Index i=0; i<num_elements; ++i)
+        for (Index idx=0; idx<num_elements; ++idx)
         {
             TS_ASSERT_EQUALS(arr[indices], alias[indices]);
             TS_ASSERT_EQUALS(arr[indices], copy[indices]);
@@ -223,7 +223,7 @@ public:
         copy.Resize(changed_extents);
         TS_ASSERT_EQUALS(copy.GetShape(), copy_alias.GetShape());
         indices = arr.GetIndices();
-        for (Index i=0; i<num_elements; ++i)
+        for (Index idx=0; idx<num_elements; ++idx)
         {
             bool shared = true;
             for (unsigned dim=0; dim<indices.size(); dim++)

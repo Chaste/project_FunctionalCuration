@@ -250,33 +250,33 @@ void CopyFile(const OutputFileHandler& rDestDir,
  */
 std::vector<std::string> GetAListOfCellMLFiles(void)
 {
-  std::string cell_ml_directory = "projects/FunctionalCuration/cellml";
+    std::string cell_ml_directory = "projects/FunctionalCuration/cellml";
 
-  // Make a list of the cellml files in the directory...
-  std::vector<std::string> cellml_files;
+    // Make a list of the cellml files in the directory...
+    std::vector<std::string> cellml_files;
 
-  struct dirent **eps;
+    struct dirent **eps;
 
-  int n = scandir(cell_ml_directory.c_str(), &eps, returnOne, alphasort);
-  if (n >= 0)
-  {
-	  for (int cnt = 0; cnt < n; ++cnt)
-	  {
-		  // The 'scandir' command picks up all the hidden files and svn stuff.
-		  std::string file_name = eps[cnt]->d_name;
-		  size_t found = file_name.find(".cellml");
-		  if (found>0 && found==file_name.length()-7) // If we found ".cellml" and it was at the end
-		  {
-			  cellml_files.push_back(file_name.substr(0,found)); // Don't include the ".cellml"
-		  }
-	  }
-  }
-  else
-  {
-	  EXCEPTION("Couldn't open the directory: " + cell_ml_directory);
-  }
+    int n = scandir(cell_ml_directory.c_str(), &eps, returnOne, alphasort);
+    if (n >= 0)
+    {
+         for (int cnt = 0; cnt < n; ++cnt)
+         {
+              // The 'scandir' command picks up all the hidden files and svn stuff.
+              std::string file_name = eps[cnt]->d_name;
+              size_t found = file_name.find(".cellml");
+              if (found>0 && found==file_name.length()-7) // If we found ".cellml" and it was at the end
+              {
+                   cellml_files.push_back(file_name.substr(0,found)); // Don't include the ".cellml"
+              }
+         }
+    }
+    else
+    {
+         EXCEPTION("Couldn't open the directory: " + cell_ml_directory);
+    }
 
-  return cellml_files;
+    return cellml_files;
 }
 
 /**
@@ -286,7 +286,7 @@ std::vector<std::string> GetAListOfCellMLFiles(void)
  */
 static int returnOne (const struct dirent *unused)
 {
-  return 1;
+    return 1;
 }
 
 /**
@@ -299,19 +299,19 @@ static int returnOne (const struct dirent *unused)
  */
 std::string GetTitleFromDirectory(const std::string& rDirectory)
 {
-  // Format the title of the graph to remove underscores and insert spaces.
-  std::string plot_title = rDirectory;
-  std::string find_this = "_";
-  std::string put_this = " ";
-  plot_title[0] = toupper(plot_title[0]); // Capitalise the first letter.
-  size_t pos = plot_title.find(find_this); // Find the first underscore
-  while ( pos != std::string::npos )
-  {
-	  plot_title.replace(pos,find_this.size(),put_this); // replace "_" with " "
-	  plot_title[pos+1] =  toupper(plot_title[pos+1]); // Capitalise the next word
-	  pos = plot_title.find(find_this); // Find the next underscore
-  }
-  return plot_title;
+    // Format the title of the graph to remove underscores and insert spaces.
+    std::string plot_title = rDirectory;
+    std::string find_this = "_";
+    std::string put_this = " ";
+    plot_title[0] = toupper(plot_title[0]); // Capitalise the first letter.
+    size_t pos = plot_title.find(find_this); // Find the first underscore
+    while ( pos != std::string::npos )
+    {
+        plot_title.replace(pos, find_this.size(), put_this); // replace "_" with " "
+        plot_title[pos+1] = toupper(plot_title[pos+1]); // Capitalise the next word
+        pos = plot_title.find(find_this); // Find the next underscore
+    }
+    return plot_title;
 }
 
 #endif // USEFULFUNCTIONSFORPROTOCOLTESTING_HPP_

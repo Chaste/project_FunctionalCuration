@@ -269,14 +269,14 @@ void Protocol::Run()
     {
         DebugProto::StopTracing();
     }
+    ProtocolTimer::EndEvent(ProtocolTimer::POSTPROCESS);
+    ProtocolTimer::EndEvent(ProtocolTimer::RUN_PROTOCOL);
     PetscTools::ReplicateException(!errors.empty());
     if (!errors.empty())
     {
         THROW_REPORTED_EXCEPTIONS(errors);
     }
     std::cout << "Finished running protocol." << std::endl;
-    ProtocolTimer::EndEvent(ProtocolTimer::POSTPROCESS);
-    ProtocolTimer::EndEvent(ProtocolTimer::RUN_PROTOCOL);
 }
 
 
@@ -338,6 +338,7 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
                 std::cout << "Failed to write intermediate results." << std::endl;
             }
         }
+        ProtocolTimer::EndEvent(ProtocolTimer::ALL);
         throw;
     }
     if (mpOutputHandler)

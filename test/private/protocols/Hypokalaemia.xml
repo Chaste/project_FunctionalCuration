@@ -65,10 +65,10 @@
         <cellml:units name="ms">
             <cellml:unit units="second" prefix="milli"/>
         </cellml:units>
-	   <cellml:units name="mM">
-	      <cellml:unit units="mole" prefix="milli"/>
-	      <cellml:unit units="litre" exponent="-1"/>
-	   </cellml:units>
+       <cellml:units name="mM">
+          <cellml:unit units="mole" prefix="milli"/>
+          <cellml:unit units="litre" exponent="-1"/>
+       </cellml:units>
     </units>
     
     <modelInterface>
@@ -80,6 +80,11 @@
         <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
         <specifyOutputVariable name="oxmeta:time" units="ms"/>
         <specifyOutputVariable name="oxmeta:extracellular_potassium_concentration" units="mM"/>
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:extracellular_potassium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
         <addOrReplaceEquation>
             <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
                 <ci>oxmeta:membrane_stimulus_current</ci>
@@ -129,61 +134,61 @@
         </addOrReplaceEquation>
     </modelInterface>
 
-    <simulations>    
-    	<!-- Do a pre-run to get the model to steady-state with the desired S1 stimulus -->
-		<timecourseSimulation>
-		    <vectorStepper name="time" units="ms">
-		        <value>0</value>
-		        <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
-		            <ci>pacing_period</ci>
-		            <ci>steady_state_beats</ci>
-		        </apply>
-		    </vectorStepper>
-		    <modifiers>
-		        <!-- Set stimulus period to S1 interval, offset 10ms -->                    
-		        <setVariable>
-		            <when>AT_START_ONLY</when>
-		            <name>oxmeta:membrane_stimulus_current_period</name><!-- ms -->
-		            <value>
-		                <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_period</ci>
-		            </value>
-		        </setVariable>         
-		        <saveState>
-		            <when>AT_END</when>
-		            <name>initial_state</name>
-		        </saveState>
-		    </modifiers>
-		</timecourseSimulation>
+    <simulations>
+        <!-- Do a pre-run to get the model to steady-state with the desired S1 stimulus -->
+        <timecourseSimulation>
+            <vectorStepper name="time" units="ms">
+                <value>0</value>
+                <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
+                    <ci>pacing_period</ci>
+                    <ci>steady_state_beats</ci>
+                </apply>
+            </vectorStepper>
+            <modifiers>
+                <!-- Set stimulus period to S1 interval, offset 10ms -->
+                <setVariable>
+                    <when>AT_START_ONLY</when>
+                    <name>oxmeta:membrane_stimulus_current_period</name><!-- ms -->
+                    <value>
+                        <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_period</ci>
+                    </value>
+                </setVariable>
+                <saveState>
+                    <when>AT_END</when>
+                    <name>initial_state</name>
+                </saveState>
+            </modifiers>
+        </timecourseSimulation>
         
-	    <nestedSimulation prefix="sim">
-	        <vectorStepper name="step_potassium" units="mM">
+        <nestedSimulation prefix="sim">
+            <vectorStepper name="step_potassium" units="mM">
                 <ci xmlns="http://www.w3.org/1998/Math/MathML">potassium_test_concentrations</ci>
-	        </vectorStepper>
-	        
-	        <modifiers>
-	            <!-- Set the external potassium concentration -->
-	            <setVariable>
-	                <when>EVERY_LOOP</when>
-	                <name>oxmeta:extracellular_potassium_concentration</name>
-	                <value>
-	                    <ci xmlns="http://www.w3.org/1998/Math/MathML">step_potassium</ci>
-	                </value>
-	            </setVariable>
-	        </modifiers>
-	    
-	        <!-- Do a run to get the model to steady-state with the desired extracellular potassium -->
-	        <timecourseSimulation>            
-	            <vectorStepper name="time" units="ms">
-	                <apply xmlns="http://www.w3.org/1998/Math/MathML"><ci>Join</ci>
-	                    <apply>
-	                        <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
-	                        <cn>0</cn>
-	                        <apply><times/>
-	                            <ci>pacing_period</ci>
-	                            <ci>steady_state_beats</ci>
-	                        </apply>
-	                    </apply>
-	                    <apply>
+            </vectorStepper>
+            
+            <modifiers>
+                <!-- Set the external potassium concentration -->
+                <setVariable>
+                    <when>EVERY_LOOP</when>
+                    <name>oxmeta:extracellular_potassium_concentration</name>
+                    <value>
+                        <ci xmlns="http://www.w3.org/1998/Math/MathML">step_potassium</ci>
+                    </value>
+                </setVariable>
+            </modifiers>
+        
+            <!-- Do a run to get the model to steady-state with the desired extracellular potassium -->
+            <timecourseSimulation>            
+                <vectorStepper name="time" units="ms">
+                    <apply xmlns="http://www.w3.org/1998/Math/MathML"><ci>Join</ci>
+                        <apply>
+                            <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
+                            <cn>0</cn>
+                            <apply><times/>
+                                <ci>pacing_period</ci>
+                                <ci>steady_state_beats</ci>
+                            </apply>
+                        </apply>
+                        <apply>
                             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
                             <domainofapplication>
                                 <!-- #0#t = bcl*st_st_beats+1 : 1 : bcl*(st_st_beats+1) -->
@@ -210,17 +215,17 @@
                             </domainofapplication>
                             <ci>t</ci>
                         </apply>
-	                </apply>
-	            </vectorStepper>
-	            
-	            <modifiers>
-		            <resetState> <!-- At the beginning of the final AP simulation load up the state variables from the long run to steady state -->
-		                <when>AT_START_ONLY</when>
-		                <state>initial_state</state>
-		            </resetState>	                
-	            </modifiers>        
-	        </timecourseSimulation>
-      	</nestedSimulation>        
+                    </apply>
+                </vectorStepper>
+                
+                <modifiers>
+                    <resetState> <!-- At the beginning of the final AP simulation load up the state variables from the long run to steady state -->
+                        <when>AT_START_ONLY</when>
+                        <state>initial_state</state>
+                    </resetState>                    
+                </modifiers>        
+            </timecourseSimulation>
+          </nestedSimulation>        
     </simulations>
     
     <post-processing>
@@ -249,7 +254,7 @@
                 <apply xmlns="http://www.w3.org/1998/Math/MathML"><times/>
                     <ci>pacing_period</ci>
                     <ci>steady_state_beats</ci>
-	            </apply>
+                </apply>
             </apply>
             
             <!-- Reduce these arrays to just the 'steady' action potential -->
@@ -363,14 +368,14 @@
             <y>steady_state_membrane_voltage</y>
         </plot>
         <plot>
-        	<title>APD_{90} as a function of [K_o]</title>
-        	<x>potassium_test_concentrations</x>
-        	<y>APD90</y>
+            <title>APD_{90} as a function of [K_o]</title>
+            <x>potassium_test_concentrations</x>
+            <y>APD90</y>
         </plot>
         <plot>
-        	<title>Resting potential as a function of [K]_o</title>
-        	<x>potassium_test_concentrations</x>
-        	<y>resting_potential</y> 
+            <title>Resting potential as a function of [K]_o</title>
+            <x>potassium_test_concentrations</x>
+            <y>resting_potential</y> 
         </plot>
     </plots>
     

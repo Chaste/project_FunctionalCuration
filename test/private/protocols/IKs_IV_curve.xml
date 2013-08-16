@@ -21,7 +21,7 @@
             <apply><eq/>
                 <ci>steady_state_time</ci>
                 <cn>10000</cn>
-            </apply>            
+            </apply>
             <!-- Length of time to hold at test potential -->
             <apply><eq/>
                 <ci>test_pulse_time</ci>
@@ -44,7 +44,7 @@
             <apply><eq/>
                 <ci>cytosolic_potassium_concentration</ci>
                 <cn>140</cn>
-            </apply>            
+            </apply>
             <apply><eq/>
                 <ci>cytosolic_sodium_concentration</ci>
                 <cn>10</cn>
@@ -57,16 +57,16 @@
                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/newArray"/>
                     <cn>-70.01</cn>
                     <cn>-60.01</cn>
-                    <cn>-50.01</cn> 
+                    <cn>-50.01</cn>
                     <cn>-40.01</cn>
-                    <cn>-30.01</cn> 
-                    <cn>-20.01</cn> 
-                    <cn>-10.01</cn> 
-                    <cn> 0.01</cn> 
-                    <cn>10.01</cn> 
-                    <cn>20.01</cn> 
+                    <cn>-30.01</cn>
+                    <cn>-20.01</cn>
+                    <cn>-10.01</cn>
+                    <cn> 0.01</cn>
+                    <cn>10.01</cn>
+                    <cn>20.01</cn>
                     <cn>30.01</cn>
-                    <cn>40.01</cn>  
+                    <cn>40.01</cn>
                     <cn>50.01</cn>
                 </apply>
             </apply>
@@ -115,8 +115,27 @@
         <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
         <specifyOutputVariable name="oxmeta:time" units="ms"/>
         
+        <!-- Needed for units conversions -->
+        <declareNewVariable name="chaste_membrane_capacitance" units="uF_per_cm2" initial_value="1"/>
+        
+        <!-- Clamp concentrations; real values will be set by modifiers -->
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:cytosolic_sodium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:cytosolic_potassium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:extracellular_potassium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
+
         <!-- Specify units conversions to get current in consistent units between models -->
-        <declareNewVariable name="chaste_membrane_capacitance" units="uF_per_cm2" initial_value="1"/>               
         <unitsConversionRule desiredDimensions="uA_per_cm2" actualDimensions="A_per_F">
             <lambda xmlns="http://www.w3.org/1998/Math/MathML">
                 <bvar><ci>rhs</ci></bvar>
@@ -252,11 +271,11 @@
                                                 <ci>time</ci>
                                                 <cn>0</cn>
                                             </apply>
-                                        </piece>   
-                                        <otherwise>                                            
+                                        </piece>
+                                        <otherwise>
                                             <ci>oxmeta:membrane_voltage</ci>
                                         </otherwise>
-                                    </piecewise>                                    
+                                    </piecewise>
                                 </otherwise>
                             </piecewise>
                         </value>
@@ -349,7 +368,7 @@
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
                         <cn>1</cn>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
-                    </apply>             
+                    </apply>
                 </apply>
             </apply>
         </apply>

@@ -93,8 +93,27 @@
         <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
         <specifyOutputVariable name="oxmeta:time" units="ms"/>
         
+        <!-- Needed for units conversions -->
+        <declareNewVariable name="chaste_membrane_capacitance" units="uF_per_cm2" initial_value="1"/>
+        
+        <!-- Clamp concentrations; real values will be set by modifiers -->
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:cytosolic_sodium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:cytosolic_potassium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
+        <addOrReplaceEquation>
+            <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
+                <ci>oxmeta:extracellular_potassium_concentration</ci><cn cellml:units="mM">0</cn>
+            </apply>
+        </addOrReplaceEquation>
+
         <!-- Specify units conversions to get current in consistent units between models -->
-        <declareNewVariable name="chaste_membrane_capacitance" units="uF_per_cm2" initial_value="1"/>               
         <unitsConversionRule desiredDimensions="uA_per_cm2" actualDimensions="A_per_F">
             <lambda xmlns="http://www.w3.org/1998/Math/MathML">
                 <bvar><ci>rhs</ci></bvar>
@@ -307,7 +326,7 @@
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
                         <cn>1</cn>
                         <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/null"/>
-                    </apply>                    
+                    </apply>
                 </apply>
             </apply>
         </apply>

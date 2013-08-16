@@ -63,8 +63,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UsefulFunctionsForProtocolTesting.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
-#include "LuoRudy1991BackwardEuler.hpp"
-
 class TestSimpleProtocol : public CxxTest::TestSuite
 {
     template<typename CELL, typename VECTOR>
@@ -156,33 +154,6 @@ public:
         p_loader = converter.Convert(copied_cellml2);
         p_cell = boost::dynamic_pointer_cast<AbstractCardiacCell>(RunLr91Test(*p_loader, true, 2e-3));
         CheckSimpleProtocolOutputs<AbstractCardiacCell, std::vector<double> >(p_cell);
-
-        options.back() = "--backward-euler";
-        OutputFileHandler handler3(dirname + "BE");
-        CopyFile(handler3, cellml_file);
-        FileFinder maple_output_file("heart/src/odes/cellml/LuoRudy1991.out", RelativeTo::ChasteSourceRoot);
-        CopyFile(handler3, maple_output_file);
-        FileFinder copied_cellml3(handler3.GetOutputDirectoryFullPath() + "/LuoRudy1991.cellml", RelativeTo::Absolute);
-        std::string extra_xml = std::string("<global>\n<lookup_tables>\n<lookup_table>\n") +
-                "<var type='name'>intracellular_calcium_concentration,Cai</var>\n" +
-                "<min>0.00001</min>\n<max>30.00001</max>\n<step>0.0001</step>\n" +
-                "</lookup_table>\n</lookup_tables>\n</global>";
-        CreateOptionsFile(handler3, proto_file, "LuoRudy1991", options, extra_xml);
-        p_loader = converter.Convert(copied_cellml3);
-        p_cell = boost::dynamic_pointer_cast<AbstractCardiacCell>(RunLr91Test(*p_loader, true, 0.3, "cytosolic_calcium_concentration"));
-        CheckSimpleProtocolOutputs<AbstractCardiacCell, std::vector<double> >(p_cell);
-
-        // Compare the last simulation above with normal Backward Euler to verify that the above tolerance really is needed!
-        double magnitude = -25.5; // uA/cm2
-        double duration  = 2.0 ;  // ms
-        double when = 50.0; // ms
-        boost::shared_ptr<SimpleStimulus> p_stimulus(new SimpleStimulus(magnitude, duration, when));
-        boost::shared_ptr<EulerIvpOdeSolver> p_solver;
-        CellLuoRudy1991FromCellMLBackwardEuler backward_lr91(p_solver, p_stimulus);
-        RunOdeSolverWithIonicModel(&backward_lr91,
-                                   1000.0,
-                                   "BackwardLr91");
-        CompareCellModelResults("ProtocolLr91", "BackwardLr91", 1e-12);
     }
 };
 

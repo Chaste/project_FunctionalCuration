@@ -58,7 +58,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 template<typename VECTOR>
 void AbstractTemplatedSystemWithOutputs<VECTOR>::SolveModel(double endPoint)
 {
-    dynamic_cast<AbstractCardiacCellInterface*>(this)->SolveAndUpdateState(this->mFreeVariable, endPoint);
+    AbstractCardiacCellInterface* p_model = dynamic_cast<AbstractCardiacCellInterface*>(this);
+    if (p_model->GetNumberOfStateVariables() > 0u)
+    {
+        p_model->SolveAndUpdateState(this->mFreeVariable, endPoint);
+    }
     this->mFreeVariable = endPoint;
 }
 

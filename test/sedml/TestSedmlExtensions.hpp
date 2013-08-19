@@ -49,6 +49,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
 #include "FileComparison.hpp"
+#include "Exception.hpp"
 
 class TestSedmlExtensions : public CxxTest::TestSuite
 {
@@ -116,22 +117,37 @@ public:
         }
 
         // Check the graphs
-        ///\todo (#1999) this only works for gnuplot 4.2
-        std::vector<std::string> graph_names = boost::assign::list_of("Simple_uniform_timecourse_-_c1")
-            ("Simple_repetition_-_c2")("Uniform_timecourse_by_repeatedTask_-_c3")
-            ("Setting_model_variable_-_c4")("Test_functional_range_-_c5")
-            ("Test_functional_range_with_shorthands_-_c6");
-        BOOST_FOREACH(const std::string& r_graph_name, graph_names)
         {
-            FileFinder ref_graph("data/repeated_task_graphs/" + r_graph_name + ".eps", this_test);
-            FileFinder new_graph = handler.FindFile(r_graph_name + ".eps");
-            FileComparison comp(ref_graph, new_graph);
-            comp.SetIgnoreCommentLines(false);
-            comp.SetIgnoreLinesBeginningWith("%");
-            comp.IgnoreLinesContaining("CreationDate");
-            comp.IgnoreLinesContaining("Title");
-            comp.IgnoreLinesContaining("Author");
-            TS_ASSERT(comp.CompareFiles());
+            ///\todo (#1999) this only works for gnuplot 4.2
+            FILE* pipe = popen("gnuplot --version", "r");
+            EXCEPT_IF_NOT(pipe != NULL);
+            std::string output;
+            const int BUFSIZE = 1024;
+            char buf[BUFSIZE];
+            while (fgets(buf, sizeof (buf), pipe))
+            {
+                output += buf;
+            }
+            pclose(pipe);
+            if (output.substr(0, 11) == "gnuplot 4.2")
+            {
+                std::vector<std::string> graph_names = boost::assign::list_of("Simple_uniform_timecourse_-_c1")
+                    ("Simple_repetition_-_c2")("Uniform_timecourse_by_repeatedTask_-_c3")
+                    ("Setting_model_variable_-_c4")("Test_functional_range_-_c5")
+                    ("Test_functional_range_with_shorthands_-_c6");
+                BOOST_FOREACH(const std::string& r_graph_name, graph_names)
+                {
+                    FileFinder ref_graph("data/repeated_task_graphs/" + r_graph_name + ".eps", this_test);
+                    FileFinder new_graph = handler.FindFile(r_graph_name + ".eps");
+                    FileComparison comp(ref_graph, new_graph);
+                    comp.SetIgnoreCommentLines(false);
+                    comp.SetIgnoreLinesBeginningWith("%");
+                    comp.IgnoreLinesContaining("CreationDate");
+                    comp.IgnoreLinesContaining("Title");
+                    comp.IgnoreLinesContaining("Author");
+                    TS_ASSERT(comp.CompareFiles());
+                }
+            }
         }
     }
 

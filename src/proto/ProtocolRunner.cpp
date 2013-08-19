@@ -40,6 +40,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
 
 #include "AbstractCvodeCell.hpp"
 #include "CellMLToSharedLibraryConverter.hpp"
@@ -86,6 +87,23 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     assert(dynamic_cast<AbstractDynamicallyLoadableEntity*>(p_cell.get()));
     boost::shared_ptr<AbstractSystemWithOutputs> p_model = boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(p_cell);
     assert(p_model);
+    // Write info about the model into the output folder
+    out_stream p_model_info = mHandler.OpenOutputFile("model_info.txt");
+    (*p_model_info) << p_model->rGetInputNames().size() << " inputs:\n";
+    BOOST_FOREACH(const std::string& r_name, p_model->rGetInputNames())
+    {
+        (*p_model_info) << "\t" << r_name << "\n";
+    }
+    (*p_model_info) << p_model->GetNumberOfOutputs() << " outputs:\n";
+    BOOST_FOREACH(const std::string& r_name, p_model->rGetOutputNames())
+    {
+        (*p_model_info) << "\t" << r_name << "\n";
+    }
+    (*p_model_info) << p_cell->GetNumberOfStateVariables() << " state variables:\n";
+    BOOST_FOREACH(const std::string& r_name, p_cell->rGetStateVariableNames())
+    {
+        (*p_model_info) << "\t" << r_name << "\n";
+    }
     ProtocolTimer::EndEvent(ProtocolTimer::LOAD_MODEL);
 
     // Load the XML protocol

@@ -55,6 +55,12 @@ const std::vector<std::string>& AbstractSystemWithOutputs::rGetOutputUnits() con
 }
 
 
+const std::vector<std::string>& AbstractSystemWithOutputs::rGetInputNames() const
+{
+    return mInputNames;
+}
+
+
 void AbstractSystemWithOutputs::SetFreeVariable(double freeVariable)
 {
     mFreeVariable = freeVariable;

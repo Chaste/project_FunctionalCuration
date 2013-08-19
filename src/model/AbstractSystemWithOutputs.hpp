@@ -74,6 +74,10 @@ public:
      */
     virtual EnvironmentCPtr GetOutputs() =0;
 
+    /**
+     * @return  the names of this system's inputs.
+     */
+    const std::vector<std::string>& rGetInputNames() const;
 
     /**
      * Set the current value of the free variable (typically time).
@@ -153,6 +157,9 @@ protected:
 
     /** Units of system outputs. */
     std::vector<std::string> mOutputUnits;
+
+    /** Names of system inputs. */
+    std::vector<std::string> mInputNames;
 
     /** Stores the current value of the free variable; used for solving the system. */
     double mFreeVariable;

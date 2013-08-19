@@ -99,10 +99,11 @@ class SedmlParser(object):
     
     def apply_protocol(self):
         """Apply the changes in the parsed SED-ML."""
+        p = protocol.Protocol(self.model)
         # Find the requested model definition, and those it extends, back to the source document
         self.prepare_model(self.requested_model)
         # Figure out what model variables are referenced by the SED-ML data generators
-        used_var_xpaths = []
+        used_var_xpaths = set()
         list_of_tasks = self.sedml_doc.sedML.listOfTasks
         relevant_task_ids = []
         for task in list_of_tasks.task:
@@ -114,16 +115,25 @@ class SedmlParser(object):
                 for var in datagen.listOfVariables.variable:
                     xpath = getattr(var, u'target', u'')
                     if xpath:
-                        used_var_xpaths.append(xpath)
+                        used_var_xpaths.add(xpath)
+        # Make any variables referenced by repeatedTask setValue changes into model inputs,
+        # and ensure those referenced in the calculations are available.
+        # TODO: Only do this for repeatedTasks applied to the requested model.
+        for task in self.sedml_doc.xml_xpath('/sedml:sedML/sedml:listOfTasks/sedml:repeatedTask'):
+            print 'Rpt', task
+            for set_value in task.xml_xpath('sedml:listOfChanges/sedml:setValue'):
+                print 'Set', set_value, set_value.target
+                assert hasattr(set_value, u'target'), "We only support setValue with target attribute at present"
+                target = self.get_var_elt(self.cellml_doc, set_value.target)
+                p.inputs.add(target)
+                p.add_alias(target, set_value.target)
+                for variable_decl in set_value.xml_xpath('sedml:listOfVariables/sedml:variable'):
+                    xpath = getattr(variable_decl, u'target', u'')
+                    if xpath:
+                        used_var_xpaths.add(xpath)
         # Set up our protocol ready for code generation
-        p = protocol.Protocol(self.model)
         for var_xpath in used_var_xpaths:
-            var = self.cellml_doc.xml_xpath(var_xpath)
-            if len(var) != 1:
-                raise ValueError("Unable to find variable matching " + var_xpath)
-            var = var[0]
-            if not isinstance(var, cellml_variable):
-                raise ValueError("Variable reference %s doesn't select a cellml:variable element" % var_xpath)
+            var = self.get_var_elt(self.cellml_doc, var_xpath)
             p.outputs.add(var)
             p.add_alias(var, var_xpath)
         p.modify_model()
@@ -131,6 +141,15 @@ class SedmlParser(object):
         self.model.get_config().options.protocol = '_'.join([
             'SEDML', os.path.splitext(os.path.basename(self.sedml_path))[0].replace('-', '_'), self.requested_model])
     
+    def get_var_elt(self, doc, xpath):
+        var = doc.xml_xpath(xpath)
+        if len(var) != 1:
+            raise ValueError("Unable to find variable matching " + xpath)
+        var = var[0]
+        if not isinstance(var, cellml_variable):
+            raise ValueError("Variable reference %s doesn't select a cellml:variable element" % xpath)
+        return var
+
     def apply_changes(self, cellml_doc, model_defn):
         """Apply to cellml_doc the changes defined in the SED-ML model_defn."""
         if hasattr(model_defn, u'listOfChanges'):
@@ -185,7 +204,7 @@ class SedmlParser(object):
                         raise ValueError("Unsupported target type: ", target)
                 else:
                     raise ValueError("Unrecognised change type: " + change.localName)
-    
+
     def get_variable(self, model_id, var_xpath):
         """Get the value of the given variable in the given model."""
         if model_id not in self.ready_models:

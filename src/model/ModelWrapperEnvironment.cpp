@@ -35,6 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ModelWrapperEnvironment.hpp"
 
+#include <algorithm>
 #include <boost/assign/list_inserter.hpp> // for 'push_back()'
 #include <boost/pointer_cast.hpp>
 
@@ -46,6 +47,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ValueTypes.hpp"
 #include "ProtoHelperMacros.hpp"
 #include "AbstractSystemWithOutputs.hpp"
+#include "VectorStreaming.hpp"
 
 template<typename VECTOR>
 ModelWrapperEnvironment<VECTOR>::ModelWrapperEnvironment(boost::shared_ptr<AbstractParameterisedSystem<VECTOR> > pModel)
@@ -100,8 +102,12 @@ void ModelWrapperEnvironment<VECTOR>::OverwriteDefinition(const std::string& rNa
                                                           const AbstractValuePtr pValue,
                                                           const std::string& rCallerLocation)
 {
-    PROTO_ASSERT2(pValue->IsDouble(), "Only real numbers can be assigned to model variables.",
-                  rCallerLocation);
+    PROTO_ASSERT2(pValue->IsDouble(), "Only real numbers can be assigned to model variables.", rCallerLocation);
+    const std::vector<std::string>& r_input_names = boost::dynamic_pointer_cast<AbstractSystemWithOutputs>(mpModel)->rGetInputNames();
+    PROTO_ASSERT2(rName == mpModel->GetSystemInformation()->GetFreeVariableName()
+                  || std::find(r_input_names.begin(), r_input_names.end(), rName) != r_input_names.end(),
+                  "The variable '" << rName << "' is not a model input and hence cannot be modified."
+                  "Inputs are: " << r_input_names, rCallerLocation);
     double value = GET_SIMPLE_VALUE(pValue);
     try
     {

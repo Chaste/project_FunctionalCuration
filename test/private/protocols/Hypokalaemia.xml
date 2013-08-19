@@ -82,7 +82,7 @@
         <specifyOutputVariable name="oxmeta:extracellular_potassium_concentration" units="mM"/>
         <addOrReplaceEquation>
             <apply xmlns="http://www.w3.org/1998/Math/MathML"><eq/>
-                <ci>oxmeta:extracellular_potassium_concentration</ci><cn cellml:units="mM">0</cn>
+                <ci>oxmeta:extracellular_potassium_concentration</ci><ci>oxmeta:extracellular_potassium_concentration</ci>
             </apply>
         </addOrReplaceEquation>
         <addOrReplaceEquation>

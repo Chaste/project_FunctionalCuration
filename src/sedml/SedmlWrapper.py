@@ -120,9 +120,7 @@ class SedmlParser(object):
         # and ensure those referenced in the calculations are available.
         # TODO: Only do this for repeatedTasks applied to the requested model.
         for task in self.sedml_doc.xml_xpath('/sedml:sedML/sedml:listOfTasks/sedml:repeatedTask'):
-            print 'Rpt', task
             for set_value in task.xml_xpath('sedml:listOfChanges/sedml:setValue'):
-                print 'Set', set_value, set_value.target
                 assert hasattr(set_value, u'target'), "We only support setValue with target attribute at present"
                 target = self.get_var_elt(self.cellml_doc, set_value.target)
                 p.inputs.add(target)

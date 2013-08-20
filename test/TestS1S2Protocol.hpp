@@ -52,24 +52,36 @@ public:
     void TestXmlSyntax() throw(Exception, std::bad_alloc)
     {
         std::string dirname = "TestS1S2ProtocolOutputs";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         // Assume we get to steady state quickly
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
-        DoTest(dirname, proto_xml_file);
+        DoTest(dirname, proto_xml_file, cellml_file, 0.212);
     }
 
     void TestCompactSyntax() throw(Exception, std::bad_alloc)
     {
         std::string dirname = "TestS1S2ProtocolOutputs_Compact";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         // Assume we get to steady state quickly
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_S1S2.txt", RelativeTo::ChasteSourceRoot);
-        DoTest(dirname, proto_xml_file);
+        DoTest(dirname, proto_xml_file, cellml_file, 0.212);
+    }
+
+    // This model has time units in seconds, so we're checking that conversion works
+    void TestNobleModel() throw(Exception, std::bad_alloc)
+    {
+        std::string dirname = "TestS1S2ProtocolOutputs_EarmNobleModel";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/earm_noble_model_1990.cellml", RelativeTo::ChasteSourceRoot);
+        // Assume we get to steady state quickly
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
+        DoTest(dirname, proto_xml_file, cellml_file, 0.0264);
     }
 
 private:
-    void DoTest(const std::string& rDirName, const ProtocolFileFinder& rProtocolFile)
+    void DoTest(const std::string& rDirName, const ProtocolFileFinder& rProtocolFile, const FileFinder& rCellmlFile,
+                double expectedSlope)
     {
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolRunner runner(cellml_file, rProtocolFile, rDirName, true);
+        ProtocolRunner runner(rCellmlFile, rProtocolFile, rDirName, true);
 
         // Don't do too many runs
         std::vector<AbstractExpressionPtr> s2_intervals
@@ -86,7 +98,7 @@ private:
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
         NdArray<double> max_slope = GET_ARRAY(r_outputs.Lookup("max_S1S2_slope"));
         TS_ASSERT_EQUALS(max_slope.GetNumElements(), 1u);
-        TS_ASSERT_DELTA(*max_slope.Begin(), 0.212, 1e-3);
+        TS_ASSERT_DELTA(*max_slope.Begin(), expectedSlope, 1e-3);
 
         // Check we did the right number of timesteps (overridden protocol input)
         NdArray<double> voltage = GET_ARRAY(r_outputs.Lookup("membrane_voltage"));

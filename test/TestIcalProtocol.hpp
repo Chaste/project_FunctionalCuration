@@ -55,29 +55,35 @@ public:
     {
         std::string dirname = "TestICaLProtocolOutputs";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
-        DoTestShortIcal(dirname, proto_xml_file);
+        DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002");
     }
 
     void TestCompactSyntax() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs_Compact";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/ICaL.txt", RelativeTo::ChasteSourceRoot);
-        DoTestShortIcal(dirname, proto_xml_file);
+        DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002");
     }
 
     void TestImporting() throw (Exception)
     {
-
         std::string dirname = "TestICaLProtocolOutputs_Import";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_ical.xml", RelativeTo::ChasteSourceRoot);
-        DoTestShortIcal(dirname, proto_xml_file, false);
+        DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002", false);
+    }
+
+    void TestPaciModel() throw (Exception)
+    {
+        std::string dirname = "TestICaLProtocolOutputs_Paci";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_ical.xml", RelativeTo::ChasteSourceRoot);
+        DoTestShortIcal(dirname, proto_xml_file, "paci_hyttinen_aaltosetala_severi_ventricularVersion");
     }
 
 private:
-    void DoTestShortIcal(const std::string& rDirName, const ProtocolFileFinder& rProtoFile, bool setInputs=true) throw (Exception)
+    void DoTestShortIcal(const std::string& rDirName, const ProtocolFileFinder& rProtoFile,
+                         const std::string& rModelName, bool setInputs=true) throw (Exception)
     {
-        std::string model_name = "fox_mcharg_gilmour_2002";
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rModelName + ".cellml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
 
@@ -101,13 +107,27 @@ private:
         TS_ASSERT_EQUALS(min_LCC.GetNumElements(), 18u);
         TS_ASSERT_EQUALS(min_LCC.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(min_LCC.GetShape()[0], 3u);
-        const double expected[] = {-0.0144, -0.1105, -0.4718, -0.3094, -0.0929, -0.0066,
-                                   -0.0273, -0.2159, -0.9366, -0.6148, -0.1848, -0.0143,
-                                   -0.0398, -0.3192, -1.3979, -0.9178, -0.2758, -0.0219};
-        NdArray<double>::ConstIterator it = min_LCC.Begin();
-        for (unsigned i=0; i<18u; i++)
+        if (rModelName.substr(0,4) == "paci")
         {
-            TS_ASSERT_DELTA(*it++, expected[i], 1e-3);
+            const double expected[] = {-0.1026, -1.0193, -3.4105, -2.4263, -0.7405, -0.0640,
+                                       -0.2053, -2.0382, -6.8208, -4.8535, -1.4830, -0.1320,
+                                       -0.3080, -3.0568, -10.2307, -7.2804, -2.2254, -0.2001};
+            NdArray<double>::ConstIterator it = min_LCC.Begin();
+            for (unsigned i=0; i<18u; i++)
+            {
+                TS_ASSERT_DELTA(*it++, expected[i], 1e-3);
+            }
+        }
+        else
+        {
+            const double expected[] = {-0.0144, -0.1105, -0.4718, -0.3094, -0.0929, -0.0066,
+                                       -0.0273, -0.2159, -0.9366, -0.6148, -0.1848, -0.0143,
+                                       -0.0398, -0.3192, -1.3979, -0.9178, -0.2758, -0.0219};
+            NdArray<double>::ConstIterator it = min_LCC.Begin();
+            for (unsigned i=0; i<18u; i++)
+            {
+                TS_ASSERT_DELTA(*it++, expected[i], 1e-3);
+            }
         }
     }
 };

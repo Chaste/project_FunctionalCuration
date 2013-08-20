@@ -59,7 +59,7 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
                                bool optimiseModel)
     : mHandler(rOutputFolder)
 {
-    ProtocolTimer::Enable();
+    ProtocolTimer::Reset();
     ProtocolTimer::BeginEvent(ProtocolTimer::ALL);
     ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_MODEL);
     std::cout << "Running protocol '" << rProtoXmlFile.rGetOriginalSource().GetAbsolutePath() << "' on model '"

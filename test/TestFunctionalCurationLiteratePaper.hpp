@@ -310,14 +310,14 @@ private:
         *p_gnuplot_script  << "set autoscale" << std::endl;
         *p_gnuplot_script  << "set xrange [-60:80]" << std::endl; // This is additional to the default script
         *p_gnuplot_script  << "set key off" << std::endl;
-        *p_gnuplot_script << "set datafile separator \",\"" << std::endl;
+        *p_gnuplot_script  << "set datafile separator \",\"" << std::endl;
 
         *p_gnuplot_script  << "plot ";
         unsigned num_cols = 3u;
         for (unsigned i=1; i<=num_cols; ++i)
         {
             *p_gnuplot_script << "\"" + data_file_name + "\" using 1:" << i+1
-                              << " with linespoints pointtype 7 \"";
+                              << " with linespoints pointtype 7";
             if (i != num_cols)
             {
                 *p_gnuplot_script << ",\\";

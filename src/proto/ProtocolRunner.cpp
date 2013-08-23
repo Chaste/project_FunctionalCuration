@@ -104,6 +104,11 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     {
         (*p_model_info) << "\t" << r_name << "\n";
     }
+    *p_model_info << p_cell->GetNumberOfParameters() << " model parameters:\n";
+    BOOST_FOREACH(const std::string& r_name, p_cell->rGetParameterNames())
+    {
+        (*p_model_info) << "\t" << r_name << "\n";
+    }
     ProtocolTimer::EndEvent(ProtocolTimer::LOAD_MODEL);
 
     // Load the XML protocol

@@ -49,10 +49,17 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For one model subsequent investigation has revealed the results in the paper to be slightly
  * incorrect.  Tightening of tolerances and refinement of sampling intervals have also
  * improved the quality of the results for several models, especially under the ICaL protocol,
- * beyond the default comparison tolerance of 0.5%.  Another model (Faber-Rudy) shows extremely
+ * beyond the default comparison tolerance of 0.5%.
+ *
+ * Another model (Faber-Rudy) shows extremely
  * high sensitivity to code generation settings in the peak transmembrane potential, which in
  * turn affects the APD90 calculation in the S1-S2 protocol.  However, all these results have been
- * verified manually to match the original publication qualitatively.)
+ * verified manually to match the original publication qualitatively.
+ *
+ * Another notable exception is that (through the process of functional curation) we found that
+ * the Decker 2009 model did not replicate results shown in its original paper (S1-S2 curve was
+ * very different). This led to us finding a bug in the CellML encoding which we have corrected,
+ * and now the Decker 2009 model gives a sensible S1-S2 curve, unlike that shown in our paper!
  *
  * You can run these simulations using the following command from within the Chaste source tree:
  * {{{

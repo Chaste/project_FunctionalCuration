@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>uk.ac.ox.cs</groupId>
+    <artifactId>ChasteFunctionCurationWS</artifactId>
+    <packaging>war</packaging>
+    <version>1.0</version>
+    <name>ChasteFunctionCurationWS</name>
+    <url>http://www.cs.ox.ac.uk/chaste/</url>
+    <dependencies>
+        <dependency>
+            <groupId>de.binfalse</groupId>
+            <artifactId>BFLog</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>ChasteFunctionCurationWS</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <warSourceExcludes>
+                        res/js/3rd/colorbox/content/**,
+                        res/js/3rd/colorbox/exam*/**,
+                        res/js/3rd/colorbox/.git/**,
+                        res/css/Open_Sans/OpenSans-LightItalic.ttf,
+res/css/Open_Sans/OpenSans-SemiboldItalic.ttf,
+res/css/Open_Sans/OpenSans-ExtraBoldItalic.ttf,
+res/css/Open_Sans/OpenSans-ExtraBold.ttf,
+res/css/Open_Sans/OpenSans-BoldItalic.ttf,
+res/css/Open_Sans/OpenSans-Semibold.ttf,
+res/css/Open_Sans/OpenSans-Light.ttf,
+res/css/Open_Sans/OpenSans-Italic.ttf,
+res/css/Open_Sans/OpenSans-Bold.ttf,
+res/css/Cousine/Cousine-Bold.ttf,
+res/css/Cousine/Cousine-Italic.ttf,
+res/css/Cousine/Cousine-BoldItalic.ttf,
+res/css/fonts.zip
+                    </warSourceExcludes>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

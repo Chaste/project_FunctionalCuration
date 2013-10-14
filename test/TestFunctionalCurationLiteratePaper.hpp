@@ -241,6 +241,13 @@ private:
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
+        
+        // A special case - some versions of CVODE fail to solve this model for some test potentials otherwise!
+        if (rCellMLFileBaseName == "iribe_model_2006")
+        {
+            boost::shared_ptr<AbstractSystemWithOutputs> p_model = runner.GetProtocol()->GetModel();
+            dynamic_cast<AbstractCvodeCell*>(p_model.get())->SetTolerances(1e-5, 1e-7);
+        }
 
         // Augment the (single) plot specification to match presentation settings used in the original paper.
         BOOST_FOREACH(PlotSpecificationPtr p_plot_spec, runner.GetProtocol()->rGetPlotSpecifications())

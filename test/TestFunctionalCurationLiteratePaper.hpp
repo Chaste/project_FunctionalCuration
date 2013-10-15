@@ -131,12 +131,14 @@ private:
      * @param rOutputFileNames  the names of the output variables to compare (i.e. no extension)
      * @param relTol  relative tolerance
      * @param absTol  absolute tolerance
+     * @return  true if the results match historical data, provided the latter are present
      */
-    void CompareToHistoricalResults(const std::string& rModelName,
+    bool CompareToHistoricalResults(const std::string& rModelName,
                                     const std::string& rProtocolName,
                                     const std::vector<std::string>& rOutputNames,
                                     double relTol, double absTol)
     {
+        bool all_match = true;
         BOOST_FOREACH(std::string output_name, rOutputNames)
         {
             std::cout << "Comparing results of " << rProtocolName << " protocol on " << rModelName << ": " << output_name << "...";
@@ -155,20 +157,23 @@ private:
             {
                 TS_WARN("No historical data for model " + rModelName + " protocol " + rProtocolName
                         + " - please save results for future comparison");
-                return;
+                return true;
             }
             TSM_ASSERT("No results found but historical data exists for model " + rModelName + " protocol " + rProtocolName,
                        !ref_output.Exists() || test_output.Exists());
             if (!test_output.Exists())
             {
                 std::cout << std::endl;
-                return;
+                return !ref_output.Exists();
             }
 
             NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-            TS_ASSERT(comp.CompareFiles(absTol, 0, relTol));
+            bool match = comp.CompareFiles(absTol, 0, relTol);
+            TS_ASSERT(match);
             std::cout << "done." << std::endl;
+            all_match = all_match && match;
         }
+        return all_match;
     }
 
     /**
@@ -241,7 +246,7 @@ private:
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
-        
+
         // A special case - some versions of CVODE fail to solve this model for some test potentials otherwise!
         if (rCellMLFileBaseName == "iribe_model_2006")
         {
@@ -383,6 +388,7 @@ public:
                                                                    ("ten_tusscher_model_2004_epi_s1s2_curve")
                                                                    ("ten_tusscher_model_2006_epi_s1s2_curve");
 
+        unsigned num_failures = 0u; // Track how many model/protocol combinations fail
         for (unsigned i=0; i<cellml_files.size(); ++i)
         {
             if (PetscTools::IsParallel() && i % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
@@ -412,7 +418,10 @@ public:
             {
                 OUR_WARN(e.GetMessage(), cellml_files[i], "S1S2");
             }
-            CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6); // 0.5% rel tol
+            if (!CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6)) // 0.5% rel tol
+            {
+                ++num_failures;
+            }
 
             try {
                 RunICaLVoltageClampProtocol(cellml_files[i]);
@@ -421,10 +430,13 @@ public:
             {
                 OUR_WARN(e.GetMessage(), cellml_files[i], "ICaL");
             }
-            CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5); // 0.5% rel tol
+            if (!CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5)) // 0.5% rel tol
+            {
+                ++num_failures;
+            }
         }
 
-        /* Finally, the master process makes comparison plots of some experimental data we got
+        /* Next, the master process makes comparison plots of some experimental data we got
          * by digitising paper graphs.
          */
         PetscTools::IsolateProcesses(false);
@@ -475,6 +487,25 @@ public:
                         OUR_WARN(e.GetMessage(), exp_data[i], "ICaL");
                     }
                 }
+            }
+        }
+
+        /* Finally, we compute and print a summary of how many model/protocol combinations failed across
+         * the whole run, since it can be tricky to determine this by hand when running on many processes.
+         */
+        Warnings::NoisyDestroy();
+        unsigned total_num_failures = 0u;
+        MPI_Reduce(&num_failures, &total_num_failures, 1, MPI_UNSIGNED, MPI_SUM, 0, PetscTools::GetWorld());
+        if (PetscTools::AmMaster())
+        {
+            std::cout << std::endl << "Ran " << (2 * cellml_files.size()) << " model/protocol combinations." << std::endl;
+            if (total_num_failures > 0u)
+            {
+                std::cout << "Failed " << total_num_failures << " unexpectedly." << std::endl;
+            }
+            else
+            {
+                std::cout << "All combinations with historical results matched to within tolerances." << std::endl;
             }
         }
     }

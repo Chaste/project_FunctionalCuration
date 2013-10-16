@@ -48,6 +48,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ModelStateCollection.hpp"
 #include "OutputSpecification.hpp"
 #include "PlotSpecification.hpp"
+#include "Manifest.hpp"
 
 #include "OutputFileHandler.hpp"
 #include "FileFinder.hpp"
@@ -104,7 +105,7 @@ public:
      *
      * @param rFileNameBase  base part of output file names
      */
-    void WriteToFile(const std::string& rFileNameBase) const;
+    void WriteToFile(const std::string& rFileNameBase);
 
     /**
      * Write protocol outputs to a collection of files in a given folder.
@@ -173,6 +174,11 @@ public:
      * @param pValue  an expression giving its new value
      */
     void SetInput(const std::string& rName, AbstractExpressionPtr pValue);
+
+    /**
+     * @return  the manifest of output files written by the protocol
+     */
+    Manifest& rGetManifest();
 
     //
     // Get methods for the constituent parts of a protocol
@@ -364,6 +370,9 @@ private:
     /** Handler for writing results, debug & tracing information to file. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
 
+    /** The manifest of output files written by the protocol. */
+    Manifest mManifest;
+
     /** Whether to write plots to .png as well as .eps. */
     bool mWritePng;
 
@@ -409,7 +418,7 @@ private:
                          const unsigned numPointsInTrace,
                          std::string xLabel,
                          std::string yLabel,
-                         bool writePng) const;
+                         bool writePng);
 
     /**
      * Generate figures for requested plots, using Gnuplot.
@@ -418,7 +427,7 @@ private:
      *
      * @param rFileNameBase  the base name for output files (ignored for the final .eps files, which just use the plot title)
      */
-    void GeneratePlots(const std::string& rFileNameBase) const;
+    void GeneratePlots(const std::string& rFileNameBase);
 };
 
 #endif // PROTOCOL_HPP_

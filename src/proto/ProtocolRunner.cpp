@@ -123,6 +123,17 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     p_cell->SetAutoReset(false); // Speedier simulations
     mpProtocol->SetModel(p_model);
     ProtocolTimer::EndEvent(ProtocolTimer::LOAD_PROTO);
+
+    // Add files written so far to the manifest
+    Manifest& r_manifest = mpProtocol->rGetManifest();
+    r_manifest.AddEntry(rModelFile.GetLeafName(), "http://identifiers.org/combine.specifications/cellml.1.0");
+    r_manifest.AddEntry(model_name + "-conf.xml", "text/xml");
+    r_manifest.AddEntry(model_name + ".hpp", "text/plain");
+    r_manifest.AddEntry(model_name + ".cpp", "text/plain");
+    r_manifest.AddEntry("lib" + model_name + ".so", "application/octet-stream");
+    r_manifest.AddEntry("model_info.txt", "text/plain");
+    r_manifest.WriteFile(mHandler);
+
     ProtocolTimer::EndEvent(ProtocolTimer::ALL);
 }
 

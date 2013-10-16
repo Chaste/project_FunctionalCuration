@@ -37,6 +37,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TESTS1S2PROTOCOL_HPP_
 
 #include <string>
+#include <set>
+#include <map>
+#include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
 #include <cxxtest/TestSuite.h>
 
 #include "ProtocolRunner.hpp"
@@ -105,6 +109,47 @@ private:
         TS_ASSERT_EQUALS(voltage.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(voltage.GetShape()[0], s2_intervals.size());
         TS_ASSERT_EQUALS(voltage.GetShape()[1], 2001u);
+
+        CheckManifest(rDirName, rCellmlFile.GetLeafNameNoExtension(), runner.GetProtocol());
+    }
+
+    void CheckManifest(const std::string& rDirName, const std::string& rModelName, ProtocolPtr pProto)
+    {
+        FileFinder manifest_file(rDirName + "/manifest.xml", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(manifest_file.Exists());
+//      <content location="./manifest.xml" format="http://identifiers.org/combine.specifications/omex-manifest"/>
+        std::map<std::string, std::string> ext_map = boost::assign::map_list_of
+                ("eps", "application/postscript")
+                ("csv", "text/csv")
+                ("txt", "text/plain")
+                ("cellml", "http://identifiers.org/combine.specifications/cellml.1.0")
+                ("xml", "text/xml")
+                ("hpp", "text/plain")
+                ("cpp", "text/plain")
+                ("gp", "text/plain")
+                ("so", "application/octet-stream");
+        std::set<std::string> entries = boost::assign::list_of("machine_info_0.txt")("model_info.txt")("provenance_info_0.txt")
+                ("trace.txt")("outputs-contents.csv")("outputs-default-plots.csv")
+                ("Action_potential_traces.eps")("outputs_Action_potential_traces_gnuplot_data.csv")("outputs_Action_potential_traces_gnuplot_data.gp")
+                ("S1-S2_curve.eps")("outputs_S1-S2_curve_gnuplot_data.csv")("outputs_S1-S2_curve_gnuplot_data.gp")
+                ("outputs_APD90.csv")("outputs_DI.csv")("outputs_max_S1S2_slope.csv")("outputs_membrane_voltage.csv")
+                ("outputs_raw_APD90.csv")("outputs_raw_DI.csv")("outputs_S1S2_slope.csv")("outputs_time_1d.csv");
+        entries.insert("lib" + rModelName + ".so");
+        std::vector<std::string> suffixes = boost::assign::list_of(".cellml")("-conf.xml")(".cpp")(".hpp");
+        BOOST_FOREACH(std::string suffix, suffixes)
+        {
+            entries.insert(rModelName + suffix);
+        }
+        std::map<std::string,std::string> expected;
+        expected["success"] = "text/plain";
+        expected["manifest.xml"] = "http://identifiers.org/combine.specifications/omex-manifest";
+        BOOST_FOREACH(const std::string& r_entry, entries)
+        {
+            std::size_t dot_pos = r_entry.rfind('.');
+            std::string ext = r_entry.substr(dot_pos + 1);
+            expected[r_entry] = ext_map[ext];
+        }
+        TS_ASSERT_EQUALS(expected, pProto->rGetManifest().rGetEntries());
     }
 };
 

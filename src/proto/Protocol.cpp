@@ -175,6 +175,7 @@ void Protocol::Run()
     if (mpOutputHandler)
     {
         DebugProto::SetTraceFolder(*mpOutputHandler);
+        mManifest.AddEntry("trace.txt", "text/plain");
     }
     ResetOutputs(mOutputs);
     // If we get an error at any stage, we want to ensure as many partial results as possible
@@ -268,6 +269,7 @@ void Protocol::Run()
     if (mpOutputHandler)
     {
         DebugProto::StopTracing();
+        mManifest.WriteFile(*mpOutputHandler);
     }
     ProtocolTimer::EndEvent(ProtocolTimer::POSTPROCESS);
     ProtocolTimer::EndEvent(ProtocolTimer::RUN_PROTOCOL);
@@ -313,6 +315,9 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
         ExecutableSupport::SetOutputDirectory(mpOutputHandler->GetOutputDirectoryFullPath());
         ExecutableSupport::WriteMachineInfoFile("machine_info");
         ExecutableSupport::WriteProvenanceInfoFile();
+        mManifest.AddEntry("machine_info_0.txt", "text/plain");
+        mManifest.AddEntry("provenance_info_0.txt", "text/plain");
+        mManifest.WriteFile(*mpOutputHandler);
     }
     // Run protocol
     try
@@ -352,6 +357,8 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
             out_stream p_file = mpOutputHandler->OpenOutputFile("success");
             (*p_file) << "Protocol completed successfully." << std::endl;
             p_file->close();
+            mManifest.AddEntry("success", "text/plain");
+            mManifest.WriteFile(*mpOutputHandler);
         }
     }
     if (mParalleliseLoops)
@@ -395,7 +402,7 @@ std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec,
 }
 
 
-void Protocol::WriteToFile(const std::string& rFileNameBase) const
+void Protocol::WriteToFile(const std::string& rFileNameBase)
 {
     ProtocolTimer::BeginEvent(ProtocolTimer::WRITE_OUTPUTS);
     if (!mpOutputHandler)
@@ -413,6 +420,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
     {
         std::string index_file_name = rFileNameBase + "-contents.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(index_file_name);
+        mManifest.AddEntry(index_file_name, "text/csv");
         (*p_file) << "Variable id,Variable name,Units,Number of dimensions,File name,Type,Dimensions" << std::endl;
         BOOST_FOREACH(OutputSpecificationPtr p_spec, mOutputSpecifications)
         {
@@ -454,6 +462,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
     {
         std::string file_name = rFileNameBase + "-default-plots.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
+        mManifest.AddEntry(file_name, "text/csv");
         (*p_file) << "Plot title,File name,First variable,Optional second variable" << std::endl;
         BOOST_FOREACH(PlotSpecificationPtr p_spec, mPlotSpecifications)
         {
@@ -515,6 +524,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
 
         std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_name + ".csv");
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
+        mManifest.AddEntry(file_name, "text/csv");
         (*p_file) << "# " << p_spec->rGetOutputDescription() << std::endl;
 
         if (p_output->IsArray())
@@ -552,6 +562,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase) const
         }
         p_file->close();
     }
+    mManifest.WriteFile(*mpOutputHandler);
     ProtocolTimer::EndEvent(ProtocolTimer::WRITE_OUTPUTS);
 
     GeneratePlots(rFileNameBase);
@@ -588,7 +599,7 @@ std::string GetAxisLabel(std::string label, const std::string& rUnits)
 }
 
 
-void Protocol::GeneratePlots(const std::string& rFileNameBase) const
+void Protocol::GeneratePlots(const std::string& rFileNameBase)
 {
     ProtocolTimer::BeginEvent(ProtocolTimer::WRITE_PLOTS);
     const Environment& r_outputs = rGetOutputsCollection();
@@ -793,6 +804,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
         // Write data for plotting
         std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_title + "_gnuplot_data.csv");
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
+        mManifest.AddEntry(file_name, "text/csv");
         // Tabular format with no header line for easy processing by gnuplot
         for (NdArray<double>::ConstIterator it_x=output_x.Begin();
              it_x != output_x.End();
@@ -827,6 +839,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase) const
             PlotWithGnuplot(p_plot_spec, file_name, total_num_traces, x_length, label_x, label_y, true);
         }
     }
+    mManifest.WriteFile(*mpOutputHandler);
     ProtocolTimer::EndEvent(ProtocolTimer::WRITE_PLOTS);
 }
 
@@ -854,7 +867,7 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
                                const unsigned numPointsInTrace,
                                std::string xLabel,
                                std::string yLabel,
-                               bool writePng) const
+                               bool writePng)
 {
     /// \todo #1999 generalise further
     /// \todo #1999 make the plot title include the model as well as protocol name
@@ -888,6 +901,7 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
 
     // Write out a Gnuplot script
     out_stream p_gnuplot_script = mpOutputHandler->OpenOutputFile(script_name);
+    mManifest.AddEntry(script_name, "text/plain");
     std::string output_dir = mpOutputHandler->GetOutputDirectoryFullPath();
     *p_gnuplot_script << "# Gnuplot script file generated by Chaste Functional Curation system." << std::endl;
     *p_gnuplot_script << "# Plot of " << pPlotSpec->rGetTitle() << "." << std::endl;
@@ -987,6 +1001,17 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     {
         WARNING("Unable to generate plot '" << pPlotSpec->rGetTitle() << "' due to missing Gnuplot.");
     }
+    else
+    {
+        if (writePng)
+        {
+            mManifest.AddEntry(fig_file_name, "image/png");
+        }
+        else
+        {
+            mManifest.AddEntry(fig_file_name, "application/postscript");
+        }
+    }
 }
 
 
@@ -1041,6 +1066,12 @@ void Protocol::SetInput(const std::string& rName, AbstractExpressionPtr pValue)
     mpInputs->RemoveDefinition(rName, "Setting protocol input");
     AbstractValuePtr p_value = (*pValue)(*mpInputs);
     mpInputs->DefineName(rName, p_value, "Setting protocol input");
+}
+
+
+Manifest& Protocol::rGetManifest()
+{
+    return mManifest;
 }
 
 

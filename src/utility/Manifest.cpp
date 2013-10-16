@@ -39,9 +39,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <boost/foreach.hpp>
 
-void Manifest::AddEntry(const std::string& rFileName, const std::string& rFormat)
+void Manifest::AddEntry(const std::string& rFileName, const std::string& rFormat, bool allowOverwrite)
 {
-    assert(mEntries.find(rFileName) == mEntries.end());
+    assert(allowOverwrite || mEntries.find(rFileName) == mEntries.end());
     mEntries[rFileName] = rFormat;
 }
 
@@ -66,4 +66,10 @@ void Manifest::WriteFile(const OutputFileHandler& rOutputFolder)
 const std::map<std::string, std::string>& Manifest::rGetEntries() const
 {
     return mEntries;
+}
+
+
+void Manifest::Clear()
+{
+    mEntries.clear();
 }

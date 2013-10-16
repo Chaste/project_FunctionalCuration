@@ -54,9 +54,11 @@ public:
      *
      * @param rFileName  the name of the file
      * @param rFormat  the file format; either a MIME type or identifiers.org URL
+     * @param allowOverwrite  whether to allow overwriting an existing entry for the given file
      */
     void AddEntry(const std::string& rFileName,
-                  const std::string& rFormat);
+                  const std::string& rFormat,
+                  bool allowOverwrite=false);
 
     /**
      * Write the manifest to disk.
@@ -69,6 +71,9 @@ public:
      * @return  a map from file name to its format description (MIME type or identifiers.org URI)
      */
     const std::map<std::string, std::string>& rGetEntries() const;
+
+    /** Clear all entries in the manifest. */
+    void Clear();
 
 private:
     /** The file name -> format mapping. */

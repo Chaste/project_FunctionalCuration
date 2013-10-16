@@ -11,15 +11,17 @@
 # Description:       A simple job queue for the Functional Curation executable.
 ### END INIT INFO
 
-DIR=/home/tom/eclipse/workspace/Chaste/projects/CellModelTests/gui
+DIR=/home/tom/eclipse/workspace/Chaste/projects/FunctionalCuration/gui
 EXE=$DIR/QueueServer.py
 PIDFILE=$DIR/functional_curation_queue.pid
 LONG_NAME="Functional Curation Queue Server"
 NAME="FCQueueServer"
-USER=tom
-GROUP=tomcat6
 
-export LD_LIBRARY_PATH=/home/$USER/eclipse/workspace/Chaste/lib
+# Environment variables that need to be seen by FC too
+export USER=tom
+export GROUP=tomcat6
+export HOME=/home/$USER
+export LD_LIBRARY_PATH=$HOME/eclipse/workspace/Chaste/lib
 
 test -f $EXE || exit 0
 

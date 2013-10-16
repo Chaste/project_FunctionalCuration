@@ -13,10 +13,16 @@ import threading
 # Configuration
 HOST, PORT = "localhost", 7777
 MAX_QUEUE_SIZE = 50
-EXE_PATH = '/home/tom/eclipse/workspace/Chaste/projects/CellModelTests/apps/src/FunctionalCuration'
+EXE_PATH = '/home/tom/eclipse/workspace/Chaste/projects/FunctionalCuration/apps/src/FunctionalCuration'
 OUTPUT_ROOT = '/var/lib/tomcat6/CellModelTestOutput'
 INPUT_ROOT = '/var/lib/tomcat6/CellModelTestInput'
 PID_FILE = os.path.join(os.getcwd(), 'functional_curation_queue.pid')
+
+# Ensure PATH has correct MPI implementation
+os.environ['PATH'] = '/home/tom/mpi/bin:' + os.environ['PATH']
+os.environ['USER'] = 'tom'
+os.environ['HOME'] = '/home/tom'
+os.environ['CHASTE_TEST_OUTPUT'] = '/tmp/tom/testoutput'
 
 # Daemonize
 import daemon

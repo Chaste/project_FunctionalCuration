@@ -145,6 +145,11 @@ public:
         else
         {
             imported_proto_file.SetPath(source_uri, mpCurrentProtocolObject->rGetSourceFile());
+            if (!imported_proto_file.Exists())
+            {
+                FileFinder library("projects/FunctionalCuration/src/proto/library", RelativeTo::ChasteSourceRoot);
+                imported_proto_file.SetPath(source_uri, library);
+            }
         }
         return mrParser.ParseFile(imported_proto_file);
     }

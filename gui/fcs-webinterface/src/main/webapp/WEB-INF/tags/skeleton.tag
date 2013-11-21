@@ -58,7 +58,7 @@
 			<nav>
 				<ul class="navbar">
 					<li><a href="${contextPath}/index.html">Home</a></li>
-					<li><a href="${contextPath}/db.html">Kown Stuff</a></li>
+					<li><a href="${contextPath}/db.html">Known Stuff</a></li>
 					<li><a href="${contextPath}/contact.html">Contact/Team</a></li>
 					<c:choose>
 						<c:when test="${user != null && user.authorized}">

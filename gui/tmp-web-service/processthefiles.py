@@ -45,6 +45,8 @@ temp_dir = os.path.dirname(sys.argv[4])
 model.extractall(os.path.join(temp_dir, 'model'))
 protocol.extractall(os.path.join(temp_dir, 'proto'))
 
+url = sys.argv[1]
+
 # Determine primary model & protocol
 model_filename = proto_filename = ''
 for item in model.infolist():
@@ -53,6 +55,14 @@ for item in model.infolist():
 for item in protocol.infolist():
     if item.filename.endswith('.txt'):
         proto_filename = item.filename
+
+if (not model_filename) or (not proto_filename):
+    payload = {'signature': sys.argv[2], 'returnmsg' : 'was not able to find model _AND_ protocol ('+model_filename+'/'+proto_filename+')', 'returntype': 'error'}
+    r = requests.post(url, data=payload)
+    sys.exit()
+
+
+
 assert model_filename
 assert proto_filename
 
@@ -60,6 +70,10 @@ assert proto_filename
 # (or rather, a subfolder thereof).
 # Also redirect stdout and stderr so we can debug any issues.
 os.environ['LD_LIBRARY_PATH'] = '/home/bob/petsc-3.1-p8/linux-gnu-opt/lib:/home/tom/eclipse/workspace/Chaste/lib'
+os.environ['CHASTE_TEST_OUTPUT'] = '/tmp/python-webservice-testoutput'
+os.environ['USER'] = 'tom'
+os.environ['GROUP'] = 'www-data'
+os.environ['HOME'] = '/home/tom'
 args = ['/home/tom/eclipse/workspace/Chaste/projects/FunctionalCuration/apps/src/FunctionalCuration',
         os.path.join(temp_dir, 'model', model_filename),
         os.path.join(temp_dir, 'proto', proto_filename),
@@ -79,9 +93,8 @@ for ofile in output_files:
         output_zip.write(ofile, os.path.basename(ofile))
 output_zip.close()
 
-url = sys.argv[1]
 files = {'experiment': open(output_path, 'rb')}
-payload = {'signature': sys.argv[2]}
+payload = {'signature': sys.argv[2], 'returntype': 'success'}
 r = requests.post(url, files=files, data=payload)
 
 # Debug

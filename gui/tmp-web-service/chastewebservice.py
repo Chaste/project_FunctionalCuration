@@ -4,6 +4,7 @@ import cgitb
 import os
 import tempfile
 import time
+import random
 
 password="Ohchej7mo_Fohh:u1ohw"
 
@@ -35,25 +36,29 @@ if (not form.has_key("password")) or (form["password"].value != password) or (no
         </body></html>
         '''
 else:
-	print "Content-Type: text/plain\n\n"
-	callBack = form["callBack"]
-	signature = form["signature"]
-	model = form["model"]
-	protocol = form["protocol"]
+    print "Content-Type: text/plain\n\n"
+    callBack = form["callBack"]
+    signature = form["signature"]
+    model = form["model"]
+    protocol = form["protocol"]
 
-	temp_dir = tempfile.mkdtemp()
-	modelFile = os.path.join(temp_dir, 'model.zip')
-	protocolFile = os.path.join(temp_dir, 'protocol.zip')
+    # lets fail by random. later on a script will check whether model and protocol are compatible
+    if (random.randrange(0,2) == 1):
+        print signature.value, "failed because i randomly decided that model/protocol are not compatible"
+    else:
+        temp_dir = tempfile.mkdtemp()
+        modelFile = os.path.join(temp_dir, 'model.zip')
+        protocolFile = os.path.join(temp_dir, 'protocol.zip')
 
-	writeFile (model.file, modelFile)
-	writeFile (protocol.file, protocolFile)
-	
-	# call the chaste handler via batch -> it will be executed if load average drops below 1.5
-	# seems to be the most convinient mech, to not blow the machine...
-	# but may be replaced by a submit to sge or other scheduling workarounds
-	os.system("batch <<< '/var/www/cgi-bin/processthefiles.py "+callBack.value+" "+signature.value+" "+modelFile+" "+protocolFile+"'")
-	
-	# print success to calling script -> tell web interface that the call was successful
-	print signature.value, "succ"
+        writeFile (model.file, modelFile)
+        writeFile (protocol.file, protocolFile)
+
+        # call the chaste handler via batch -> it will be executed if load average drops below 1.5
+        # seems to be the most convinient mech, to not blow the machine...
+        # but may be replaced by a submit to sge or other scheduling workarounds
+        os.system("batch <<< '/var/www/cgi-bin/processthefiles.py "+callBack.value+" "+signature.value+" "+modelFile+" "+protocolFile+"'")
+
+        # print success to calling script -> tell web interface that the call was successful
+        print signature.value, "succ"
 
 

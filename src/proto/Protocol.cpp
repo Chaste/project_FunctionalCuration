@@ -427,7 +427,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
         std::string index_file_name = rFileNameBase + "-contents.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(index_file_name);
         mManifest.AddEntry(index_file_name, "text/csv");
-        (*p_file) << "Variable id,Variable name,Units,Number of dimensions,File name,Type,Dimensions" << std::endl;
+        *p_file << "Variable id,Variable name,Units,Number of dimensions,File name,Type,Dimensions" << std::endl;
         BOOST_FOREACH(OutputSpecificationPtr p_spec, mOutputSpecifications)
         {
             const std::string& r_name = p_spec->rGetOutputName();
@@ -445,16 +445,16 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
             if (p_output->IsArray())
             {
                 NdArray<double> output = GET_ARRAY(p_output);
-                (*p_file) << '"' << r_name << "\",\"" << p_spec->rGetOutputDescription()
-                          << "\",\"" << p_output->GetUnits()
-                          << "\"," << output.GetNumDimensions()
-                          << "," << SanitiseFileName(rFileNameBase + "_" + r_name + ".csv")
-                          << "," << p_spec->rGetOutputType();
+                *p_file << '"' << r_name << "\",\"" << p_spec->rGetOutputDescription()
+                         << "\",\"" << p_output->GetUnits()
+                         << "\"," << output.GetNumDimensions()
+                         << "," << SanitiseFileName(rFileNameBase + "_" + r_name + ".csv")
+                         << "," << p_spec->rGetOutputType();
                 BOOST_FOREACH(NdArray<double>::Index len, output.GetShape())
                 {
-                    (*p_file) << "," << len;
+                    *p_file << "," << len;
                 }
-                (*p_file) << std::endl;
+                *p_file << std::endl;
             }
             else
             {
@@ -469,7 +469,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
         std::string file_name = rFileNameBase + "-default-plots.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         mManifest.AddEntry(file_name, "text/csv");
-        (*p_file) << "Plot title,File name,Data file name,First variable id,Optional second variable id" << std::endl;
+        *p_file << "Plot title,File name,Data file name,First variable id,Optional second variable id,Optional key variable id" << std::endl;
         BOOST_FOREACH(PlotSpecificationPtr p_spec, mPlotSpecifications)
         {
             bool all_variables_exist = true;
@@ -504,13 +504,22 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                 p_spec->SetVariableUnits(units); // Store for later plotting use
                 p_spec->SetVariableDescriptions(descriptions); // Store for later plotting use
                 const std::string& r_title = p_spec->rGetTitle();
-                (*p_file) << '"' << r_title << "\"," << PlotFileName(p_spec);
+                *p_file << '"' << r_title << "\"," << PlotFileName(p_spec);
                 *p_file << "," << DataFileName(rFileNameBase, p_spec);
                 BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
                 {
-                    (*p_file) << ",\"" << r_name << "\"";
+                    *p_file << ",\"" << r_name << "\"";
                 }
-                (*p_file) << std::endl;
+                if (p_spec->rGetVariableNames().size() == 1u)
+                {
+                    // Second variable omitted, so add a blank entry
+                    *p_file << ",";
+                }
+                if (!p_spec->rGetKeyVariableName().empty())
+                {
+                    *p_file << ",\"" << p_spec->rGetKeyVariableName() << "\"";
+                }
+                *p_file << std::endl;
             }
         }
     }
@@ -532,7 +541,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
         std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_name + ".csv");
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         mManifest.AddEntry(file_name, "text/csv");
-        (*p_file) << "# " << p_spec->rGetOutputDescription() << std::endl;
+        *p_file << "# " << p_spec->rGetOutputDescription() << std::endl;
 
         if (p_output->IsArray())
         {
@@ -547,23 +556,23 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                 {
                     for (idxs[0]=0; idxs[0]<shape[0]; ++idxs[0])
                     {
-                        (*p_file) << (idxs[0] == 0 ? "" : ",") << output[idxs];
+                        *p_file << (idxs[0] == 0 ? "" : ",") << output[idxs];
                     }
-                    (*p_file) << std::endl;
+                    *p_file << std::endl;
                 }
             }
             else
             {
                 // General format - one entry per line, with header giving the shape
-                (*p_file) << num_dims;
+                *p_file << num_dims;
                 for (unsigned i=0; i<num_dims; ++i)
                 {
-                    (*p_file) << "," << shape[i];
+                    *p_file << "," << shape[i];
                 }
-                (*p_file) << std::endl;
+                *p_file << std::endl;
                 for (NdArray<double>::Iterator it = output.Begin(); it != output.End(); ++it)
                 {
-                    (*p_file) << *it << std::endl;
+                    *p_file << *it << std::endl;
                 }
             }
         }

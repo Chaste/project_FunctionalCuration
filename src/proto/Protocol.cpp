@@ -469,7 +469,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
         std::string file_name = rFileNameBase + "-default-plots.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         mManifest.AddEntry(file_name, "text/csv");
-        *p_file << "Plot title,File name,Data file name,First variable id,Optional second variable id,Optional key variable id" << std::endl;
+        *p_file << "Plot title,File name,Data file name,Line style,First variable id,Optional second variable id,Optional key variable id" << std::endl;
         BOOST_FOREACH(PlotSpecificationPtr p_spec, mPlotSpecifications)
         {
             bool all_variables_exist = true;
@@ -505,7 +505,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                 p_spec->SetVariableDescriptions(descriptions); // Store for later plotting use
                 const std::string& r_title = p_spec->rGetTitle();
                 *p_file << '"' << r_title << "\"," << PlotFileName(p_spec);
-                *p_file << "," << DataFileName(rFileNameBase, p_spec);
+                *p_file << "," << DataFileName(rFileNameBase, p_spec) << "," << p_spec->rGetStyle();
                 BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
                 {
                     *p_file << ",\"" << r_name << "\"";
@@ -893,20 +893,11 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
     std::string script_name = rDataFileName.substr(0, dot) + ".gp";
     std::string fig_file_name = PlotFileName(pPlotSpec, writePng);
 
-    // Decide whether to plot with points or lines
-    std::string points_or_lines;
-    if (numPointsInTrace > 100)
-    {   // Magic number choice here - if there are over 100 data points we visualise as a continuous line.
-        points_or_lines = "lines";
-    }
-    else
-    {   // otherwise we visualise as points joined by straight lines.
-        points_or_lines = "linespoints";
-    }
-    if (!pPlotSpec->rGetStyle().empty())
+    // Decide whether to plot with points or lines (default points joined by straight lines)
+    std::string points_or_lines = pPlotSpec->rGetStyle();
+    if (points_or_lines.empty())
     {
-        // The plot can override this setting
-        points_or_lines = pPlotSpec->rGetStyle();
+        points_or_lines = "linespoints";
     }
 
     // Escape single-quote characters in the plot title & axis labels

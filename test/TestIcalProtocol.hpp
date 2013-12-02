@@ -46,7 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
 
-#include "NumericFileComparison.hpp"
+#include "FileComparison.hpp"
 
 class TestIcalProtocol : public CxxTest::TestSuite
 {
@@ -63,6 +63,13 @@ public:
         std::string dirname = "TestICaLProtocolOutputs_Compact";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/ICaL.txt", RelativeTo::ChasteSourceRoot);
         DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002");
+
+        // Check the default plots file (see e.g. #2475)
+        FileFinder ref_plots("projects/FunctionalCuration/test/data/TestIcalProtocol-default-plots.csv", RelativeTo::ChasteSourceRoot);
+        FileFinder out_dir(dirname, RelativeTo::ChasteTestOutput);
+        FileFinder test_file("outputs-default-plots.csv", out_dir);
+        FileComparison comparer(test_file, ref_plots);
+        TS_ASSERT( comparer.CompareFiles() );
     }
 
     void TestImporting() throw (Exception)

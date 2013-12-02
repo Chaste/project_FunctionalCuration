@@ -1034,8 +1034,8 @@ public:
             SetContext(p_plot_elt);
             PlotSpecificationPtr p_plot;
             std::vector<DOMElement*> children = XmlTools::GetChildElements(p_plot_elt);
-            PROTO_ASSERT(children.size() >= 2 && children.size() <= 4,
-                         "A plot element must have 2-4 children, not " << children.size() << ".");
+            PROTO_ASSERT(children.size() >= 2 && children.size() <= 5,
+                         "A plot element must have 2-5 children, not " << children.size() << ".");
             std::string title = X2C(children.front()->getTextContent());
             const std::string elt_name = X2C(children[1]->getLocalName());
             if (elt_name == "data")
@@ -1049,10 +1049,17 @@ public:
                 std::string y_var = X2C(children[2]->getTextContent());
                 p_plot.reset(new PlotSpecification(title, x_var, y_var));
             }
-            // Check for a key variable
-            if (X2C(children.back()->getLocalName()) == "key")
+            // Check for a using declaration
+            std::vector<DOMElement*> using_elts = XmlTools::FindElements(p_plot_elt, "using");
+            if (!using_elts.empty())
             {
-                p_plot->SetKeyVariableName(X2C(children.back()->getTextContent()));
+                p_plot->SetStyle(X2C(using_elts.front()->getTextContent()));
+            }
+            // Check for a key variable
+            std::vector<DOMElement*> key_elts = XmlTools::FindElements(p_plot_elt, "key");
+            if (!key_elts.empty())
+            {
+                p_plot->SetKeyVariableName(X2C(key_elts.front()->getTextContent()));
             }
             TransferContext(p_plot_elt, p_plot);
             plots.push_back(p_plot);

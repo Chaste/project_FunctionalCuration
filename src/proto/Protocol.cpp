@@ -402,6 +402,11 @@ std::string PlotFileName(boost::shared_ptr<PlotSpecification> pPlotSpec,
     return SanitiseFileName(file_name);
 }
 
+std::string DataFileName(const std::string& rFileNameBase, boost::shared_ptr<PlotSpecification> pPlotSpec)
+{
+    return SanitiseFileName(rFileNameBase + "_" + pPlotSpec->rGetTitle() + "_gnuplot_data.csv");
+}
+
 
 void Protocol::WriteToFile(const std::string& rFileNameBase)
 {
@@ -464,7 +469,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
         std::string file_name = rFileNameBase + "-default-plots.csv";
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         mManifest.AddEntry(file_name, "text/csv");
-        (*p_file) << "Plot title,File name,First variable,Optional second variable" << std::endl;
+        (*p_file) << "Plot title,File name,Data file name,First variable id,Optional second variable id" << std::endl;
         BOOST_FOREACH(PlotSpecificationPtr p_spec, mPlotSpecifications)
         {
             bool all_variables_exist = true;
@@ -500,6 +505,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                 p_spec->SetVariableDescriptions(descriptions); // Store for later plotting use
                 const std::string& r_title = p_spec->rGetTitle();
                 (*p_file) << '"' << r_title << "\"," << PlotFileName(p_spec);
+                *p_file << "," << DataFileName(rFileNameBase, p_spec);
                 BOOST_FOREACH(const std::string& r_name, p_spec->rGetVariableNames())
                 {
                     (*p_file) << ",\"" << r_name << "\"";
@@ -803,7 +809,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
         }
 
         // Write data for plotting
-        std::string file_name = SanitiseFileName(rFileNameBase + "_" + r_title + "_gnuplot_data.csv");
+        std::string file_name = DataFileName(rFileNameBase, p_plot_spec);
         out_stream p_file = mpOutputHandler->OpenOutputFile(file_name);
         mManifest.AddEntry(file_name, "text/csv");
         // Tabular format with no header line for easy processing by gnuplot

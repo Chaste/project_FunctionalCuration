@@ -18,6 +18,7 @@
                 <ci>steady_state_time</ci>
                 <cn>10000</cn>
             </apply>
+            
             <!-- Fix some concentrations -->
             <apply><eq/>
                 <ci>extracellular_potassium_concentration</ci>

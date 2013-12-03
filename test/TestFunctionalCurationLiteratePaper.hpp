@@ -49,7 +49,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For one model subsequent investigation has revealed the results in the paper to be slightly
  * incorrect.  Tightening of tolerances and refinement of sampling intervals have also
  * improved the quality of the results for several models, especially under the ICaL protocol,
- * beyond the default comparison tolerance of 0.5%.
+ * beyond the default comparison tolerance of 0.5%.)
  *
  * Another model (Faber-Rudy) shows extremely
  * high sensitivity to code generation settings in the peak transmembrane potential, which in

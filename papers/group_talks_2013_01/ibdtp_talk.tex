@@ -74,19 +74,6 @@ How do we determine if a mathematical model of a biological system is useful for
 Audience have an academic background in Biology, Biochemistry or Chemistry and have completed the DTC's 2 week introductory mathematics course. Aim to provide an introduction to the role and applications of mathematical, computational and systems biology approaches in biological research.
 
 Duration: 40 mins
-
-Sections:
- - motivation
- - the concept (incl what goes in a protocol)
- - examples
- - conclusions / plans
-
-Todo:
- - improve intro
-   - use hund_2004.png to explain expt
- - add ICaL example
- - mention new website in progress
- - mention Aidan by name
  - refer back to Gary's talk
    - ion channel screens as example expt in motivation
 \end{comment}
@@ -134,7 +121,7 @@ Todo:
 
 \begin{frame}{Models and experiments}
 \small
-Suppose we have our mathematical model (Hund \& Rudy 2004):\\
+Suppose we have our mathematical model, e.g.\ Hund \& Rudy 2004:\\
 \includegraphics[width=\textwidth]{hund_2004}\\
 We want to perform various potentially complex interventions\ldots
 \end{frame}
@@ -144,6 +131,7 @@ We want to perform various potentially complex interventions\ldots
 \begin{center}
 \includegraphics[width=\textwidth]{ICaLIntro}
 \end{center}
+%Used for ion channel screens by pharma, c.f. Gary's talk
 \end{frame}
 
 
@@ -164,6 +152,7 @@ We want to perform various potentially complex interventions\ldots
 \begin{center}
 \includegraphics[width=.9\textwidth]{VirtEx_overview}
 \end{center}
+\vspace{-.25cm}
 \begin{itemize}
 \item Apply any \alert{virtual experiment} to any (relevant) model
 \item One definitive version of each model / protocol
@@ -363,9 +352,9 @@ We want to perform various potentially complex interventions\ldots
 \item Parameter sweep over crypt height
 \end{itemize}
 \end{minipage}
-\vspace{.5cm}
+\vspace{.4cm}
 \begin{center}
-\small
+\tiny
 \myhref{http://dx.doi.org/10.1016/j.procs.2013.05.235}{Cooper and Osborne, ICCS 2013}
 \end{center}
 \end{frame}
@@ -421,14 +410,14 @@ We want to perform various potentially complex interventions\ldots
   \item Brings together competing models, experimental data, and virtual experiments
   \item New models, experiments, or data analysed automatically under all relevant combinations
   \end{itemize}
-%Newly published models or datasets would then be picked up by the system and analysed automatically. Utilising semantic annotations to identify relevance, a new model would be characterised under all suitable virtual experiments (including those explicitly stated as being the training and validation experiments for the model). The results would be checked against the expected behaviors (e.g. using annotations of curves from Knuepfer et al., 2013), and thus the region of operation for a model would be determined, and limitations for the use of that model identified. Even more excitingly, it becomes possible to position a model relative to other models, with this comparison focused on the phenomena the models were built to imitate, providing a new starting point for model analyses. The accumulated battery of virtual experiments can reveal similarities and differences between models, beyond those originally expected. Dagmar mentioned scatter plot of models, as planned for the next version of  model VC with BudHat (Scharm et al., in preparation). Likewise, any new data set would be used to assess the goodness of fit of any relevant models, or even fitting model parameters on-the-fly.
+%Newly published models or datasets would then be picked up by the system and analysed automatically. Utilising semantic annotations to identify relevance, a new model would be characterised under all suitable virtual experiments (including those explicitly stated as being the training and validation experiments for the model). The results would be checked against the expected behaviors (e.g. using annotations of curves from Knuepfer et al., 2013), and thus the region of operation for a model would be determined, and limitations for the use of that model identified. Even more excitingly, it becomes possible to position a model relative to other models, with this comparison focused on the phenomena the models were built to imitate, providing a new starting point for model analyses. The accumulated battery of virtual experiments can reveal similarities and differences between models, beyond those originally expected. Likewise, any new data set would be used to assess the goodness of fit of any relevant models, or even fitting model parameters on-the-fly.
 \end{itemize}
 \end{frame}
 
 
 \begin{frame}{Plans for this year}
 \begin{itemize}
-\item Comprehensive cardiac protocol suite and \myhref{https://userpc58.cs.ox.ac.uk/FunctionalCuration}{website under development}
+\item Comprehensive cardiac protocol suite and website under development
 \item New more flexible implementation using Python
 \item Parameter fitting (with new student Aidan)
 \item Developing community standards for virtual experiments (SED-ML)

@@ -39,7 +39,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cxxtest/TestSuite.h>
 
 #include <string>
+#include <boost/assign/list_of.hpp>
 
+#include "ArrayFileReader.hpp"
 #include "ProtocolRunner.hpp"
 #include "ProtocolFileFinder.hpp"
 
@@ -48,16 +50,22 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PetscSetupAndFinalize.hpp"
 
+typedef NdArray<double>::Range R;
+typedef std::vector<R> RangeSpec;
+
 class TestClamping : public CxxTest::TestSuite
 {
 public:
     void TestClampingToInitialValue() throw (Exception)
     {
         std::string dirname = "TestClampingToInitialValue";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_clamping1.txt", RelativeTo::ChasteSourceRoot);
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_clamping1.txt",
+                                      RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml",
+                               RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
         runner.RunProtocol();
+
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
     }
@@ -65,10 +73,52 @@ public:
     void TestClampingToFixedValue() throw (Exception)
     {
         std::string dirname = "TestClampingToFixedValue";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_clamping2.txt", RelativeTo::ChasteSourceRoot);
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_clamping2.txt",
+                                      RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml",
+                               RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
         runner.RunProtocol();
+
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+    }
+
+    void xTestClampingToTimecourse() throw(Exception)
+    {
+        std::string dirname = "TestClampingToTimecourse";
+
+        // Load protocol
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/timecourse_voltage_clamp.txt",
+                                      RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/ten_tusscher_model_2004_epi.cellml",
+                               RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, proto_file, dirname);
+
+//        // Load voltage data from file with ArrayReader
+//        FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
+//        FileFinder data_file("data/one_pace_voltage.csv", this_test);
+//
+//        ArrayFileReader reader;
+//        NdArray<double> array = reader.ReadFile(data_file);
+//
+//        RangeSpec view_indices = boost::assign::list_of(R(0, 0, R::END)) // All elements from dim 0
+//                                                       (R(0)); // Just the first entry in second dimension
+//        NdArray<double> times = array[view_indices];
+//
+//        view_indices = boost::assign::list_of(R(0, 0, R::END)) // All elements from dim 0
+//                                             (R(1)); // Just the second entry in second dimension
+//        NdArray<double> voltages = array[view_indices];
+//
+//        // Wrap in an ArrayValue & set as protocol input
+//        ArrayValue time_values(times);
+//        ArrayValue voltage_values(voltages);
+//
+//        // Run protocol
+//        runner.GetProtocol()->SetInput("time_trace", &time_values);
+//        runner.GetProtocol()->SetInput("voltage_trace", &voltage_values);
+        runner.RunProtocol();
+
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
     }

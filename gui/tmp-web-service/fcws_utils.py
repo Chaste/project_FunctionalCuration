@@ -95,7 +95,7 @@ def GetProtoInterface(protoPath):
             source = os.path.join(library, source_uri)
         terms.update(GetProtoInterface(source))
     grammars = {CSP.CompactSyntaxParser.nsDecl: ProcessNsDecl,
-                CSP.CompactSyntaxParser.importStmt: (lambda res: ProcessImport(res[0][0])),
+                CSP.CompactSyntaxParser.importStmt: (lambda res: ProcessImport(res[0][1])),
                 CSP.CompactSyntaxParser.inputVariable: ProcessInput,
                 CSP.CompactSyntaxParser.outputVariable: ProcessOutput,
                 nested_proto: (lambda res: ProcessImport(res[0]))}

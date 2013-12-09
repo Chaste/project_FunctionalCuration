@@ -56,12 +56,19 @@ NdArray<double> ArrayFileReader::ReadFile(const FileFinder& rDataFile)
     std::istringstream line_stream(line);
     std::vector<double> data;
     double datum;
+    bool csv = false;
     while (line_stream.good())
     {
         line_stream >> datum;
         if (!line_stream.fail())
         {
             data.push_back(datum);
+        }
+        if (line_stream.peek() == ',')
+        {
+            // CSV data
+            csv = true;
+            line_stream.get(); // discard the comma
         }
     }
     const unsigned num_cols = data.size();
@@ -102,6 +109,10 @@ NdArray<double> ArrayFileReader::ReadFile(const FileFinder& rDataFile)
                 EXCEPT_IF_NOT(items_read < num_cols);
                 *array_it++ = datum;
                 items_read++;
+            }
+            if (csv)
+            {
+                line_stream.get(); // discard comma
             }
         }
         EXCEPT_IF_NOT(items_read == num_cols || items_read == 0u);

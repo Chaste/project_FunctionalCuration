@@ -895,10 +895,7 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
 
     // Decide whether to plot with points or lines (default points joined by straight lines)
     std::string points_or_lines = pPlotSpec->rGetStyle();
-    if (points_or_lines.empty())
-    {
-        points_or_lines = "linespoints";
-    }
+    assert(!points_or_lines.empty());
 
     // Escape single-quote characters in the plot title & axis labels
     std::string display_title = pPlotSpec->rGetDisplayTitle();

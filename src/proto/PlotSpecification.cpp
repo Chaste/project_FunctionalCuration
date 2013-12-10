@@ -41,7 +41,8 @@ PlotSpecification::PlotSpecification(const std::string& rTitle,
                                      const std::string& rXVariable,
                                      const std::string& rYVariable)
     : mTitle(rTitle),
-      mDisplayTitle(rTitle)
+      mDisplayTitle(rTitle),
+      mStyle("linespoints")
 {
     mVariableNames = boost::assign::list_of(rXVariable)(rYVariable);
 }
@@ -50,7 +51,8 @@ PlotSpecification::PlotSpecification(const std::string& rTitle,
                                      const std::string& rDataVariable)
     : mTitle(rTitle),
       mDisplayTitle(rTitle),
-      mVariableNames(1, rDataVariable)
+      mVariableNames(1, rDataVariable),
+      mStyle("linespoints")
 {}
 
 const std::string& PlotSpecification::rGetTitle() const

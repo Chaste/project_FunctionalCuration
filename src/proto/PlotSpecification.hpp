@@ -142,7 +142,7 @@ public:
     void SetGnuplotExtraCommands(const std::vector<std::string>& rCommands);
 
     /**
-     * Set the Gnuplot line/point style to use.
+     * Set the Gnuplot line/point style to use (the default is linespoints).
      *
      * @param rStyle  the style setting
      */

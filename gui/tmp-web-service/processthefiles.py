@@ -56,6 +56,7 @@ args = ['/home/tom/eclipse/workspace/Chaste/projects/FunctionalCuration/apps/src
 child_stdout_name = os.path.join(temp_dir, 'stdout.txt')
 output_file = open(child_stdout_name, 'w')
 subprocess.call(args, stdout=output_file, stderr=subprocess.STDOUT)
+output_file.close()
 
 # Zip up the outputs and post them to the callback
 output_path = os.path.join(temp_dir, 'output.zip')
@@ -65,10 +66,23 @@ output_zip.write(child_stdout_name, 'stdout.txt')
 for ofile in output_files:
     if os.path.isfile(ofile):
         output_zip.write(ofile, os.path.basename(ofile))
+outcome = 'success' if 'success' in output_zip.filelist else 'failed'
+# Add a manifest if Chaste didn't create one
+if 'manifest.xml' not in output_zip.filelist:
+    manifest = open(os.path.join(temp_dir, 'manifest.xml'), 'w')
+    manifest.write("""<?xml version='1.0' encoding='utf-8'?>
+<omexManifest xmlns='http://identifiers.org/combine.specifications/omex-manifest'>
+  <content location='%s' format='%s'/>
+  <content location='%s' format='%s'/>
+</omexManifest>
+""" % ('manifest.xml', 'http://identifiers.org/combine.specifications/omex-manifest',
+       'stdout.txt', 'text/plain'))
+    manifest.close()
+    output_zip.write(os.path.join(temp_dir, 'manifest.xml'), 'manifest.xml')
 output_zip.close()
 
 files = {'experiment': open(output_path, 'rb')}
-payload = {'signature': sys.argv[2], 'returntype': 'success'}
+payload = {'signature': sys.argv[2], 'returntype': outcome}
 r = requests.post(callback_url, files=files, data=payload)
 
 # Debug

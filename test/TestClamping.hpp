@@ -45,6 +45,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolRunner.hpp"
 #include "ProtocolFileFinder.hpp"
 #include "ProtoHelperMacros.hpp"
+#include "NumericFileComparison.hpp"
 
 #include "FileFinder.hpp"
 #include "Warnings.hpp"
@@ -98,7 +99,7 @@ public:
 
         // Load voltage data from file with ArrayReader
         FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
-        FileFinder data_file("data/one_pace_voltage.csv", this_test);
+        FileFinder data_file("data/reference_traces/one_pace_voltage.csv", this_test);
 
         ArrayFileReader reader;
         NdArray<double> array = reader.ReadFile(data_file);
@@ -122,6 +123,12 @@ public:
 
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
+
+        FileFinder reference_trace("data/reference_traces/tt04_I_Kr_under_AP_clamp.csv", this_test);
+        FileFinder generated_trace(dirname + "/outputs_I_Kr.csv", RelativeTo::ChasteTestOutput);
+
+        NumericFileComparison comparer(reference_trace, generated_trace);
+        TS_ASSERT(comparer.CompareFiles());
     }
 };
 

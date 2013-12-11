@@ -123,7 +123,8 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
         {
             // Note: iteration over a map is in ascending key order
             PROTO_ASSERT(it->second.mStep * (int)(it->second.mEnd - it->second.mBegin) > 0,
-                         "Stride and begin/end of range of dimension " << it->first << " are inconsistent.");
+                         "Stride (" << it->second.mStep << ") and range [" <<it->second.mBegin << ","
+                         << it->second.mEnd<< "] of dimension " << it->first << " are inconsistent.");
             generator_dimensions.push_back(it->first);
             generation_ranges.push_back(it->second);
             index_names.push_back(range_names.find(it->first)->second);

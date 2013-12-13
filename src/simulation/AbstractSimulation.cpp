@@ -130,7 +130,16 @@ void AbstractSimulation::InitialiseSteppers()
     {
         // Create an environment to contain views of the simulation outputs thus far, for
         // use in the loop condition test if needed.
-        EnvironmentPtr p_view_env(new Environment(true/* allow overwrite */));
+        // If we're in a nested protocol, the environment might already have been created...
+        EnvironmentCPtr p_view_env = mpEnvironment->GetDelegateeEnvironment(mOutputsPrefix);
+        if (!p_view_env)
+        {
+            p_view_env.reset(new Environment(true/* allow overwrite */));
+        }
+        else
+        {
+            boost::const_pointer_cast<Environment>(p_view_env)->Clear();
+        }
         mpEnvironment->SetDelegateeEnvironment(p_view_env, mOutputsPrefix);
     }
 }

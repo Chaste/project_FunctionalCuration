@@ -1,2 +1,0 @@
-serviceClass: fcs.client.GetResultsService
-path: F263EE4C179F4F2DDEAFF0C42B607732.gwt.rpc

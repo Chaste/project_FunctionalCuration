@@ -1,2 +1,0 @@
-serviceClass: fcs.client.GreetingService
-path: E9CCF165045ECD21C1250C09B503F1BD.gwt.rpc

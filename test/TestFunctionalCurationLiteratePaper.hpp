@@ -388,7 +388,9 @@ public:
                                                                    ("ten_tusscher_model_2004_epi_s1s2_curve")
                                                                    ("ten_tusscher_model_2006_epi_s1s2_curve");
 
-        unsigned num_failures = 0u; // Track how many model/protocol combinations fail
+        // Track which model/protocol combinations fail
+        std::vector<std::string> failed_combinations;
+
         for (unsigned i=0; i<cellml_files.size(); ++i)
         {
             if (PetscTools::IsParallel() && i % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
@@ -420,7 +422,7 @@ public:
             }
             if (!CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6)) // 0.5% rel tol
             {
-                ++num_failures;
+                failed_combinations.push_back(cellml_files[i] + " / S1S2");
             }
 
             try {
@@ -432,7 +434,7 @@ public:
             }
             if (!CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5)) // 0.5% rel tol
             {
-                ++num_failures;
+                failed_combinations.push_back(cellml_files[i] + " / ICaL");
             }
         }
 
@@ -490,24 +492,35 @@ public:
             }
         }
 
-        /* Finally, we compute and print a summary of how many model/protocol combinations failed across
+        /* Finally, we compute and print a summary of which model/protocol combinations failed across
          * the whole run, since it can be tricky to determine this by hand when running on many processes.
          */
         Warnings::NoisyDestroy();
+        unsigned num_local_failures = failed_combinations.size();
         unsigned total_num_failures = 0u;
-        MPI_Reduce(&num_failures, &total_num_failures, 1, MPI_UNSIGNED, MPI_SUM, 0, PetscTools::GetWorld());
+        MPI_Allreduce(&num_local_failures, &total_num_failures, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
         if (PetscTools::AmMaster())
         {
-            std::cout << std::endl << "Ran " << (2 * cellml_files.size()) << " model/protocol combinations." << std::endl;
+            std::cout << std::endl << "Ran " << (2 * cellml_files.size()) << " model / protocol combinations." << std::endl;
             if (total_num_failures > 0u)
             {
-                std::cout << "Failed " << total_num_failures << " unexpectedly." << std::endl;
+                std::cout << "Failed " << total_num_failures << " unexpectedly:" << std::endl;
             }
             else
             {
                 std::cout << "All combinations with historical results matched to within tolerances." << std::endl;
             }
         }
+        if (total_num_failures > 0u)
+        {
+            PetscTools::BeginRoundRobin();
+            BOOST_FOREACH(const std::string& r_combo, failed_combinations)
+            {
+                std::cout << "    " << r_combo << std::endl;
+            }
+            PetscTools::EndRoundRobin();
+        }
+        PetscTools::Barrier(); // Prevent printing cxxtest pass/fail lines until above completed for all processes
     }
 };
 

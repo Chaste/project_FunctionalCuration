@@ -154,7 +154,7 @@ void Protocol::InitialiseLibrary(bool reinit)
     // Now do our library
     const unsigned library_size = mpLibrary->GetNumberOfDefinitions();
     assert(library_size == 0 || library_size == mLibraryStatements.size());
-    if (library_size == 0 || reinit)
+    if (library_size == 0)
     {
         mpLibrary->ExecuteStatements(mLibraryStatements);
     }

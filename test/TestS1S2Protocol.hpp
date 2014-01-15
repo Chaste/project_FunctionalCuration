@@ -133,7 +133,9 @@ private:
                 ("Action_potential_traces.eps")("outputs_Action_potential_traces_gnuplot_data.csv")("outputs_Action_potential_traces_gnuplot_data.gp")
                 ("S1-S2_curve.eps")("outputs_S1-S2_curve_gnuplot_data.csv")("outputs_S1-S2_curve_gnuplot_data.gp")
                 ("outputs_APD90.csv")("outputs_DI.csv")("outputs_max_S1S2_slope.csv")("outputs_membrane_voltage.csv")
-                ("outputs_raw_APD90.csv")("outputs_raw_DI.csv")("outputs_S1S2_slope.csv")("outputs_time_1d.csv");
+                ("outputs_raw_APD90.csv")("outputs_raw_DI.csv")("outputs_S1S2_slope.csv")("outputs_time_1d.csv")
+                ("outputs_PCLs.csv")("outputs_restitution_curve_gnuplot_data.csv")
+                ("restitution_curve.eps")("outputs_restitution_curve_gnuplot_data.gp");
         entries.insert("lib" + rModelName + ".so");
         std::vector<std::string> suffixes = boost::assign::list_of(".cellml")("-conf.xml")(".cpp")(".hpp");
         BOOST_FOREACH(std::string suffix, suffixes)

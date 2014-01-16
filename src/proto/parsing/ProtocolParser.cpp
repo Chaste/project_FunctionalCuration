@@ -234,44 +234,6 @@ public:
         }
     }
 
-    template<typename OBJ_VEC>
-    bool CheckUseImports(DOMElement* pElt,
-                         OBJ_VEC& (Protocol::*pGetter)(),
-                         void (Protocol::*pAdder)(const OBJ_VEC&))
-    {
-        bool matched = (X2C(pElt->getLocalName()) == "useImports");
-        if (matched)
-        {
-            SetContext(pElt);
-            PROTO_ASSERT(pElt->hasAttribute(X("prefix")),
-                         "A useImports element must have a prefix attribute.");
-            const std::string prefix = X2C(pElt->getAttribute(X("prefix")));
-            ProtocolPtr p_imported_proto = mpCurrentProtocolObject->GetImportedProtocol(prefix);
-            PROTO_ASSERT(p_imported_proto, "No protocol imported with the prefix " << prefix);
-            OBJ_VEC& r_items = (p_imported_proto.get()->*pGetter)();
-            (mpCurrentProtocolObject.get()->*pAdder)(r_items);
-        }
-        return matched;
-    }
-
-    template<typename OBJ_VEC>
-    bool CheckUseImportsVec(DOMElement* pElt, OBJ_VEC& (Protocol::*pGetter)(), OBJ_VEC& rDestVec)
-    {
-        bool matched = (X2C(pElt->getLocalName()) == "useImports");
-        if (matched)
-        {
-            SetContext(pElt);
-            PROTO_ASSERT(pElt->hasAttribute(X("prefix")),
-                         "A useImports element must have a prefix attribute.");
-            const std::string prefix = X2C(pElt->getAttribute(X("prefix")));
-            ProtocolPtr p_imported_proto = mpCurrentProtocolObject->GetImportedProtocol(prefix);
-            PROTO_ASSERT(p_imported_proto, "No protocol imported with the prefix " << prefix);
-            OBJ_VEC& r_items = (p_imported_proto.get()->*pGetter)();
-            std::copy(r_items.begin(), r_items.end(), std::back_inserter(rDestVec));
-        }
-        return matched;
-    }
-
     /**
      * Parse an element that may contain either a constant number or an expression child element.
      *
@@ -972,10 +934,6 @@ public:
         variable_specs.reserve(spec_elts.size());
         BOOST_FOREACH(DOMElement* p_spec_elt, spec_elts)
         {
-            if (CheckUseImportsVec(p_spec_elt, &Protocol::rGetOutputSpecifications, variable_specs))
-            {
-                continue;
-            }
             SetContext(p_spec_elt);
             std::string elt_name = X2C(p_spec_elt->getLocalName());
             std::string type;
@@ -1027,10 +985,6 @@ public:
         plots.reserve(plot_elts.size());
         BOOST_FOREACH(DOMElement* p_plot_elt, plot_elts)
         {
-            if (CheckUseImportsVec(p_plot_elt, &Protocol::rGetPlotSpecifications, plots))
-            {
-                continue;
-            }
             SetContext(p_plot_elt);
             PlotSpecificationPtr p_plot;
             std::vector<DOMElement*> children = XmlTools::GetChildElements(p_plot_elt);
@@ -1221,10 +1175,7 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
         std::vector<DOMElement*> children = XmlTools::GetChildElements(simulations.front());
         BOOST_FOREACH(DOMElement* p_sim_elt, children)
         {
-            if (!rParser.CheckUseImports(p_sim_elt, &Protocol::rGetSimulations, &Protocol::AddSimulations))
-            {
-                pProto->AddSimulation(rParser.ParseSimulationDefinition(p_sim_elt));
-            }
+            pProto->AddSimulation(rParser.ParseSimulationDefinition(p_sim_elt));
         }
     }
 
@@ -1235,9 +1186,7 @@ void AddElementsToProtocol(ProtocolPtr pProto, ProtocolParserImpl& rParser, DOME
         std::vector<DOMElement*> children = XmlTools::GetChildElements(post_proc.front());
         BOOST_FOREACH(DOMElement* p_child, children)
         {
-            // Check for useImports
-            if (!rParser.CheckUseImports(p_child, &Protocol::rGetPostProcessing, &Protocol::AddPostProcessing)
-                && X2C(p_child->getLocalName()) == "apply")
+            if (X2C(p_child->getLocalName()) == "apply")
             {
                 // Local definitions
                 pProto->AddPostProcessing(rParser.ParseStatementList(p_child));

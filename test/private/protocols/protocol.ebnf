@@ -62,9 +62,6 @@ imports = {import} ;
 import = "import", mws, [ident, eq, '"', path, '"'], [ setInputs ], stmtE ;
 setInputs = blkS, { assignmentStmt }, blkE ;
 
-(* For using prefixed imports elsewhere *)
-useImports = "use", mws, "imports", mws, ncIdent, stmtE ;
-
 
 (* The protocol library is a sequence of assignments defining useful functions and
    variables for use in later parts of the protocol.  The expressions here can make
@@ -90,7 +87,7 @@ unitsRef = "units", mws, '"', ident, '"' ;
    Finally, the mathematics of the model may be altered, e.g. to replace the equation
    defining the stimulus current, or replace the ODE for V by an input parameter. *)
 modelInterface = "model", mws, "interface", blkS,
-                 {useImports}, [setIndependentVariableUnits],
+                 [setIndependentVariableUnits],
                  {specifyInputVariable}, {specifyOutputVariable},
                  {declareNewVariable}, {addOrReplaceEquation},
                  {unitsConversionRule}, blkE ;
@@ -144,7 +141,7 @@ resetState = "reset", [mws, "to", mws, ncIdent] ;
 
 (* The post-processing section consists of a sequence of statements which are
    executed in order.  See below for more about the statement structure. *)
-post-processing = "post-processing", blkS, { statementList | useImports }, blkE ;
+post-processing = "post-processing", blkS, statementList, blkE ;
 
 
 (* The outputs section identifies which variables should be considered as the
@@ -156,14 +153,14 @@ post-processing = "post-processing", blkS, { statementList | useImports }, blkE 
    This is required when referring to a variable using a prefix.  (Note that a
    prefix is not required to access post-processing results defined in this
    protocol.) *)
-outputs = "outputs", blkS, {useImports | output}, blkE ;
+outputs = "outputs", blkS, output, blkE ;
 output = ncIdent, [eq, varRef], [blkS, [unitsRef], [outputDescription] , blkE] ;
 outputDescription = "description", mws, quotedString ;
 
 
 (* Default graphs of interest for the protocol may be specified.  We've not
    looked at this aspect in any detail yet. *)
-plots = "plots", blkS, { plot | useImports }, blkE ;
+plots = "plots", blkS, plot, blkE ;
 plot = "plot", mws, quotedString, blkS, plotDetails, blkE ;
 plotDetails = {ws}, "x", eq, ident, stmtE,
               {ws}, "y", eq, ident, stmtE ;

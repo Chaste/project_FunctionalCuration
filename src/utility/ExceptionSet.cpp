@@ -53,15 +53,20 @@ ExceptionSet::ExceptionSet(const std::vector<Exception>& rComponentErrors,
         }
         else
         {
-            // Extract the last line that isn't empty
-            std::string short_message("\n" + rErr.GetShortMessage());
-            while (*(short_message.rbegin()) == '\n')
-            {
-                short_message = short_message.substr(0, short_message.length()-1);
-            }
-            size_t last_line_start = short_message.rfind('\n');
-            message += "\n  " + short_message.substr(last_line_start+1);
+            message += "\n  " + ExtractShortMessage(rErr);
         }
     }
     SetMessage(message, rFileName, lineNumber);
+}
+
+
+std::string ExceptionSet::ExtractShortMessage(const Exception& rError)
+{
+    std::string short_message("\n" + rError.GetShortMessage());
+    while (*(short_message.rbegin()) == '\n')
+    {
+        short_message = short_message.substr(0, short_message.length()-1);
+    }
+    size_t last_line_start = short_message.rfind('\n');
+    return short_message.substr(last_line_start+1);
 }

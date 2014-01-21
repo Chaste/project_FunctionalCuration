@@ -61,10 +61,51 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
 {
     ProtocolTimer::Reset();
     ProtocolTimer::BeginEvent(ProtocolTimer::ALL);
-    ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_MODEL);
     std::cout << "Running protocol '" << rProtoXmlFile.rGetOriginalSource().GetAbsolutePath() << "' on model '"
               << rModelFile.GetAbsolutePath() << "' and writing output to "
               << mHandler.GetOutputDirectoryFullPath() << std::endl;
+
+    boost::shared_ptr<AbstractSystemWithOutputs> p_model;
+    try
+    {
+        p_model = LoadModel(rModelFile, rProtoXmlFile, optimiseModel);
+    }
+    catch (...)
+    {
+        Protocol::WriteError("Error loading CellML model from file.  See full output (stdout) for details.",
+                             mHandler);
+        throw;
+    }
+    try
+    {
+        LoadProtocol(rProtoXmlFile, p_model);
+    }
+    catch (const Exception& r_e)
+    {
+        Protocol::WriteError(r_e.GetMessage(), mHandler);
+        throw;
+    }
+
+    // Add files written so far to the manifest
+    Manifest& r_manifest = mpProtocol->rGetManifest();
+    std::string model_name = rModelFile.GetLeafNameNoExtension();
+    r_manifest.AddEntry(rModelFile.GetLeafName(), "http://identifiers.org/combine.specifications/cellml.1.0");
+    r_manifest.AddEntry(model_name + "-conf.xml", "text/xml");
+    r_manifest.AddEntry(model_name + ".hpp", "text/plain");
+    r_manifest.AddEntry(model_name + ".cpp", "text/plain");
+    r_manifest.AddEntry("lib" + model_name + ".so", "application/octet-stream");
+    r_manifest.AddEntry("model_info.txt", "text/plain");
+    r_manifest.WriteFile(mHandler);
+
+    ProtocolTimer::EndEvent(ProtocolTimer::ALL);
+}
+
+
+boost::shared_ptr<AbstractSystemWithOutputs> ProtocolRunner::LoadModel(const FileFinder& rModelFile,
+                                                                       const ProtocolFileFinder& rProtoXmlFile,
+                                                                       bool optimiseModel)
+{
+    ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_MODEL);
     // Copy CellML file into output dir and create conf file
     std::string model_name = rModelFile.GetLeafNameNoExtension();
     std::cout << "Generating modified model " << model_name << std::endl;
@@ -109,33 +150,28 @@ ProtocolRunner::ProtocolRunner(const FileFinder& rModelFile,
     {
         (*p_model_info) << "\t" << r_name << "\n";
     }
-    ProtocolTimer::EndEvent(ProtocolTimer::LOAD_MODEL);
-
-    // Load the XML protocol
-    ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_PROTO);
-    ProtocolParser parser;
-    mpProtocol = parser.ParseFile(rProtoXmlFile);
-    mpProtocol->SetOutputFolder(mHandler);
 
     p_cell->SetMaxSteps(2e7); // We need to allow CVODE to take lots of internal steps for some protocols
     p_cell->SetTimestep(0.5); // Max dt = 0.5ms to ensure stimulus isn't missed
     p_cell->SetTolerances(/*rel*/1e-6, /*abs*/1e-8); // Guard against changes to defaults
     p_cell->SetAutoReset(false); // Speedier simulations
-    mpProtocol->SetModel(p_model);
-    ProtocolTimer::EndEvent(ProtocolTimer::LOAD_PROTO);
 
-    // Add files written so far to the manifest
-    Manifest& r_manifest = mpProtocol->rGetManifest();
-    r_manifest.AddEntry(rModelFile.GetLeafName(), "http://identifiers.org/combine.specifications/cellml.1.0");
-    r_manifest.AddEntry(model_name + "-conf.xml", "text/xml");
-    r_manifest.AddEntry(model_name + ".hpp", "text/plain");
-    r_manifest.AddEntry(model_name + ".cpp", "text/plain");
-    r_manifest.AddEntry("lib" + model_name + ".so", "application/octet-stream");
-    r_manifest.AddEntry("model_info.txt", "text/plain");
-    r_manifest.WriteFile(mHandler);
-
-    ProtocolTimer::EndEvent(ProtocolTimer::ALL);
+    ProtocolTimer::EndEvent(ProtocolTimer::LOAD_MODEL);
+    return p_model;
 }
+
+
+void ProtocolRunner::LoadProtocol(const ProtocolFileFinder& rProtoXmlFile,
+                                  boost::shared_ptr<AbstractSystemWithOutputs> pModel)
+{
+    ProtocolTimer::BeginEvent(ProtocolTimer::LOAD_PROTO);
+    ProtocolParser parser;
+    mpProtocol = parser.ParseFile(rProtoXmlFile);
+    mpProtocol->SetOutputFolder(mHandler);
+    mpProtocol->SetModel(pModel);
+    ProtocolTimer::EndEvent(ProtocolTimer::LOAD_PROTO);
+}
+
 
 void ProtocolRunner::SetPngOutput(bool writePng)
 {

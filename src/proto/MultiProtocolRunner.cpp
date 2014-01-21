@@ -222,7 +222,7 @@ void MultiProtocolRunner::RunProtocols()
             }
             catch (const Exception& r_e)
             {
-                std::cerr << r_e.GetMessage();
+                std::cerr << r_e.GetMessage() << std::endl;
                 WARNING("Running protocol " << proto_name << " on model " << model_name << " failed:"
                         << r_e.GetMessage());
             }

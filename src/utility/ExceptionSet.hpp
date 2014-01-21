@@ -58,6 +58,15 @@ public:
                  const std::string& rFileName,
                  unsigned lineNumber,
                  bool includeBacktraces=true);
+
+    /**
+     * Extract the last non-empty line from an exception message.
+     * Especially useful for getting the actual issue from a BacktraceException.
+     *
+     * @param rError  the error object
+     * @return  the one-line error message
+     */
+    static std::string ExtractShortMessage(const Exception& rError);
 };
 
 /**

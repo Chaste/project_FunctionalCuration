@@ -52,6 +52,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "OutputFileHandler.hpp"
 #include "FileFinder.hpp"
+#include "Exception.hpp"
 
 // See below!
 class Protocol;
@@ -179,6 +180,21 @@ public:
      * @return  the manifest of output files written by the protocol
      */
     Manifest& rGetManifest();
+
+    /**
+     * Write a short error message to an "errors.txt" file summarising any errors that occurred.
+     *
+     * @param rMessage  the error message
+     * @param rHandler  where to write the errors file
+     */
+    static void WriteError(const std::string& rMessage, const OutputFileHandler& rHandler);
+
+    /**
+     * Write a short summary of the given error to the "errors.txt" file.
+     *
+     * @param rError  an error that has just occurred
+     */
+    void WriteError(const Exception& rError);
 
     //
     // Get methods for the constituent parts of a protocol

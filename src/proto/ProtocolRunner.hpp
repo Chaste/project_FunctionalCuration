@@ -81,6 +81,27 @@ public:
     void SetPngOutput(bool writePng);
 
 private:
+    /**
+     * Load a model from a CellML file.
+     *
+     * @param rModelFile  the model CellML file
+     * @param rProtoXmlFile  the protocol definition file
+     * @param optimiseModel  whether to apply PyCml optimisations to the model
+     * @return
+     */
+    boost::shared_ptr<AbstractSystemWithOutputs> LoadModel(const FileFinder& rModelFile,
+                                                           const ProtocolFileFinder& rProtoXmlFile,
+                                                           bool optimiseModel);
+
+    /**
+     * Load a protocol from its definition file.
+     *
+     * @param rProtoXmlFile  the protocol definition file
+     * @param pModel  the model to experiment on
+     */
+    void LoadProtocol(const ProtocolFileFinder& rProtoXmlFile,
+                      boost::shared_ptr<AbstractSystemWithOutputs> pModel);
+
     /** The handler for file output. */
     OutputFileHandler mHandler;
 

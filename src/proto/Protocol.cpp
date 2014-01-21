@@ -44,7 +44,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/foreach.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "Exception.hpp"
 #include "ExecutableSupport.hpp"
 #include "Warnings.hpp"
 #include "PetscTools.hpp"
@@ -214,6 +213,7 @@ void Protocol::Run()
     {
         std::cerr << e.GetMessage();
         errors.push_back(e);
+        WriteError(e);
     }
     ProtocolTimer::EndEvent(ProtocolTimer::SIMULATE);
     ProtocolTimer::BeginEvent(ProtocolTimer::POSTPROCESS);
@@ -232,6 +232,7 @@ void Protocol::Run()
             {
                 std::cerr << e.GetMessage();
                 errors.push_back(e);
+                WriteError(e);
             }
         }
         // Transfer requested outputs to mOutputs[""]
@@ -259,6 +260,7 @@ void Protocol::Run()
             {
                 std::cerr << e.GetMessage();
                 errors.push_back(e);
+                WriteError(e);
             }
         }
     }
@@ -304,6 +306,30 @@ void Protocol::WriteToFile(const OutputFileHandler& rHandler,
 {
     SetOutputFolder(rHandler);
     WriteToFile(rFileNameBase);
+}
+
+
+void Protocol::WriteError(const std::string& rMessage,
+                          const OutputFileHandler& rHandler)
+{
+    try
+    {
+        out_stream p_error_file = rHandler.OpenOutputFile("errors.txt", std::ios_base::app);
+        *p_error_file << rMessage << std::endl;
+        p_error_file->close();
+    }
+    catch (...)
+    {
+        // Swallow any errors while writing - stdout will have full error information anyway.
+    }
+}
+
+void Protocol::WriteError(const Exception& rError)
+{
+    if (mpOutputHandler)
+    {
+        Protocol::WriteError(ExceptionSet::ExtractShortMessage(rError), *mpOutputHandler);
+    }
 }
 
 
@@ -586,6 +612,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
     if (!missing_outputs.empty())
     {
         std::vector<std::string> missing_names(missing_outputs.begin(), missing_outputs.end());
+        WriteError("Not all expected protocol outputs were defined; see full output for details.", *mpOutputHandler);
         EXCEPTION("Not all protocol outputs were defined.  Missing names: " << missing_names);
     }
 }

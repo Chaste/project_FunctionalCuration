@@ -329,6 +329,7 @@ void Protocol::WriteError(const Exception& rError)
     if (mpOutputHandler)
     {
         Protocol::WriteError(ExceptionSet::ExtractShortMessage(rError), *mpOutputHandler);
+        mManifest.AddEntry("errors.txt", "text/plain", true);
     }
 }
 

@@ -98,6 +98,31 @@ public:
             TS_ASSERT_DELTA(*it++, expected[i], 1e-3);
         }
     }
+
+    void TestClampingComputedVariable() throw (Exception)
+    {
+        std::string dirname = "TestOptionalVariables_TestClampingComputedVariable";
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/matsuoka_model_2003.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, proto_file, dirname);
+        runner.RunProtocol();
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+
+        // Check the key outputs haven't changed.
+        const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
+        NdArray<double> arr_to_check = GET_ARRAY(r_outputs.Lookup("normalised_peak_currents"));
+        TS_ASSERT_EQUALS(arr_to_check.GetNumElements(), 19u);
+        TS_ASSERT_EQUALS(arr_to_check.GetNumDimensions(), 1u);
+        const double expected[] = {0.893527, 0.946238, 0.980761, 0.999288, 1, 0.98876, 0.961362, 0.903678, 0.79484,
+                                   0.622032, 0.410937, 0.224468, 0.104744, 0.044427, 0.018137, 0.00741457, 0.00312374,
+                                   0.000728363, 0.000343776};
+        NdArray<double>::ConstIterator it = arr_to_check.Begin();
+        for (unsigned i=0; i<19u; i++)
+        {
+            TS_ASSERT_DELTA(*it++, expected[i], 1e-3);
+        }
+    }
 };
 
 #endif // TESTOPTIONALVARIABLES_HPP_

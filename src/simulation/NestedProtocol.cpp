@@ -91,6 +91,10 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
         OutputFileHandler this_run(mpOutputHandler->FindFile(run_dir.str()));
         mpProtocol->SetOutputFolder(this_run);
     }
+    if (mpOutputHandler)
+    {
+        mpProtocol->SetErrorOutput(mpOutputHandler);
+    }
     // Run the nested protocol
     if (pResults && mpOutputHandler && GetTrace())
     {

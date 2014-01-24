@@ -326,11 +326,21 @@ void Protocol::WriteError(const std::string& rMessage,
 
 void Protocol::WriteError(const Exception& rError)
 {
-    if (mpOutputHandler)
+    if (!mpErrorHandler)
+    {
+        mpErrorHandler = mpOutputHandler;
+    }
+    if (mpErrorHandler)
     {
         Protocol::WriteError(ExceptionSet::ExtractShortMessage(rError), *mpOutputHandler);
         mManifest.AddEntry("errors.txt", "text/plain", true);
     }
+}
+
+
+void Protocol::SetErrorOutput(boost::shared_ptr<OutputFileHandler> pHandler)
+{
+    mpErrorHandler = pHandler;
 }
 
 

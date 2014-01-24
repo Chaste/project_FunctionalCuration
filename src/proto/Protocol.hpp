@@ -196,6 +196,13 @@ public:
      */
     void WriteError(const Exception& rError);
 
+    /**
+     * Set where to write error summaries to (defaults to our main output location).
+     *
+     * @param pHandler  handler for writing error summaries
+     */
+    void SetErrorOutput(boost::shared_ptr<OutputFileHandler> pHandler);
+
     //
     // Get methods for the constituent parts of a protocol
     //
@@ -385,6 +392,9 @@ private:
 
     /** Handler for writing results, debug & tracing information to file. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
+
+    /** Handler for writing error summaries to file. */
+    boost::shared_ptr<OutputFileHandler> mpErrorHandler;
 
     /** The manifest of output files written by the protocol. */
     Manifest mManifest;

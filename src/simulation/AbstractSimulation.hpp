@@ -159,6 +159,13 @@ public:
     FileFinder GetOutputFolder() const;
 
     /**
+     * Set where to write error summaries to.
+     *
+     * @param pHandler  handler for writing error summaries
+     */
+    virtual void SetErrorFolder(boost::shared_ptr<OutputFileHandler> pHandler);
+
+    /**
      * Set whether to use automatic parallelisation of nested loops.
      *
      * @param paralleliseLoops  whether to parallelise loops whenever safe
@@ -267,6 +274,9 @@ protected:
 
     /** Where to write tracing/debug output, if desired. */
     boost::shared_ptr<OutputFileHandler> mpOutputHandler;
+
+    /** Handler for writing error summaries to file. */
+    boost::shared_ptr<OutputFileHandler> mpErrorHandler;
 
     /** Whether to use automatic parallelisation of nested loops. */
     bool mParalleliseLoops;

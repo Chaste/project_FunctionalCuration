@@ -201,7 +201,7 @@ public:
      *
      * @param pHandler  handler for writing error summaries
      */
-    void SetErrorOutput(boost::shared_ptr<OutputFileHandler> pHandler);
+    void SetErrorFolder(boost::shared_ptr<OutputFileHandler> pHandler);
 
     //
     // Get methods for the constituent parts of a protocol

@@ -107,6 +107,13 @@ void NestedSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHan
 }
 
 
+void NestedSimulation::SetErrorFolder(boost::shared_ptr<OutputFileHandler> pHandler)
+{
+    AbstractSimulation::SetErrorFolder(pHandler);
+    mpNestedSimulation->SetErrorFolder(pHandler);
+}
+
+
 bool NestedSimulation::CanParallelise()
 {
     // The outermost loop checks if we are able to parallelise this nested simulation

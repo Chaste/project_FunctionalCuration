@@ -179,6 +179,12 @@ void AbstractSimulation::SetOutputFolder(boost::shared_ptr<OutputFileHandler> pH
 }
 
 
+void AbstractSimulation::SetErrorFolder(boost::shared_ptr<OutputFileHandler> pHandler)
+{
+    mpErrorHandler = pHandler;
+}
+
+
 FileFinder AbstractSimulation::GetOutputFolder() const
 {
     FileFinder folder;

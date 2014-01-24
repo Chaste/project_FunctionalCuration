@@ -290,6 +290,7 @@ void Protocol::SetOutputFolder(const OutputFileHandler& rHandler)
     mpOutputHandler.reset(new OutputFileHandler(rHandler));
     BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
     {
+        p_sim->SetErrorFolder(mpOutputHandler);
         const std::string prefix = p_sim->GetOutputsPrefix();
         if (!prefix.empty())
         {
@@ -332,15 +333,19 @@ void Protocol::WriteError(const Exception& rError)
     }
     if (mpErrorHandler)
     {
-        Protocol::WriteError(ExceptionSet::ExtractShortMessage(rError), *mpOutputHandler);
+        Protocol::WriteError(ExceptionSet::ExtractShortMessage(rError), *mpErrorHandler);
         mManifest.AddEntry("errors.txt", "text/plain", true);
     }
 }
 
 
-void Protocol::SetErrorOutput(boost::shared_ptr<OutputFileHandler> pHandler)
+void Protocol::SetErrorFolder(boost::shared_ptr<OutputFileHandler> pHandler)
 {
     mpErrorHandler = pHandler;
+    BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
+    {
+        p_sim->SetErrorFolder(mpErrorHandler);
+    }
 }
 
 

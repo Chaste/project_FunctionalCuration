@@ -72,6 +72,13 @@ public:
     void SetOutputFolder(boost::shared_ptr<OutputFileHandler> pHandler);
 
     /**
+     * Set where to write error summaries to.
+     *
+     * @param pHandler  handler for writing error summaries
+     */
+    void SetErrorFolder(boost::shared_ptr<OutputFileHandler> pHandler);
+
+    /**
      * Ensure that all results arrays are initialised with zeros so that they can easily be replicated
      * by doing a global sum.
      */

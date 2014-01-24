@@ -27,14 +27,6 @@
                 <ci>test_pulse_time</ci>
                 <cn>2000</cn>
             </apply>
-            <!-- Length of time to hold at test potential -->
-            <apply><eq/>
-                <ci>end_time</ci>
-                <apply><plus/>
-                    <ci>test_pulse_time</ci>
-                    <cn>1000</cn>
-                </apply>
-            </apply>
             
             <!-- Fix some concentrations -->
             <apply><eq/>

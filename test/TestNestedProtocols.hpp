@@ -88,7 +88,7 @@ private:
         TS_ASSERT_DELTA(peak_V[idxs], 46.959, 2e-3);
         TS_ASSERT_DELTA(apd90[idxs], 359.015, 1e-3);
         peak_V.IncrementIndices(idxs);
-        TS_ASSERT_DELTA(peak_V[idxs], 46.939, 2e-3);
+        TS_ASSERT_DELTA(peak_V[idxs], 46.939, 2.5e-3);
         TS_ASSERT_DELTA(apd90[idxs], 361.847, 1e-3);
     }
 };

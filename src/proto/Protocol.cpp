@@ -213,10 +213,12 @@ void Protocol::Run()
     {
         std::cerr << e.GetMessage();
         errors.push_back(e);
+        WriteError("Error running simulations:", *mpOutputHandler);
         WriteError(e);
     }
     ProtocolTimer::EndEvent(ProtocolTimer::SIMULATE);
     ProtocolTimer::BeginEvent(ProtocolTimer::POSTPROCESS);
+    bool error_header_written = false;
     if (!mParalleliseLoops || PetscTools::AmMaster())
     {
         // Post-process the results
@@ -232,6 +234,11 @@ void Protocol::Run()
             {
                 std::cerr << e.GetMessage();
                 errors.push_back(e);
+                if (!error_header_written)
+                {
+                    WriteError("Error(s) running post-processing:", *mpOutputHandler);
+                    error_header_written = true;
+                }
                 WriteError(e);
             }
         }

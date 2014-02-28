@@ -197,6 +197,13 @@ public:
     void WriteError(const Exception& rError);
 
     /**
+     * Write a short error message to the "errors.txt" file.
+     *
+     * @param rMessage  the error message
+     */
+    void WriteError(const std::string& rMessage);
+
+    /**
      * Set where to write error summaries to (defaults to our main output location).
      *
      * @param pHandler  handler for writing error summaries

@@ -213,7 +213,7 @@ void Protocol::Run()
     {
         std::cerr << e.GetMessage();
         errors.push_back(e);
-        WriteError("Error running simulations:", *mpOutputHandler);
+        WriteError("Error running simulations:");
         WriteError(e);
     }
     ProtocolTimer::EndEvent(ProtocolTimer::SIMULATE);
@@ -236,7 +236,7 @@ void Protocol::Run()
                 errors.push_back(e);
                 if (!error_header_written)
                 {
-                    WriteError("Error(s) running post-processing:", *mpOutputHandler);
+                    WriteError("Error(s) running post-processing:");
                     error_header_written = true;
                 }
                 WriteError(e);
@@ -332,7 +332,7 @@ void Protocol::WriteError(const std::string& rMessage,
     }
 }
 
-void Protocol::WriteError(const Exception& rError)
+void Protocol::WriteError(const std::string& rMessage)
 {
     if (!mpErrorHandler)
     {
@@ -340,9 +340,14 @@ void Protocol::WriteError(const Exception& rError)
     }
     if (mpErrorHandler)
     {
-        Protocol::WriteError(ExceptionSet::ExtractShortMessage(rError), *mpErrorHandler);
+        Protocol::WriteError(rMessage, *mpErrorHandler);
         mManifest.AddEntry("errors.txt", "text/plain", true);
     }
+}
+
+void Protocol::WriteError(const Exception& rError)
+{
+    WriteError(ExceptionSet::ExtractShortMessage(rError));
 }
 
 
@@ -635,7 +640,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
     if (!missing_outputs.empty())
     {
         std::vector<std::string> missing_names(missing_outputs.begin(), missing_outputs.end());
-        WriteError("Not all expected protocol outputs were defined; see full output for details.", *mpOutputHandler);
+        WriteError("Not all expected protocol outputs were defined; see full output for details.");
         EXCEPTION("Not all protocol outputs were defined.  Missing names: " << missing_names);
     }
 }

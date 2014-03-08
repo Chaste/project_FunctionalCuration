@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<?xml-model href="../../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
 <protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:proto="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
@@ -12,7 +12,7 @@
                 <value>1</value>
             </vectorStepper>
             <modifiers/>
-            <nestedProtocol source="SteadyPacing.xml" proto:trace="true">
+            <nestedProtocol source="../../../protocols/xml/SteadyPacing.xml" proto:trace="true">
                 <setInput name="steady_state_beats">
                     <cn xmlns="http://www.w3.org/1998/Math/MathML">5</cn>
                 </setInput>

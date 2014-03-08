@@ -188,13 +188,13 @@ class TestProtocolParser : public CxxTest::TestSuite
 public:
     void TestCorePostprocXml() throw (Exception)
     {
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/xml/test_core_postproc.xml", RelativeTo::ChasteSourceRoot);
         DoCorePostproc(proto_file);
     }
 
     void TestCorePostprocCompact() throw (Exception)
     {
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_core_postproc.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_core_postproc.txt", RelativeTo::ChasteSourceRoot);
         DoCorePostproc(proto_file);
 
     }
@@ -202,7 +202,7 @@ public:
     void TestSimpleError() throw (Exception)
     {
         ProtocolParser parser;
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_error1.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/xml/test_error1.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
@@ -236,7 +236,7 @@ public:
     void TestErrorInCompactSyntax() throw (Exception)
     {
         ProtocolParser parser;
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_error_msg.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_error_msg.txt", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();
@@ -269,7 +269,7 @@ public:
     void TestFindAndIndexCompact() throw (Exception)
     {
         ProtocolParser parser;
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_find_index.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_find_index.txt", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_library = p_proto->rGetLibraryStatements();
@@ -283,7 +283,7 @@ public:
     void TestFindAndIndex() throw (Exception)
     {
         ProtocolParser parser;
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_find_index.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/xml/test_find_index.xml", RelativeTo::ChasteSourceRoot);
         ProtocolPtr p_proto = parser.ParseFile(proto_file);
 
         std::vector<AbstractStatementPtr>& r_program = p_proto->rGetPostProcessing();

@@ -48,14 +48,14 @@ public:
     void TestXmlSyntax() throw (Exception)
     {
         std::string dirname = "TestNestedProtocols";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_nested_protocol.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_nested_protocol.xml", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_xml_file);
     }
 
     void TestCompactSyntax() throw (Exception)
     {
         std::string dirname = "TestNestedProtocol_Compact";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_nested_protocol.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_nested_protocol.txt", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_xml_file);
     }
 

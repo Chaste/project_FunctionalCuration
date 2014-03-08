@@ -47,11 +47,11 @@ class TestProtocolFileFinder : public CxxTest::TestSuite
 public:
     void TestFinder() throw (Exception)
     {
-        ProtocolFileFinder xml_proto1("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder txt_proto1("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder xml_proto1("projects/FunctionalCuration/protocols/xml/GraphState.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder txt_proto1("projects/FunctionalCuration/protocols/GraphState.txt", RelativeTo::ChasteSourceRoot);
         FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder xml_proto2("protocols/GraphState.xml", this_file);
-        ProtocolFileFinder txt_proto2("protocols/compact/GraphState.txt", this_file);
+        ProtocolFileFinder xml_proto2("../protocols/xml/GraphState.xml", this_file);
+        ProtocolFileFinder txt_proto2("../protocols/GraphState.txt", this_file);
 
         TS_ASSERT(AreSameFile(xml_proto1, xml_proto2));
         TS_ASSERT(!AreSameFile(txt_proto1, txt_proto2));
@@ -61,8 +61,8 @@ public:
         TS_ASSERT(!AreSameFile(txt_proto1.rGetOriginalSource(), txt_proto1));
         TS_ASSERT(!AreSameFile(txt_proto2.rGetOriginalSource(), txt_proto2));
 
-        FileFinder src_proto1("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
-        FileFinder src_proto2("protocols/compact/GraphState.txt", this_file);
+        FileFinder src_proto1("projects/FunctionalCuration/protocols/GraphState.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder src_proto2("../protocols/GraphState.txt", this_file);
         TS_ASSERT(AreSameFile(txt_proto1.rGetOriginalSource(), src_proto1));
         TS_ASSERT(AreSameFile(txt_proto2.rGetOriginalSource(), src_proto2));
         TS_ASSERT(AreSameFile(txt_proto1.rGetOriginalSource(), txt_proto2.rGetOriginalSource()));
@@ -71,7 +71,7 @@ public:
         CheckOutputIsXml(txt_proto2);
 
         // Check other constructors and calling SetPath directly work too
-        fs::path boost_path("projects/FunctionalCuration/test/protocols/compact/GraphState.txt");
+        fs::path boost_path("projects/FunctionalCuration/protocols/GraphState.txt");
         ProtocolFileFinder txt_proto3(boost_path);
         TS_ASSERT(AreSameFile(txt_proto3.rGetOriginalSource(), src_proto1));
         CheckOutputIsXml(txt_proto3);
@@ -81,7 +81,7 @@ public:
         CheckOutputIsXml(txt_proto4);
 
         // Check we can re-target a finder successfully
-        FileFinder src("projects/FunctionalCuration/test/protocols/compact/test_find_index.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder src("projects/FunctionalCuration/test/protocols/test_find_index.txt", RelativeTo::ChasteSourceRoot);
         txt_proto4.SetPath(src.GetAbsolutePath(), RelativeTo::Absolute);
         TS_ASSERT(AreSameFile(txt_proto4.rGetOriginalSource(), src));
         CheckOutputIsXml(txt_proto4);

@@ -54,14 +54,14 @@ public:
     void TestXmlSyntax() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/xml/ICaL.xml", RelativeTo::ChasteSourceRoot);
         DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002");
     }
 
     void TestCompactSyntax() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs_Compact";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/ICaL.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/ICaL.txt", RelativeTo::ChasteSourceRoot);
         DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002");
 
         // Check the default plots file (see e.g. #2475)
@@ -75,14 +75,14 @@ public:
     void TestImporting() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs_Import";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_ical.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_ical.xml", RelativeTo::ChasteSourceRoot);
         DoTestShortIcal(dirname, proto_xml_file, "fox_mcharg_gilmour_2002", false);
     }
 
     void TestPaciModel() throw (Exception)
     {
         std::string dirname = "TestICaLProtocolOutputs_Paci";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_ical.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_ical.xml", RelativeTo::ChasteSourceRoot);
         DoTestShortIcal(dirname, proto_xml_file, "paci_hyttinen_aaltosetala_severi_ventricularVersion");
     }
 

@@ -56,14 +56,14 @@ public:
     void TestSimpleIteration() throw (Exception)
     {
         std::string dirname = "TestWhileLoops";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_while_loop.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_while_loop.xml", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_xml_file);
     }
 
     void TestCompactSyntax() throw (Exception)
 	{
         std::string dirname = "TestWhileLoops_Compact";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_while_loop.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_while_loop.txt", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_file);
 	}
 

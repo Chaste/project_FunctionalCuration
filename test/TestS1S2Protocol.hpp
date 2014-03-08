@@ -58,7 +58,7 @@ public:
         std::string dirname = "TestS1S2ProtocolOutputs";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         // Assume we get to steady state quickly
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_xml_file, cellml_file, 0.212);
     }
 
@@ -67,7 +67,7 @@ public:
         std::string dirname = "TestS1S2ProtocolOutputs_Compact";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         // Assume we get to steady state quickly
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_S1S2.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.txt", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_xml_file, cellml_file, 0.212);
     }
 
@@ -77,7 +77,7 @@ public:
         std::string dirname = "TestS1S2ProtocolOutputs_EarmNobleModel";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/earm_noble_model_1990.cellml", RelativeTo::ChasteSourceRoot);
         // Assume we get to steady state quickly
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_S1S2.xml", RelativeTo::ChasteSourceRoot);
         DoTest(dirname, proto_xml_file, cellml_file, 0.0264);
     }
 

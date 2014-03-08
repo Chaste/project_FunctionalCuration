@@ -33,13 +33,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef TESTRUNNINGALLCELLMODELTESTS_HPP_
-#define TESTRUNNINGALLCELLMODELTESTS_HPP_
+#ifndef TESTRUNNINGALLPROTOCOLS_HPP_
+#define TESTRUNNINGALLPROTOCOLS_HPP_
 
 #include <cxxtest/TestSuite.h>
 
 #include <vector>
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include "FileFinder.hpp"
@@ -50,11 +49,20 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PetscSetupAndFinalize.hpp"
 
 /**
- * This test attempts to run all of the protocols listed for all of the cellml models in the FunctionalCuration/cellml folder.
+ * This test attempts to run all of the protocols in the FunctionalCuration/protocols/ folder for all of the cellml models in the FunctionalCuration/cellml folder.
  *
- * It collects warnings about the ones which failed (generally this is because of missing metadata tags).
+ * Basically it's a thin test wrapper around the same class that the FunctionalCuration executable uses,
+ * and so you're more likely to want to use it with command line arguments.
+ *
+ * For instance, you can run:
+ * <code>
+ * scons b=GccOptNative_8 -j8 projects/FunctionalCuration/test/TestRunningAllProtocols.hpp run_time_flags="--protocols path_to_proto1.txt ... --models path_to_model1.cellml ..."
+ * </code>
+ * to build the test on 8 cores, and then run all the model/protocol combinations listed in parallel, using 8 cores again.
+ *
+ * It collects warnings about the ones which failed.
  */
-class TestRunningAllCellModelTests : public CxxTest::TestSuite
+class TestRunningAllProtocols : public CxxTest::TestSuite
 {
 public:
 
@@ -62,22 +70,13 @@ public:
     {
         MultiProtocolRunner runner;
 
-        // Set up default protocols list
+        // Set up default protocols list, using just text syntax protocols
         {
-            FileFinder proto_root("projects/FunctionalCuration/test", RelativeTo::ChasteSourceRoot);
+            FileFinder proto_root("projects/FunctionalCuration/protocols", RelativeTo::ChasteSourceRoot);
             std::vector<ProtocolFileFinder> protocols;
-            std::vector<std::string> proto_names = boost::assign::list_of(std::string("protocols/ICaL.xml"))
-                                                                         ("protocols/S1S2.xml")
-                                                                         ("protocols/SteadyPacing.xml")
-                                                                         ("protocols/SteadyStateRunner.xml")
-                                                                         ("private/protocols/INa_IV_curve.xml")
-                                                                         ("private/protocols/Hypokalaemia.xml")
-                                                                         ("private/protocols/IK1_IV_curve.xml")
-                                                                         ("private/protocols/IKr_IV_curve.xml")
-                                                                         ("private/protocols/IKs_IV_curve.xml");
-            BOOST_FOREACH(const std::string& r_proto, proto_names)
+            BOOST_FOREACH(const FileFinder& r_finder, proto_root.FindMatches("*.txt"))
             {
-                protocols.push_back(ProtocolFileFinder(r_proto, proto_root));
+                protocols.push_back(ProtocolFileFinder(r_finder.GetAbsolutePath()));
             }
             runner.SetDefaultProtocols(protocols);
         }
@@ -93,4 +92,4 @@ public:
     }
 };
 
-#endif // TESTRUNNINGALLCELLMODELTESTS_HPP_
+#endif // TESTRUNNINGALLPROTOCOLS_HPP_

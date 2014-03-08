@@ -52,7 +52,7 @@ public:
     {
         std::string dirname = "TestOneStepSimulation";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_onestep_sim.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_onestep_sim.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
 
@@ -66,7 +66,7 @@ public:
     {
         std::string dirname = "TestOneStepSimulation_Compact";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/test_onestep_sim.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_onestep_sim.txt", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
 

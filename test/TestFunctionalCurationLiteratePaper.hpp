@@ -203,7 +203,7 @@ private:
         std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "S1S2");
 
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/S1S2.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/xml/S1S2.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
         runner.GetProtocol()->SetInput("s1_interval", CONST(s1PacingCycleLength));
@@ -243,7 +243,7 @@ private:
     {
         std::string dirname = SetupOutputFileHandler(rCellMLFileBaseName, "ICaL");
         FileFinder cellml_file("projects/FunctionalCuration/cellml/" + rCellMLFileBaseName + ".cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/ICaL.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/xml/ICaL.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname);
 

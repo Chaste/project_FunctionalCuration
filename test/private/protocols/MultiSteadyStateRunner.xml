@@ -31,7 +31,7 @@
                     <when>EVERY_LOOP</when>
                 </resetState>
             </modifiers>
-            <nestedProtocol source="SteadyStateRunner.xml">
+            <nestedProtocol source="../../../protocols/xml/SteadyStateRunner.xml">
                 <setInput name="steady_state_beats">
                     <ci xmlns="http://www.w3.org/1998/Math/MathML">steady_state_beats</ci>
                 </setInput>

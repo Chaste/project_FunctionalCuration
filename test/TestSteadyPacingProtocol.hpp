@@ -52,7 +52,7 @@ public:
     {
         std::string dirname = "TestSteadyStateCompact";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/SteadyStateRunner.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/SteadyStateRunner.txt", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
 
@@ -67,7 +67,7 @@ public:
     {
         std::string dirname = "TestSteadyPacingProtocolOutputs";
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/SteadyPacing.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/xml/SteadyPacing.xml", RelativeTo::ChasteSourceRoot);
 
         ProtocolRunner runner(cellml_file, proto_xml_file, dirname, true);
 

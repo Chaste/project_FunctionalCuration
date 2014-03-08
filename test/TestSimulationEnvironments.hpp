@@ -53,7 +53,7 @@ public:
     void TestCompactSyntax() throw (Exception)
     {
         std::string dirname = "TestSimulationEnvironments";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_sim_environments.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_sim_environments.txt", RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
         runner.RunProtocol();

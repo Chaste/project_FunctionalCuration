@@ -53,14 +53,14 @@ public:
     void TestXmlSyntax() throw (Exception)
     {
         std::string dirname = "TestAccessingStateVector";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/GraphState.xml", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/xml/GraphState.xml", RelativeTo::ChasteSourceRoot);
         DoTestGraphState(dirname, proto_xml_file);
     }
 
     void TestCompactSyntax() throw (Exception)
     {
         std::string dirname = "TestAccessingStateVector_Compact";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/compact/GraphState.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/protocols/GraphState.txt", RelativeTo::ChasteSourceRoot);
         DoTestGraphState(dirname, proto_xml_file);
     }
 

@@ -61,7 +61,7 @@ public:
     void TestClampingToInitialValue() throw (Exception)
     {
         std::string dirname = "TestClampingToInitialValue";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_clamping1.txt",
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_clamping1.txt",
                                       RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml",
                                RelativeTo::ChasteSourceRoot);
@@ -75,7 +75,7 @@ public:
     void TestClampingToFixedValue() throw (Exception)
     {
         std::string dirname = "TestClampingToFixedValue";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_clamping2.txt",
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_clamping2.txt",
                                       RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml",
                                RelativeTo::ChasteSourceRoot);
@@ -91,7 +91,7 @@ public:
         std::string dirname = "TestClampingToTimecourse";
 
         // Load protocol
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/timecourse_voltage_clamp.txt",
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/protocols/timecourse_voltage_clamp.txt",
                                       RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/ten_tusscher_model_2004_epi.cellml",
                                RelativeTo::ChasteSourceRoot);

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<?xml-model href="src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
 <protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
-    <import source="../../src/proto/library/BasicLibrary.xml" mergeDefinitions="true"/>
+    <import source="BasicLibrary.xml" mergeDefinitions="true"/>
     
     <units>
         <cellml:units name="ms">

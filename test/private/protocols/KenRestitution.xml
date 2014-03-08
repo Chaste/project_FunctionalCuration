@@ -60,7 +60,7 @@
                 <ci xmlns="http://www.w3.org/1998/Math/MathML">pacing_cycle_lengths</ci>
             </vectorStepper>
             <modifiers/>
-            <nestedProtocol source="../../protocols/SteadyPacing.xml" proto:trace="true">
+            <nestedProtocol source="../../../protocols/xml/SteadyPacing.xml" proto:trace="true">
                 <setInput name="apd_percent">
                     <cn xmlns="http://www.w3.org/1998/Math/MathML">80</cn>
                 </setInput>

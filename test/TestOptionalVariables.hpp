@@ -54,7 +54,7 @@ public:
     void TestClampingWithOldModel() throw (Exception)
     {
         std::string dirname = "TestOptionalVariables_TestClampingWithOldModel";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/test_INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml", RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
         runner.RunProtocol();
@@ -78,7 +78,7 @@ public:
     void TestDefaultExpressions() throw (Exception)
     {
         std::string dirname = "TestOptionalVariables_TestDefaultExpressions";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/protocols/INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml", RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
         runner.RunProtocol();
@@ -102,7 +102,7 @@ public:
     void TestClampingComputedVariable() throw (Exception)
     {
         std::string dirname = "TestOptionalVariables_TestClampingComputedVariable";
-        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/compact/INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/protocols/INa_IV_curves.txt", RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/matsuoka_model_2003.cellml", RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
         runner.RunProtocol();

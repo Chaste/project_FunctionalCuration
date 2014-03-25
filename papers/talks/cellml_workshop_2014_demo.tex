@@ -145,42 +145,6 @@ giving a demo of the website.
 \end{frame}
 
 
-\begin{frame}{What goes in a protocol?}
-\begin{itemize}
-\item Definition of the interface with the model being experimented on
-  \begin{itemize}
-  \item Handle variations in modelling conventions: naming, encoding the biology in mathematics
-  \item Units conversions
-  \item Isolate relevant sub-model(s), using model inputs \& outputs of interest
-  \end{itemize}
-\item Definition of simulations to perform
-\item Post-processing operations on simulation results
-\item Description of what to plot
-\vspace{.5cm}
-\item Also language features facilitating building complex protocols, e.g.\ protocol inputs, outputs, and imports.
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{Goals of this work}
-\begin{itemize}[<+->]
-\item Provide a framework for a coherent approach to model fitting, simulation, comparison and validation
-  \begin{itemize}[<.->]
-  \item Continuous evaluation of model predictions against experimental data, throughout model lifecycle
-  \item Models that are robust, well tested, and well characterised for particular biological studies
-  \item Model development akin to high quality software
-  \item Improve model reuse and simulation result reproducibility
-  \end{itemize}
-\item A functional curation system \alert{for each domain}
-  \begin{itemize}[<.->]
-  \item Brings together competing models, experimental data, and virtual experiments
-  \item New models, experiments, or data analysed automatically under all relevant combinations
-  \only<3>{\item \alert{A crucial part of a researcher's toolkit}}
-  \end{itemize}
-\end{itemize}
-\end{frame}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Demo}
 \subsection*{Main}
@@ -205,7 +169,7 @@ giving a demo of the website.
   \item Priebe, Ten Tusscher(s), Matsuoka, Grandi, O'Hara (human models) under 2Hz pacing
   \item All models under IK1 block: default plot, then resting potential
   \end{itemize}
-\item Compare protocols for a single model: e.g.\ O'Hara at different pacing rates, and then different restitution curves (note alternans at high freq)
+\item Compare protocols for a single model: e.g.\ O'Hara at different pacing rates, and then different restitution curves (note alternans at high frequency)
 \end{itemize}
 \end{frame}
 
@@ -214,13 +178,47 @@ giving a demo of the website.
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{frame}{Goals of this work}
+\begin{itemize}[<+->]
+\item Provide a framework for a coherent approach to model fitting, simulation, comparison and validation
+  \begin{itemize}[<.->]
+  \item Continuous evaluation of model predictions against experimental data, throughout model lifecycle
+  \item Models that are robust, well tested, and well characterised for particular biological studies
+  \item Model development akin to high quality software
+  \item Improve model reuse and simulation result reproducibility
+  \end{itemize}
+\item A functional curation system \alert{for each domain}
+  \begin{itemize}[<.->]
+  \item Brings together competing models, experimental data, and virtual experiments
+  \item New models, experiments, or data analysed automatically under all relevant combinations
+  \only<3>{\item \alert{A crucial part of a researcher's toolkit}}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Areas for community engagement}
+%Talk about what the CellML / PMR projects could do to integrate with this; easy wins etc.
+\begin{itemize}
+\item Linking between models and protocols requires agreement on terms used to annotate models
+  \begin{itemize}
+  \item Develop a community standard ontology to use for the cardiac case
+  \item Provide annotated models direct from the CellML repository
+  \end{itemize}
+\item Develop a protocol editor as an OpenCOR plugin, facilitating the creation of new protocols
+\item Incorporate protocol language features in future versions of SED-ML
+\item Ultimately, functional curation systems should be embedded between model repositories and experimental databases
+\end{itemize}
+\end{frame}
+
+
 \begin{frame}{A vision of the future}
 \begin{itemize}
 \item \textbf{With this work}: we know which models are sensible to use for which studies
 \item \textbf{With this work}: we can publish protocols with models, to immediately allow reproduction of graphs in a paper
 \item Future: experimental data come with a machine-readable protocol description
-\item Future: models are auto-checked against the new data
-\item Future: models are auto-updated by fitting to the new data
+\item Future: models are auto-checked against new data
+\item Future: models are auto-updated by fitting to new data
 \item Future: models are auto-developed to take into account latest findings
 \end{itemize}
 \end{frame}
@@ -255,6 +253,22 @@ Further information slides follow \dots
 \begin{center}
 \includegraphics[width=\textwidth]{protocol_language}
 \end{center}
+\end{frame}
+
+\begin{frame}{What goes in a protocol?}
+\begin{itemize}
+\item Definition of the interface with the model being experimented on
+  \begin{itemize}
+  \item Handle variations in modelling conventions: naming, encoding the biology in mathematics
+  \item Units conversions
+  \item Isolate relevant sub-model(s), using model inputs \& outputs of interest
+  \end{itemize}
+\item Definition of simulations to perform
+\item Post-processing operations on simulation results
+\item Description of what to plot
+\vspace{.5cm}
+\item Also language features facilitating building complex protocols, e.g.\ protocol inputs, outputs, and imports.
+\end{itemize}
 \end{frame}
 
 

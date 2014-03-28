@@ -154,7 +154,7 @@ boost::shared_ptr<AbstractSystemWithOutputs> ProtocolRunner::LoadModel(const Fil
     p_cell->SetMaxSteps(2e7); // We need to allow CVODE to take lots of internal steps for some protocols
     p_cell->SetTimestep(0.5); // Max dt = 0.5ms to ensure stimulus isn't missed
     p_cell->SetTolerances(/*rel*/1e-6, /*abs*/1e-8); // Guard against changes to defaults
-    p_cell->SetAutoReset(false); // Speedier simulations
+    // p_cell->SetForceReset(false); // This is now the default behaviour.
 
     ProtocolTimer::EndEvent(ProtocolTimer::LOAD_MODEL);
     return p_model;

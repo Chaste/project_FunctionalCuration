@@ -85,10 +85,10 @@ private:
         TS_ASSERT_EQUALS(apd90.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(apd90.GetNumElements(), 2u);
         NdArray<double>::Indices idxs = peak_V.GetIndices();
-        TS_ASSERT_DELTA(peak_V[idxs], 46.959, 2e-3);
+        TS_ASSERT_DELTA(peak_V[idxs], 46.9566, 2e-3);
         TS_ASSERT_DELTA(apd90[idxs], 359.015, 1e-3);
         peak_V.IncrementIndices(idxs);
-        TS_ASSERT_DELTA(peak_V[idxs], 46.939, 2.5e-3);
+        TS_ASSERT_DELTA(peak_V[idxs], 46.936, 2.5e-3);
         TS_ASSERT_DELTA(apd90[idxs], 361.847, 1e-3);
     }
 };

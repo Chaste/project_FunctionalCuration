@@ -35,6 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DebugProto.hpp"
 
+#include <iomanip>
 #include <boost/foreach.hpp>
 
 #include "VectorStreaming.hpp"
@@ -52,6 +53,8 @@ void DebugProto::SetTraceFolder(const OutputFileHandler& rHandler)
         mpTraceFile->close();
     }
     mpTraceFile = rHandler.OpenOutputFile("trace.txt", std::ios_base::app);
+    //*mpTraceFile << std::scientific;
+    *mpTraceFile << std::setprecision(16);
 }
 
 

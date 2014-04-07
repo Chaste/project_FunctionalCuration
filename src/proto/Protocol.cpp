@@ -37,6 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -605,6 +606,8 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
             if (num_dims == 2)
             {
                 // Tabular format for easy processing by other software
+                //*p_file << std::scientific;
+                *p_file << std::setprecision(16);
                 NdArray<double>::Indices idxs = output.GetIndices();
                 for (idxs[1]=0; idxs[1]<shape[1]; ++idxs[1])
                 {
@@ -624,6 +627,8 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                     *p_file << "," << shape[i];
                 }
                 *p_file << std::endl;
+                //*p_file << std::scientific;
+                *p_file << std::setprecision(16);
                 for (NdArray<double>::Iterator it = output.Begin(); it != output.End(); ++it)
                 {
                     *p_file << *it << std::endl;

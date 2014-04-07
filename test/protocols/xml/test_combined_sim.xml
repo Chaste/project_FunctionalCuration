@@ -237,7 +237,7 @@
                         <!-- Check the final value -->
                         <apply>
                             <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/assert"/>
-                            <apply><eq/>
+                            <apply><lt/><apply><abs/><apply><minus/>
                                 <apply>
                                     <csymbol definitionURL="https://chaste.cs.ox.ac.uk/nss/protocol/view"/>
                                     <ci>vector</ci>
@@ -247,7 +247,7 @@
                                     </apply>
                                 </apply>
                                 <ci>expectedEnd</ci>
-                            </apply>
+                            </apply></apply><cn>1e-12</cn></apply>
                         </apply>
                         <!-- Return true if all assertions passed -->
                         <apply>
@@ -492,4 +492,14 @@
             
         </apply>
     </post-processing>
+    
+    <outputVariables>
+        <raw ref="seq:sim1:membrane_voltage" name="V_seq_1"/>
+        <raw ref="seq:sim2:membrane_voltage" name="V_seq_2"/>
+        <raw ref="para:sim1:membrane_voltage" name="V_para_1"/>
+        <raw ref="para:sim2:membrane_voltage" name="V_para_2"/>
+        <raw ref="c_in_c:seq:sim1:membrane_voltage" name="V_c_in_c_1"/>
+        <raw ref="nested:sim1:membrane_voltage" name="V_nest_1"/>
+        <raw ref="nested:sim2:membrane_voltage" name="V_nest_2"/>
+    </outputVariables>
 </protocol>

@@ -128,7 +128,7 @@ public:
         FileFinder generated_trace(dirname + "/outputs_I_Kr.csv", RelativeTo::ChasteTestOutput);
 
         NumericFileComparison comparer(reference_trace, generated_trace);
-        TS_ASSERT(comparer.CompareFiles());
+        TS_ASSERT(comparer.CompareFiles(1e-6)); // Abs tol to account for compiler variation
     }
 };
 

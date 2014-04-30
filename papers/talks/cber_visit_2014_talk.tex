@@ -53,7 +53,7 @@
 \newcommand{\dt}{\ud t}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{A Brief Introduction To My Interests}
+\title{Life as a Research Software Engineer}
 \author{Jonathan Cooper}
 \institute[University of Oxford]
 {Computational Biology Group\\
@@ -76,11 +76,30 @@
 %\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Research Software Engineering}
+\subsection*{Main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Scientific software development}
+\begin{itemize}
+\item How should software for science be developed?
+\item How can we train researchers to produce `better' software more easily?
+  \begin{itemize}
+  \item Pair-programming in the Chaste project --- a large code base for computational biology
+  \item The `Software Carpentry' effort
+  \end{itemize}
+\item Working with different groups to help in their development efforts
+\item My research theme:\\
+    \alert{Developing tools and approaches that make research more effective}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Functional curation}
 \subsection*{Main}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}{Using models}
+\begin{frame}{Improving the process of modelling}
 \begin{itemize}
 \item As hypothesis encodings, models are developed \emph{for a specific purpose}
   \subitem{May not be appropriate for studying same system in different context}
@@ -116,22 +135,6 @@
 \end{frame}
 
 
-\begin{frame}{Aims}
-\begin{itemize}
-\item Provide a framework for a coherent approach to model fitting, simulation, comparison and validation
-  \begin{itemize}
-  \item Continuous evaluation of model predictions against experimental data, throughout model lifecycle
-  \item Models that are robust, well tested, and well characterised for particular biological studies
-  \end{itemize}
-\item A functional curation system \alert{for each domain}
-  \begin{itemize}
-  \item Brings together competing models, experimental data, and virtual experiments
-  \item New models, experiments, or data analysed automatically under all relevant combinations
-  \end{itemize}
-\end{itemize}
-\end{frame}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Applications in Ecology}
 \subsection*{Main}
@@ -145,35 +148,22 @@
   \item Make it easy to change definition of \alert{processes} (e.g.\ predation), \alert{functional groups} (defined by \alert{traits}, e.g.\ feeding mode), etc.
   \item Make it easy to run different experiments
   \end{itemize}
-\item Prototype implementation in F\# working, but still very much work in progress \ldots
+\item Prototype implementation in F\# working, but still early stages \ldots
 \end{itemize}
 \end{frame}
 
 
 \begin{frame}{Species distribution modelling}
 \begin{center}
+\vspace{-.3cm}
 \includegraphics[width=\textwidth]{zoon}
 \end{center}
 \begin{itemize}
 \item Held initial discussion workshop in February
+  \subitem{Attendees from Oxford Zoology \& Geography, and Centre for Ecology \& Hydrology}
 \item Interest in creating resource for comparing methods on different (synthetic and real) datasets
   \subitem{Later stage to allow researchers to upload own data for analysis by different methods}
 \item Currently pursuing funding and manpower
-\end{itemize}
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Scientific Software Development}
-\subsection*{Main}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}{Research software engineering}
-\begin{itemize}
-\item How should software for science be developed?
-\item How can we train researchers to produce `better' software more easily?
-  \subitem{The `Software Carpentry' effort}
-\item Working with different groups to help in their development efforts
 \end{itemize}
 \end{frame}
 
@@ -199,6 +189,22 @@ Website: \myurl{https://chaste.cs.ox.ac.uk/FunctionalCuration}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{frame}{Aims of functional curation}
+\begin{itemize}
+\item Provide a framework for a coherent approach to model fitting, simulation, comparison and validation
+  \begin{itemize}
+  \item Continuous evaluation of model predictions against experimental data, throughout model lifecycle
+  \item Models that are robust, well tested, and well characterised for particular biological studies
+  \end{itemize}
+\item A functional curation system \alert{for each domain}
+  \begin{itemize}
+  \item Brings together competing models, experimental data, and virtual experiments
+  \item New models, experiments, or data analysed automatically under all relevant combinations
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
 \begin{frame}{What goes in a protocol?}
 \begin{itemize}
 \item Definition of the interface with the model being experimented on
@@ -215,11 +221,13 @@ Website: \myurl{https://chaste.cs.ox.ac.uk/FunctionalCuration}
 \end{itemize}
 \end{frame}
 
+
 \begin{frame}{Our protocol structure}
 \begin{center}
 \includegraphics[width=\textwidth]{protocol_language}
 \end{center}
 \end{frame}
+
 
 \begin{frame}{Challenges arising from cell-based work}
 \begin{itemize}

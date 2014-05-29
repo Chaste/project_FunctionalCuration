@@ -122,6 +122,9 @@ private:
     /** Keep track of the current directory */
     boost::shared_ptr<OutputFileHandler> mpHandler;
 
+    /** Track new results for which no historical data exists. */
+    std::vector<std::string> mMissingHistoricalData;
+
     /**
      * This method compares the final results against historical data, to ensure that code changes aren't
      * introducing errors.
@@ -157,6 +160,7 @@ private:
             {
                 TS_WARN("No historical data for model " + rModelName + " protocol " + rProtocolName
                         + " - please save results for future comparison");
+                mMissingHistoricalData.push_back(rModelName + " / " + rProtocolName);
                 return true;
             }
             TSM_ASSERT("No results found but historical data exists for model " + rModelName + " protocol " + rProtocolName,
@@ -515,6 +519,24 @@ public:
         {
             PetscTools::BeginRoundRobin();
             BOOST_FOREACH(const std::string& r_combo, failed_combinations)
+            {
+                std::cout << "    " << r_combo << std::endl;
+            }
+            PetscTools::EndRoundRobin();
+        }
+        /* We also display results for which no historical data has been saved yet.
+         */
+        unsigned num_missing_historical = mMissingHistoricalData.size();
+        unsigned total_missing_historical = 0u;
+        MPI_Allreduce(&num_missing_historical, &total_missing_historical, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
+        if (total_missing_historical > 0u)
+        {
+            if (PetscTools::AmMaster())
+            {
+                std::cout << "The following combinations are new results without historical data:" << std::endl;
+            }
+            PetscTools::BeginRoundRobin();
+            BOOST_FOREACH(const std::string& r_combo, mMissingHistoricalData)
             {
                 std::cout << "    " << r_combo << std::endl;
             }

@@ -219,29 +219,21 @@ void Protocol::Run()
     }
     ProtocolTimer::EndEvent(ProtocolTimer::SIMULATE);
     ProtocolTimer::BeginEvent(ProtocolTimer::POSTPROCESS);
-    bool error_header_written = false;
     if (!mParalleliseLoops || PetscTools::AmMaster())
     {
         // Post-process the results
         EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
-        if (errors.empty())
+        std::cout << "Running post-processing..." << std::endl;
+        try
         {
-            std::cout << "Running post-processing..." << std::endl;
-            try
-            {
-                p_post_proc_env->ExecuteStatements(mPostProcessing);
-            }
-            catch (const Exception& e)
-            {
-                std::cerr << e.GetMessage();
-                errors.push_back(e);
-                if (!error_header_written)
-                {
-                    WriteError("Error(s) running post-processing:");
-                    error_header_written = true;
-                }
-                WriteError(e);
-            }
+            p_post_proc_env->ExecuteStatements(mPostProcessing);
+        }
+        catch (const Exception& e)
+        {
+            std::cerr << e.GetMessage();
+            errors.push_back(e);
+            WriteError("Error(s) running post-processing:");
+            WriteError(e);
         }
         // Transfer requested outputs to mOutputs[""]
         std::cout << "Recording protocol outputs..." << std::endl;

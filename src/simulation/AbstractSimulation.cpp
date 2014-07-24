@@ -383,6 +383,43 @@ EnvironmentPtr AbstractSimulation::Run()
     catch (const Exception& rE)
     {
         PetscTools::ReplicateException(true);
+        // Shrink results to largest possible regular arrays with valid data.
+        // For the first stepper that has been stepped, we take all the results from previous steps of that stepper.
+        if (store_results)
+        {
+            std::vector<NdArray<double>::Index> base_shape(mpSteppers->size());
+            bool found_progress = false;
+            for (unsigned i=0; i<mpSteppers->size(); i++)
+            {
+                AbstractStepperPtr p_stepper = (*mpSteppers)[i];
+                unsigned n = p_stepper->GetCurrentOutputNumber();
+                if (found_progress)
+                {
+                    base_shape[i] = p_stepper->GetNumberOfOutputPoints();
+                }
+                else if (n > 0u)
+                {
+                    found_progress = true;
+                    base_shape[i] = n;
+                }
+                else
+                {
+                    base_shape[i] = 1u;
+                }
+            }
+            const std::vector<std::string> output_names = mpResultsEnvironment->GetDefinedNames();
+            BOOST_FOREACH(const std::string& r_name, output_names)
+            {
+                NdArray<double> array = GET_ARRAY(mpResultsEnvironment->Lookup(r_name, GetLocationInfo()));
+                NdArray<double>::Extents shape = array.GetShape();
+                for (unsigned i=0; i<base_shape.size(); i++)
+                {
+                    shape[i] = base_shape[i];
+                }
+                array.Resize(shape);
+            }
+        }
+        // Re-throw, without causing parallel deadlock
         throw rE;
     }
     if (store_results)

@@ -71,7 +71,7 @@ void NestedSimulation::Run(EnvironmentPtr pResults)
                 continue; // Someone else will do it
             }
         }
-        std::cout << "Nested simulation " << mpStepper->GetIndexName() << " step "
+        std::cout << mIndent << "Nested simulation " << mpStepper->GetIndexName() << " step "
                   << mpStepper->GetCurrentOutputNumber() << " (value " << mpStepper->GetCurrentOutputPoint()
                   << ") on process " << PetscTools::GetMyRank() << "..." << std::endl;
         if (GetTrace() && mpOutputHandler)
@@ -219,4 +219,11 @@ void NestedSimulation::ZeroInitialiseResults()
 {
     AbstractSimulation::ZeroInitialiseResults();
     mpNestedSimulation->ZeroInitialiseResults();
+}
+
+
+void NestedSimulation::SetIndent(std::string indent)
+{
+    AbstractSimulation::SetIndent(indent);
+    mpNestedSimulation->SetIndent(indent + "  ");
 }

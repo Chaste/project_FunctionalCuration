@@ -168,11 +168,17 @@ void Protocol::SetParalleliseLoops(bool paralleliseLoops)
 }
 
 
+void Protocol::SetIndent(std::string indent)
+{
+    mIndent = indent;
+}
+
+
 void Protocol::Run()
 {
     ProtocolTimer::BeginEvent(ProtocolTimer::RUN_PROTOCOL);
     ProtocolTimer::BeginEvent(ProtocolTimer::SETUP);
-    std::cout << "Running protocol..." << std::endl;
+    std::cout << mIndent << "Running protocol..." << std::endl;
     if (mpOutputHandler)
     {
         DebugProto::SetTraceFolder(*mpOutputHandler);
@@ -191,8 +197,9 @@ void Protocol::Run()
         BOOST_FOREACH(boost::shared_ptr<AbstractSimulation> p_sim, mSimulations)
         {
             const std::string prefix = p_sim->GetOutputsPrefix();
-            std::cout << "Running simulation " << simulation_number << " " << prefix
+            std::cout << mIndent << "Running simulation " << simulation_number << " " << prefix
                       << " on process " << PetscTools::GetMyRank() << "..." << std::endl;
+            p_sim->SetIndent(mIndent + "  ");
             p_sim->InitialiseSteppers();
             p_sim->SetParalleliseLoops(mParalleliseLoops);
             p_sim->Run();
@@ -212,7 +219,7 @@ void Protocol::Run()
     }
     catch (const Exception& e)
     {
-        std::cerr << e.GetMessage();
+        std::cerr << mIndent << e.GetMessage();
         errors.push_back(e);
         WriteError("Error running simulations:");
         WriteError(e);
@@ -223,20 +230,20 @@ void Protocol::Run()
     {
         // Post-process the results
         EnvironmentPtr p_post_proc_env(new Environment(mpLibrary->GetAsDelegatee()));
-        std::cout << "Running post-processing..." << std::endl;
+        std::cout << mIndent << "Running post-processing..." << std::endl;
         try
         {
             p_post_proc_env->ExecuteStatements(mPostProcessing);
         }
         catch (const Exception& e)
         {
-            std::cerr << e.GetMessage();
+            std::cerr << mIndent << e.GetMessage();
             errors.push_back(e);
             WriteError("Error(s) running post-processing:");
             WriteError(e);
         }
         // Transfer requested outputs to mOutputs[""]
-        std::cout << "Recording protocol outputs..." << std::endl;
+        std::cout << mIndent << "Recording protocol outputs..." << std::endl;
         EnvironmentPtr p_proto_outputs = mOutputs[""];
         BOOST_FOREACH(boost::shared_ptr<OutputSpecification> p_spec, mOutputSpecifications)
         {
@@ -258,7 +265,7 @@ void Protocol::Run()
             }
             catch (const Exception& e)
             {
-                std::cerr << e.GetMessage();
+                std::cerr << mIndent << e.GetMessage();
                 errors.push_back(e);
                 WriteError(e);
             }
@@ -281,7 +288,7 @@ void Protocol::Run()
     {
         THROW_REPORTED_EXCEPTIONS(errors);
     }
-    std::cout << "Finished running protocol." << std::endl;
+    std::cout << mIndent << "Finished running protocol." << std::endl;
 }
 
 
@@ -378,17 +385,17 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
         {
             try
             {
-                std::cout << "Error running protocol. Trying to write intermediate results to file..." << std::endl;
+                std::cout << mIndent << "Error running protocol. Trying to write intermediate results to file..." << std::endl;
                 WriteToFile(fileNameBase);
-                std::cout << "Intermediate results written; re-throwing error..." << std::endl;
+                std::cout << mIndent << "Intermediate results written; re-throwing error..." << std::endl;
             }
             catch (const Exception& e)
             {
-                std::cout << "Failed to write intermediate results:" << std::endl << e.GetMessage();
+                std::cout << mIndent << "Failed to write intermediate results:" << std::endl << e.GetMessage();
             }
             catch (...)
             {
-                std::cout << "Failed to write intermediate results." << std::endl;
+                std::cout << mIndent << "Failed to write intermediate results." << std::endl;
             }
         }
         ProtocolTimer::EndEvent(ProtocolTimer::ALL);
@@ -398,10 +405,10 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
     {
         if (PetscTools::AmMaster())
         {
-            std::cout << "Writing results to file..." << std::endl;
+            std::cout << mIndent << "Writing results to file..." << std::endl;
             WriteToFile(fileNameBase);
             // Indicate successful completion
-            std::cout << "Done!" << std::endl;
+            std::cout << mIndent << "Done!" << std::endl;
             out_stream p_file = mpOutputHandler->OpenOutputFile("success");
             (*p_file) << "Protocol completed successfully." << std::endl;
             p_file->close();
@@ -485,7 +492,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
             }
             catch (const Exception&)
             {
-                std::cerr << "Missing protocol output '" << r_name << "'; ignoring for now." << std::endl;
+                std::cerr << mIndent << "Missing protocol output '" << r_name << "'; ignoring for now." << std::endl;
                 missing_outputs.insert(r_name);
                 continue;
             }
@@ -505,7 +512,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
             }
             else
             {
-                std::cerr << "Unexpected non-array protocol output '" << r_name << "'; ignoring." << std::endl;
+                std::cerr << mIndent << "Unexpected non-array protocol output '" << r_name << "'; ignoring." << std::endl;
             }
         }
     }
@@ -541,7 +548,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                 }
                 catch (const Exception&)
                 {
-                    std::cerr << "Plot requests protocol output '" << r_name << "', which has not been specified as an output." << std::endl;
+                    std::cerr << mIndent << "Plot requests protocol output '" << r_name << "', which has not been specified as an output." << std::endl;
                     missing_outputs.insert(r_name);
                     all_variables_exist = false;
                 }
@@ -692,7 +699,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
                 }
                 else
                 {
-                    std::cerr << "Cannot plot non-array output '" << r_name << "'." << std::endl;
+                    std::cerr << mIndent << "Cannot plot non-array output '" << r_name << "'." << std::endl;
                     missing_array = true;
                 }
             }
@@ -711,14 +718,14 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
                 AbstractValuePtr p_key = r_outputs.Lookup(r_name);
                 if (!p_key->IsArray() || !GET_ARRAY(p_key).GetNumDimensions() == 1u)
                 {
-                    std::cerr << "Cannot plot non-vector key variable '" << r_name << "'." << std::endl;
+                    std::cerr << mIndent << "Cannot plot non-vector key variable '" << r_name << "'." << std::endl;
                     missing_array = true;
                 }
             }
             catch (const Exception&)
             {
                 missing_array = true;
-                std::cerr << "Plot requests key vector '" << r_name << "' which is not specified as an output." << std::endl;
+                std::cerr << mIndent << "Plot requests key vector '" << r_name << "' which is not specified as an output." << std::endl;
             }
         }
         // Don't plot if any required output is missing
@@ -797,7 +804,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
         }
 
         // Tracing what we're doing
-        std::cout << "Plotting " << r_title << ":\t" << label_y << " against " << label_x << "..." << std::endl;
+        std::cout << mIndent << "Plotting " << r_title << ":\t" << label_y << " against " << label_x << "..." << std::endl;
 
         // Check the shapes of the arrays to plot
         // X must be 1d, or be equivalent to a 1d array (i.e. just multiple copies of the same vector)
@@ -826,7 +833,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
             }
             if (!equal)
             {
-                std::cerr << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
+                std::cerr << mIndent << "The X data for a plot must be a 1d array, not " << output_x.GetNumDimensions() << "d." << std::endl;
                 continue;
             }
             else
@@ -844,12 +851,12 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
             y_arrays.push_back(output_y);
             if (output_y.GetNumDimensions() < 1)
             {
-                std::cerr << "The Y data for a plot must be a true array, not a single value." << std::endl;
+                std::cerr << mIndent << "The Y data for a plot must be a true array, not a single value." << std::endl;
                 continue;
             }
             if (output_y.GetShape().back() != x_length)
             {
-                std::cerr << "The last dimension of the Y data for a plot must be the same size as the X data. "
+                std::cerr << mIndent << "The last dimension of the Y data for a plot must be the same size as the X data. "
                           << "Y shape " << output_y.GetShape() << " is not compatible with X length " << x_length << std::endl;
                 continue;
             }
@@ -865,7 +872,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
 
         if (total_num_traces == 0u)
         {
-            std::cerr << "No valid traces found." << std::endl;
+            std::cerr << mIndent << "No valid traces found." << std::endl;
             continue;
         }
 
@@ -1019,7 +1026,7 @@ void Protocol::PlotWithGnuplot(PlotSpecificationPtr pPlotSpec,
         }
         if (key_values.size() != numTraces)
         {
-            std::cerr << "Plot key vector '" << r_key_name << "' has " << key_values.size()
+            std::cerr << mIndent << "Plot key vector '" << r_key_name << "' has " << key_values.size()
                       << " entries, but there are " << numTraces << " traces." << std::endl;
             key_values.clear();
         }

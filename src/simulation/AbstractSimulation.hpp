@@ -178,6 +178,12 @@ public:
      */
     virtual void ZeroInitialiseResults();
 
+    /**
+     * Set the indentation level to use for status/error output written to the screen/terminal.
+     * @param indent  the string (typically containing just spaces) to use for indentation
+     */
+    virtual void SetIndent(std::string indent);
+
 protected:
     /**
      * Run a simulation, filling in the results if requested.
@@ -283,6 +289,9 @@ protected:
 
     /** Whether to fill result arrays with zero when they're created. */
     bool mZeroInitialiseArrays;
+
+    /** The indentation string to use for status/error lines written to cout/cerr. */
+    std::string mIndent;
 
 private:
     /** The namespace prefix to use for outputs from this simulation. */

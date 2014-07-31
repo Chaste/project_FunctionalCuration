@@ -119,6 +119,12 @@ public:
                      const std::string& rFileNameBase);
 
     /**
+     * Set the indentation level to use for status/error output written to the screen/terminal.
+     * @param indent  the string (typically containing just spaces) to use for indentation
+     */
+    void SetIndent(std::string indent);
+
+    /**
      * Set whether to write plots to PNG format as well as the default EPS.
      *
      * @param writePng  whether .png files should be created for plots
@@ -405,6 +411,9 @@ private:
 
     /** The manifest of output files written by the protocol. */
     Manifest mManifest;
+
+    /** The indentation string to use for status/error lines written to cout/cerr. */
+    std::string mIndent;
 
     /** Whether to write plots to .png as well as .eps. */
     bool mWritePng;

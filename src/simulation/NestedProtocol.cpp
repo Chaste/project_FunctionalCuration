@@ -62,6 +62,7 @@ void NestedProtocol::SetModel(boost::shared_ptr<AbstractSystemWithOutputs> pMode
 
 void NestedProtocol::Run(EnvironmentPtr pResults)
 {
+    mpProtocol->SetIndent(mIndent);
     // Temporarily disable the event handler, so the nested protocol doesn't record its own timings!
     bool timer_enabled = ProtocolTimer::IsEnabled();
     ProtocolTimer::Disable();

@@ -84,6 +84,12 @@ public:
      */
     virtual void ZeroInitialiseResults();
 
+    /**
+     * Set the indentation level to use for status/error output written to the screen/terminal.
+     * @param indent  the string (typically containing just spaces) to use for indentation
+     */
+    virtual void SetIndent(std::string indent);
+
 protected:
     /**
      * Run a simulation, filling in the results.

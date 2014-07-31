@@ -632,3 +632,9 @@ void AbstractSimulation::ZeroInitialiseResults()
 {
     mZeroInitialiseArrays = true;
 }
+
+
+void AbstractSimulation::SetIndent(std::string indent)
+{
+    mIndent = indent;
+}

@@ -186,7 +186,7 @@ AbstractValuePtr ArrayCreate::operator()(const Environment& rEnv) const
                 PROTO_ASSERT(sub_array_shape == sub_array.GetShape(),
                              "All sub-arrays in an array comprehension must have the same shape; arrays "
                              << i << " of shape " << sub_array.GetShape() << " and 0 of shape "
-                             << sub_array_shape << "differ.");
+                             << sub_array_shape << " differ.");
             }
 //            std::cout << "Sub array " << i << ": " << std::vector<double>(sub_array.Begin(), sub_array.End()) << std::endl;
             // Fill in the view of the new array corresponding to this sub-array

@@ -36,11 +36,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef USEFULFUNCTIONSFORPROTOCOLTESTING_HPP_
 #define USEFULFUNCTIONSFORPROTOCOLTESTING_HPP_
 
+#include <cxxtest/TestSuite.h>
+
 #include <sys/types.h>
 #include <dirent.h>
 #include <vector>
 #include <string>
-#include <cxxtest/TestSuite.h>
+#include <boost/foreach.hpp>
 
 #ifdef CHASTE_CVODE
 // CVODE headers
@@ -58,6 +60,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "EulerIvpOdeSolver.hpp"
 #include "SimpleStimulus.hpp"
 
+#include "NumericFileComparison.hpp"
 #include "RunAndCheckIonicModels.hpp"
 #include "Warnings.hpp"
 
@@ -69,7 +72,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Function declarations
 //
 
-boost::shared_ptr<AbstractCardiacCellInterface> RunLr91Test(DynamicCellModelLoader& rLoader,                                                            bool testTables=false,
+boost::shared_ptr<AbstractCardiacCellInterface> RunLr91Test(DynamicCellModelLoader& rLoader,
+                                                            bool testTables=false,
                                                             double tolerance=1e-3,
                                                             const std::string caiTableName="");
 
@@ -313,5 +317,150 @@ std::string GetTitleFromDirectory(const std::string& rDirectory)
     }
     return plot_title;
 }
+
+/**
+ * A utility class for comparing the results of protocols against stored historical results, for regression testing.
+ * It handles tracking which model/protocol combination have changed results, and also which combinations are missing reference data.
+ * It can also report on these at the end of a test run.
+ */
+class HistoricalResultTester
+{
+public:
+    /**
+     * This method compares experiment results against historical data, to ensure that code changes aren't
+     * introducing errors.  It will trigger a test failure if results do not match, as well as returning false
+     * and recording the model/protocol combination.
+     *
+     * @param rHandler  a handler for the results just produced
+     * @param rModelName  the name of the model, and hence the CellML file
+     * @param rProtocolName  the protocol name
+     * @param rOutputFileNames  the names of the output variables to compare (i.e. no extension)
+     * @param relTol  relative tolerance
+     * @param absTol  absolute tolerance
+     * @return  true if the results match historical data, provided the latter are present
+     */
+    bool CompareToHistoricalResults(const OutputFileHandler& rHandler,
+                                    const std::string& rModelName,
+                                    const std::string& rProtocolName,
+                                    const std::vector<std::string>& rOutputNames,
+                                    double relTol, double absTol)
+    {
+        mNumCombinations++;
+        bool all_match = true;
+        BOOST_FOREACH(std::string output_name, rOutputNames)
+        {
+            std::cout << "Comparing results of " << rProtocolName << " protocol on " << rModelName << ": " << output_name << "...";
+
+            std::string base_name = "projects/FunctionalCuration/test/data/historic/" + rModelName + "/" +
+                    rProtocolName + "/outputs_" + output_name;
+            FileFinder ref_output(base_name + ".csv", RelativeTo::ChasteSourceRoot);
+
+            if (!ref_output.Exists()) // Old output was in .dat format so if missing look for that instead...
+            {
+                ref_output.SetPath(base_name + ".dat", RelativeTo::ChasteSourceRoot);
+            }
+
+            FileFinder test_output = rHandler.FindFile(output_name + ".csv");
+            if (!ref_output.Exists() && test_output.Exists())
+            {
+                TS_WARN("No historical data for model " + rModelName + " protocol " + rProtocolName
+                        + " - please save results for future comparison");
+                mMissingHistoricalData.push_back(rModelName + " / " + rProtocolName);
+                return true;
+            }
+            TSM_ASSERT("No results found but historical data exists for model " + rModelName + " protocol " + rProtocolName,
+                       !ref_output.Exists() || test_output.Exists());
+            if (!test_output.Exists())
+            {
+                std::cout << std::endl;
+                all_match = all_match && !ref_output.Exists();
+            }
+            else
+            {
+                NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
+                bool match = comp.CompareFiles(absTol, 0, relTol);
+                TS_ASSERT(match);
+                std::cout << "done." << std::endl;
+                all_match = all_match && match;
+            }
+        }
+        if (!all_match)
+        {
+            mFailedCombinations.push_back(rModelName + " / " + rProtocolName);
+        }
+        return all_match;
+    }
+
+    /**
+     * Compute and print a summary of which model/protocol combinations failed across
+     * the whole run, since it can be tricky to determine this by hand when running on many processes.
+     *
+     * We also display results for which no historical data has been saved yet.
+     */
+    void ReportResults()
+    {
+        Warnings::NoisyDestroy();
+
+        unsigned num_local_failures = mFailedCombinations.size();
+        unsigned total_num_failures = 0u;
+        MPI_Allreduce(&num_local_failures, &total_num_failures, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
+        if (PetscTools::AmMaster())
+        {
+            std::cout << std::endl << "Ran " << mNumCombinations << " model / protocol combinations." << std::endl;
+            if (total_num_failures > 0u)
+            {
+                std::cout << "Failed " << total_num_failures << " unexpectedly:" << std::endl;
+            }
+            else
+            {
+                std::cout << "All combinations with historical results matched to within tolerances." << std::endl;
+            }
+        }
+        if (total_num_failures > 0u)
+        {
+            PetscTools::BeginRoundRobin();
+            BOOST_FOREACH(const std::string& r_combo, mFailedCombinations)
+            {
+                std::cout << "    " << r_combo << std::endl;
+            }
+            PetscTools::EndRoundRobin();
+        }
+
+        unsigned num_missing_historical = mMissingHistoricalData.size();
+        unsigned total_missing_historical = 0u;
+        MPI_Allreduce(&num_missing_historical, &total_missing_historical, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
+        if (total_missing_historical > 0u)
+        {
+            if (PetscTools::AmMaster())
+            {
+                std::cout << "The following combinations are new results without historical data:" << std::endl;
+            }
+            PetscTools::BeginRoundRobin();
+            BOOST_FOREACH(const std::string& r_combo, mMissingHistoricalData)
+            {
+                std::cout << "    " << r_combo << std::endl;
+            }
+            PetscTools::EndRoundRobin();
+        }
+        PetscTools::Barrier(); // Prevent printing cxxtest pass/fail lines until above completed for all processes
+    }
+
+    /**
+     * This simple constructor just initialises our data structures to reflect no results tested yet.
+     */
+    HistoricalResultTester()
+        : mNumCombinations(0u)
+    {}
+
+private:
+    /** A count of how many experiments (model/protocol combinations) have been run. */
+    unsigned mNumCombinations;
+
+    /** Track new results for which no historical data exists. */
+    std::vector<std::string> mMissingHistoricalData;
+
+    /** Track which model/protocol combinations fail. */
+    std::vector<std::string> mFailedCombinations;
+};
 
 #endif // USEFULFUNCTIONSFORPROTOCOLTESTING_HPP_

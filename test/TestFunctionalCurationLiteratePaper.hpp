@@ -49,7 +49,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For one model subsequent investigation has revealed the results in the paper to be slightly
  * incorrect.  Tightening of tolerances and refinement of sampling intervals have also
  * improved the quality of the results for several models, especially under the ICaL protocol,
- * beyond the default comparison tolerance of 0.5%.)
+ * beyond the default comparison tolerance of 0.5%.
  *
  * Another model (Faber-Rudy) shows extremely
  * high sensitivity to code generation settings in the peak transmembrane potential, which in
@@ -57,9 +57,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * verified manually to match the original publication qualitatively.
  *
  * Another notable exception is that (through the process of functional curation) we found that
- * the Decker 2009 model did not replicate results shown in its original paper (S1-S2 curve was
+ * the Decker 2009 model did not replicate results shown in its original paper (the S1-S2 curve was
  * very different). This led to us finding a bug in the CellML encoding which we have corrected,
- * and now the Decker 2009 model gives a sensible S1-S2 curve, unlike that shown in our paper!
+ * and now the Decker 2009 model gives a sensible S1-S2 curve, unlike that shown in our paper!)
  *
  * You can run these simulations using the following command from within the Chaste source tree:
  * {{{
@@ -103,7 +103,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ProtocolRunner.hpp"
 #include "ProtoHelperMacros.hpp"
-#include "NumericFileComparison.hpp"
 #include "PetscTools.hpp"
 
 #include "PetscSetupAndFinalize.hpp"
@@ -121,64 +120,6 @@ class TestFunctionalCurationPaper : public CxxTest::TestSuite
 private:
     /** Keep track of the current directory */
     boost::shared_ptr<OutputFileHandler> mpHandler;
-
-    /** Track new results for which no historical data exists. */
-    std::vector<std::string> mMissingHistoricalData;
-
-    /**
-     * This method compares the final results against historical data, to ensure that code changes aren't
-     * introducing errors.
-     *
-     * @param rModelName  the name of the model, and hence the CellML file
-     * @param rProtocolName  the protocol name
-     * @param rOutputFileNames  the names of the output variables to compare (i.e. no extension)
-     * @param relTol  relative tolerance
-     * @param absTol  absolute tolerance
-     * @return  true if the results match historical data, provided the latter are present
-     */
-    bool CompareToHistoricalResults(const std::string& rModelName,
-                                    const std::string& rProtocolName,
-                                    const std::vector<std::string>& rOutputNames,
-                                    double relTol, double absTol)
-    {
-        bool all_match = true;
-        BOOST_FOREACH(std::string output_name, rOutputNames)
-        {
-            std::cout << "Comparing results of " << rProtocolName << " protocol on " << rModelName << ": " << output_name << "...";
-
-            std::string base_name = "projects/FunctionalCuration/test/data/historic/" + rModelName + "/" +
-                    rProtocolName + "/" + output_name;
-            FileFinder ref_output(base_name + ".dat", RelativeTo::ChasteSourceRoot);
-
-            if (!ref_output.Exists()) // New output is in .csv format so if missing look for that instead...
-            {
-                ref_output.SetPath(base_name + ".csv", RelativeTo::ChasteSourceRoot);
-            }
-
-            FileFinder test_output = mpHandler->FindFile(output_name + ".csv");
-            if (!ref_output.Exists() && test_output.Exists())
-            {
-                TS_WARN("No historical data for model " + rModelName + " protocol " + rProtocolName
-                        + " - please save results for future comparison");
-                mMissingHistoricalData.push_back(rModelName + " / " + rProtocolName);
-                return true;
-            }
-            TSM_ASSERT("No results found but historical data exists for model " + rModelName + " protocol " + rProtocolName,
-                       !ref_output.Exists() || test_output.Exists());
-            if (!test_output.Exists())
-            {
-                std::cout << std::endl;
-                return !ref_output.Exists();
-            }
-
-            NumericFileComparison comp(test_output.GetAbsolutePath(), ref_output.GetAbsolutePath());
-            bool match = comp.CompareFiles(absTol, 0, relTol);
-            TS_ASSERT(match);
-            std::cout << "done." << std::endl;
-            all_match = all_match && match;
-        }
-        return all_match;
-    }
 
     /**
      * Set up #mpHandler to point to the correct model and protocol subfolder.
@@ -366,8 +307,8 @@ public:
             cellml_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--models");
         }
 
-        std::vector<std::string> ical_outputs = boost::assign::list_of("outputs_min_LCC")("outputs_final_membrane_voltage");
-        std::vector<std::string> s1s2_outputs = boost::assign::list_of("outputs_APD90")("outputs_DI");
+        std::vector<std::string> ical_outputs = boost::assign::list_of("min_LCC")("final_membrane_voltage");
+        std::vector<std::string> s1s2_outputs = boost::assign::list_of("APD90")("DI");
 
         /* We use Chaste's process isolation facility to process models in parallel, if running on multiple processes.
          * The main output folder needs to be created with a collective call (so we don't have multiple processes
@@ -392,8 +333,9 @@ public:
                                                                    ("ten_tusscher_model_2004_epi_s1s2_curve")
                                                                    ("ten_tusscher_model_2006_epi_s1s2_curve");
 
-        // Track which model/protocol combinations fail
-        std::vector<std::string> failed_combinations;
+        /* This utility class handles comparing virtual experiment results against stored reference data.
+         */
+        HistoricalResultTester result_tester;
 
         for (unsigned i=0; i<cellml_files.size(); ++i)
         {
@@ -424,10 +366,7 @@ public:
             {
                 OUR_WARN(e.GetMessage(), cellml_files[i], "S1S2");
             }
-            if (!CompareToHistoricalResults(cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6)) // 0.5% rel tol
-            {
-                failed_combinations.push_back(cellml_files[i] + " / S1S2");
-            }
+            result_tester.CompareToHistoricalResults(*mpHandler, cellml_files[i], "S1S2", s1s2_outputs, 0.005, 1e-6); // 0.5% rel tol
 
             try {
                 RunICaLVoltageClampProtocol(cellml_files[i]);
@@ -436,10 +375,7 @@ public:
             {
                 OUR_WARN(e.GetMessage(), cellml_files[i], "ICaL");
             }
-            if (!CompareToHistoricalResults(cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5)) // 0.5% rel tol
-            {
-                failed_combinations.push_back(cellml_files[i] + " / ICaL");
-            }
+            result_tester.CompareToHistoricalResults(*mpHandler, cellml_files[i], "ICaL", ical_outputs, 0.005, 1e-5); // 0.5% rel tol
         }
 
         /* Next, the master process makes comparison plots of some experimental data we got
@@ -498,51 +434,10 @@ public:
 
         /* Finally, we compute and print a summary of which model/protocol combinations failed across
          * the whole run, since it can be tricky to determine this by hand when running on many processes.
+         *
+         * We also display results for which no historical data has been saved yet.
          */
-        Warnings::NoisyDestroy();
-        unsigned num_local_failures = failed_combinations.size();
-        unsigned total_num_failures = 0u;
-        MPI_Allreduce(&num_local_failures, &total_num_failures, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
-        if (PetscTools::AmMaster())
-        {
-            std::cout << std::endl << "Ran " << (2 * cellml_files.size()) << " model / protocol combinations." << std::endl;
-            if (total_num_failures > 0u)
-            {
-                std::cout << "Failed " << total_num_failures << " unexpectedly:" << std::endl;
-            }
-            else
-            {
-                std::cout << "All combinations with historical results matched to within tolerances." << std::endl;
-            }
-        }
-        if (total_num_failures > 0u)
-        {
-            PetscTools::BeginRoundRobin();
-            BOOST_FOREACH(const std::string& r_combo, failed_combinations)
-            {
-                std::cout << "    " << r_combo << std::endl;
-            }
-            PetscTools::EndRoundRobin();
-        }
-        /* We also display results for which no historical data has been saved yet.
-         */
-        unsigned num_missing_historical = mMissingHistoricalData.size();
-        unsigned total_missing_historical = 0u;
-        MPI_Allreduce(&num_missing_historical, &total_missing_historical, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
-        if (total_missing_historical > 0u)
-        {
-            if (PetscTools::AmMaster())
-            {
-                std::cout << "The following combinations are new results without historical data:" << std::endl;
-            }
-            PetscTools::BeginRoundRobin();
-            BOOST_FOREACH(const std::string& r_combo, mMissingHistoricalData)
-            {
-                std::cout << "    " << r_combo << std::endl;
-            }
-            PetscTools::EndRoundRobin();
-        }
-        PetscTools::Barrier(); // Prevent printing cxxtest pass/fail lines until above completed for all processes
+        result_tester.ReportResults();
     }
 };
 

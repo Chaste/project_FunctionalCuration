@@ -116,7 +116,7 @@ public:
 //        outputs_to_check["IKs_block"] = boost::assign::list_of("scaled_APD90")("detailed_voltage");
 //        outputs_to_check["IKs_IV_curve"] = boost::assign::list_of("normalised_peak_Ks_tail");
         outputs_to_check["INa_block"] = boost::assign::list_of("scaled_APD90")("detailed_voltage");
-        outputs_to_check["INa_IV_curve"] = boost::assign::list_of("normalised_peak_currents")("current_activation");
+        outputs_to_check["INa_IV_curves"] = boost::assign::list_of("normalised_peak_currents")("current_activation");
 //        outputs_to_check["Ito_block"] = boost::assign::list_of("scaled_resting_potential")("scaled_APD90")("detailed_voltage");
         outputs_to_check["NCX_block"] = boost::assign::list_of("scaled_resting_potential")("scaled_APD90")("detailed_voltage");
         outputs_to_check["RyR_block"] = boost::assign::list_of("scaled_APD90")("detailed_voltage");

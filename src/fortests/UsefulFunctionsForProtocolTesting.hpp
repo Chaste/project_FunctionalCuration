@@ -355,11 +355,6 @@ public:
                     rProtocolName + "/outputs_" + output_name;
             FileFinder ref_output(base_name + ".csv", RelativeTo::ChasteSourceRoot);
 
-            if (!ref_output.Exists()) // Old output was in .dat format so if missing look for that instead...
-            {
-                ref_output.SetPath(base_name + ".dat", RelativeTo::ChasteSourceRoot);
-            }
-
             FileFinder test_output = rHandler.FindFile(output_name + ".csv");
             if (!ref_output.Exists() && test_output.Exists())
             {

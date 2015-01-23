@@ -77,7 +77,7 @@ public:
             }
 
             std::cout << "Comparing results of S1-S2 protocol: " << output_name << "...";
-            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/S1S2/" + output_name + ".dat",
+            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/S1S2/" + output_name + ".csv",
                                   RelativeTo::ChasteSourceRoot);
             OutputFileHandler handler(dirname, false);
             FileFinder test_output = handler.FindFile(output_name + ".csv");
@@ -116,7 +116,7 @@ public:
             }
 
             std::cout << "Comparing results of ICaL protocol: " << output_name << "...";
-            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/ICaL/" + output_name + ".dat",
+            FileFinder ref_output("projects/FunctionalCuration/test/data/historic/" + model_name + "/ICaL/" + output_name + ".csv",
                                   RelativeTo::ChasteSourceRoot);
             OutputFileHandler handler(dirname, false);
             FileFinder test_output = handler.FindFile(output_name + ".csv");

@@ -355,7 +355,7 @@ public:
                     rProtocolName + "/outputs_" + output_name;
             FileFinder ref_output(base_name + ".csv", RelativeTo::ChasteSourceRoot);
 
-            FileFinder test_output = rHandler.FindFile(output_name + ".csv");
+            FileFinder test_output = rHandler.FindFile("outputs_" + output_name + ".csv");
             if (!ref_output.Exists() && test_output.Exists())
             {
                 TS_WARN("No historical data for model " + rModelName + " protocol " + rProtocolName

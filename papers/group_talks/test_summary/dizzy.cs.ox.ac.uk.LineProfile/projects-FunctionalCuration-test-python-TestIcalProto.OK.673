@@ -1,0 +1,427 @@
+Got RuntimeError: maximum recursion depth exceeded
+Increasing recursion limit to 1500
+Entering TestIcal (TestIcalProto.TestIcalProto)
+generating model code...
+Warning: unable to utilise units conversion rule below as required variables missing; this may lead to later units conversion errors:
+   projects/FunctionalCuration/protocols/ICaL.txt:53:40	    convert microamps to uA_per_cm2 by lambda rhs: (rhs / oxmeta:membrane_capacitance) * chaste_membrane_capacitance
+Warning: unable to utilise units conversion rule below as required variables missing; this may lead to later units conversion errors:
+   projects/FunctionalCuration/protocols/ICaL.txt:54:40	    convert uA_per_cm2 to microamps by lambda rhs: (rhs * oxmeta:membrane_capacitance) / chaste_membrane_capacitance
+Statistics about the modified model:
+    # inputs:          2
+    # total outputs:   4
+    # state variables: 27
+    # equations:       144
+    # variables:       450
+running build_ext
+cythoning model.pyx to model.c
+building 'model' extension
+creating build
+creating build/temp.linux-x86_64-2.6
+gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -I/home/jonc/eclipse/workspace/Chaste -I/home/jonc/eclipse/workspace/Chaste/cxxtest -isystem /home/bob/petsc-3.1-p8/linux-gnu/include -isystem /home/bob/petsc-3.1-p8/include -isystem /usr/share/R/include/ -isystem /usr/local/lib/R/site-library/Rcpp/include/ -isystem /usr/local/lib/R/site-library/RInside/include/ -isystem /usr/include/vtk-5.2 -fPIC -I/usr/local/lib/python2.6/dist-packages/numpy/core/include -I/home/jonc/eclipse/workspace/Chaste/python/pycml/../../projects/FunctionalCuration/src/python -I/usr/include/python2.6 -c model.c -o build/temp.linux-x86_64-2.6/model.o
+In file included from /usr/local/lib/python2.6/dist-packages/numpy/core/include/numpy/ndarraytypes.h:1804,
+                 from /usr/local/lib/python2.6/dist-packages/numpy/core/include/numpy/ndarrayobject.h:17,
+                 from /usr/local/lib/python2.6/dist-packages/numpy/core/include/numpy/arrayobject.h:4,
+                 from model.c:315:
+/usr/local/lib/python2.6/dist-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:15:2: warning: #warning "Using deprecated NumPy API, disable it by " "#defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION"
+/usr/local/lib/python2.6/dist-packages/numpy/core/include/numpy/__multiarray_api.h:1629: warning: '_import_array' defined but not used
+/usr/local/lib/python2.6/dist-packages/numpy/core/include/numpy/__ufunc_api.h:241: warning: '_import_umath' defined but not used
+gcc -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -L/home/bob/petsc-3.1-p8/linux-gnu/lib -L/home/bob/petsc-3.1-p8/externalpackages/f2cblaslapack/linux-gnu -L/opt/intel/composerxe/mkl/lib/intel64 -L/usr/lib/R -L/usr/local/lib/R/site-library/Rcpp/lib -L/usr/local/lib/R/site-library/RInside/lib -L/home/jonc/eclipse/workspace/Chaste/lib -pg -I/home/jonc/eclipse/workspace/Chaste -I/home/jonc/eclipse/workspace/Chaste/cxxtest -isystem /home/bob/petsc-3.1-p8/linux-gnu/include -isystem /home/bob/petsc-3.1-p8/include -isystem /usr/share/R/include/ -isystem /usr/local/lib/R/site-library/Rcpp/include/ -isystem /usr/local/lib/R/site-library/RInside/include/ -isystem /usr/include/vtk-5.2 build/temp.linux-x86_64-2.6/model.o -lsundials_cvode -lsundials_nvecserial -lm -o /tmp/jonc/testoutput/Py_TestIcalProto_1421247094/tmpCOG3P1/model.so
+SetSolver: Models implemented using Cython contain a built-in ODE solver, so ignoring setting.
+running protocol...
+/usr/local/lib/python2.6/dist-packages/numexpr/necompiler.py:746: DeprecationWarning: using `oa_ndim == 0` when `op_axes` is NULL is deprecated. Use `oa_ndim == -1` or the MultiNew iterator for NumPy <1.8 compatibility
+  return compiled_ex(*arguments, **kwargs)
+running simulation 
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+running simulation sim
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+Exception KeyError: (<code object FindDefiningEnvironment at 0x4171af8, file "/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py", line 113>,) in '_line_profiler.python_trace_callback' ignored
+/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/simulations/simulations.py:135: DeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
+  result = V.Array(np.empty(range_dims + output.shape))
+nested simulation step_calcium step 0 (value 900.0 )
+nested simulation step_voltage step 0 (value -45.01 )
+nested simulation step_voltage step 1 (value -40.01 )
+nested simulation step_voltage step 2 (value -35.01 )
+nested simulation step_voltage step 3 (value -30.01 )
+nested simulation step_voltage step 4 (value -25.01 )
+nested simulation step_voltage step 5 (value -20.01 )
+nested simulation step_voltage step 6 (value -15.01 )
+nested simulation step_voltage step 7 (value -10.01 )
+nested simulation step_voltage step 8 (value -5.01 )
+nested simulation step_voltage step 9 (value 0.01 )
+nested simulation step_voltage step 10 (value 5.01 )
+nested simulation step_voltage step 11 (value 10.01 )
+nested simulation step_voltage step 12 (value 15.01 )
+nested simulation step_voltage step 13 (value 20.01 )
+nested simulation step_voltage step 14 (value 25.01 )
+nested simulation step_voltage step 15 (value 30.01 )
+nested simulation step_voltage step 16 (value 35.01 )
+nested simulation step_voltage step 17 (value 40.01 )
+nested simulation step_voltage step 18 (value 45.01 )
+nested simulation step_voltage step 19 (value 50.01 )
+nested simulation step_voltage step 20 (value 55.01 )
+nested simulation step_voltage step 21 (value 60.01 )
+nested simulation step_voltage step 22 (value 65.01 )
+nested simulation step_voltage step 23 (value 70.01 )
+nested simulation step_voltage step 24 (value 75.01 )
+nested simulation step_voltage step 25 (value 79.99 )
+nested simulation step_calcium step 1 (value 1800.0 )
+nested simulation step_voltage step 0 (value -45.01 )
+nested simulation step_voltage step 1 (value -40.01 )
+nested simulation step_voltage step 2 (value -35.01 )
+nested simulation step_voltage step 3 (value -30.01 )
+nested simulation step_voltage step 4 (value -25.01 )
+nested simulation step_voltage step 5 (value -20.01 )
+nested simulation step_voltage step 6 (value -15.01 )
+nested simulation step_voltage step 7 (value -10.01 )
+nested simulation step_voltage step 8 (value -5.01 )
+nested simulation step_voltage step 9 (value 0.01 )
+nested simulation step_voltage step 10 (value 5.01 )
+nested simulation step_voltage step 11 (value 10.01 )
+nested simulation step_voltage step 12 (value 15.01 )
+nested simulation step_voltage step 13 (value 20.01 )
+nested simulation step_voltage step 14 (value 25.01 )
+nested simulation step_voltage step 15 (value 30.01 )
+nested simulation step_voltage step 16 (value 35.01 )
+nested simulation step_voltage step 17 (value 40.01 )
+nested simulation step_voltage step 18 (value 45.01 )
+nested simulation step_voltage step 19 (value 50.01 )
+nested simulation step_voltage step 20 (value 55.01 )
+nested simulation step_voltage step 21 (value 60.01 )
+nested simulation step_voltage step 22 (value 65.01 )
+nested simulation step_voltage step 23 (value 70.01 )
+nested simulation step_voltage step 24 (value 75.01 )
+nested simulation step_voltage step 25 (value 79.99 )
+nested simulation step_calcium step 2 (value 2700.0 )
+nested simulation step_voltage step 0 (value -45.01 )
+nested simulation step_voltage step 1 (value -40.01 )
+nested simulation step_voltage step 2 (value -35.01 )
+nested simulation step_voltage step 3 (value -30.01 )
+nested simulation step_voltage step 4 (value -25.01 )
+nested simulation step_voltage step 5 (value -20.01 )
+nested simulation step_voltage step 6 (value -15.01 )
+nested simulation step_voltage step 7 (value -10.01 )
+nested simulation step_voltage step 8 (value -5.01 )
+nested simulation step_voltage step 9 (value 0.01 )
+nested simulation step_voltage step 10 (value 5.01 )
+nested simulation step_voltage step 11 (value 10.01 )
+nested simulation step_voltage step 12 (value 15.01 )
+nested simulation step_voltage step 13 (value 20.01 )
+nested simulation step_voltage step 14 (value 25.01 )
+nested simulation step_voltage step 15 (value 30.01 )
+nested simulation step_voltage step 16 (value 35.01 )
+nested simulation step_voltage step 17 (value 40.01 )
+nested simulation step_voltage step 18 (value 45.01 )
+nested simulation step_voltage step 19 (value 50.01 )
+nested simulation step_voltage step 20 (value 55.01 )
+nested simulation step_voltage step 21 (value 60.01 )
+nested simulation step_voltage step 22 (value 65.01 )
+nested simulation step_voltage step 23 (value 70.01 )
+nested simulation step_voltage step 24 (value 75.01 )
+nested simulation step_voltage step 25 (value 79.99 )
+running post processing...
+saving output data to h5 file...
+plotting IV curve curve: Minimum I_{CaL} current against Test potential
+Time spent running protocol (s): 669.104826
+    load model       26.561192
+    post-processing  0.011529
+    run library      0.005386
+    save outputs     0.172488
+    simulations      627.413296
+    parsing          14.536170
+    create plots     0.404765
+Passed
+
+Ran 1 test in 669.123s
+
+OK!
+Timer unit: 1e-06 s
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/language/expressions/abstract.py
+Function: RealEvaluateCompiled at line 143
+Total time: 94.53 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   143                                               def RealEvaluateCompiled(self, env):
+   144                                                   """Evaluate the compiled form of this expression using eval().
+   145                                           
+   146                                                   This is suitable for use only in non-array contexts, such as by the SetVariable modifier.
+   147                                                   """
+   148   3978160     15790703      4.0     16.7          func = self.compiledFunction
+   149   3978160     11184415      2.8     11.8          arg_envs = self.GetDefiningEnvironments(env)
+   150   3978160      4241804      1.1      4.5          assert env is self._rootDefiningEnv, "Internal implementation assumption violated"
+   151  15912476     49922228      3.1     52.8          args = [arg_envs[name].unwrappedBindings[name] for name in self._usedVarLocalNames]
+   152   3978160     13390809      3.4     14.2          return func(*args)
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/language/expressions/array.py
+Function: Interpret at line 249
+Total time: 0.001135 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   249                                               def Interpret(self, env):
+   250                                                   #print 'View', self.location
+   251         5          117     23.4     10.3          array = self.arrayExpression.Evaluate(env)
+   252         5           20      4.0      1.8          if len(self.children) > array.array.ndim: 
+   253                                                       raise ProtocolError("You entered", len(self.children), "indices, but the array has", array.array.ndim, "dimensions.")
+   254         5          247     49.4     21.8          indices = self.EvaluateChildren(env) # list of tuples with indices
+   255         5           14      2.8      1.2          if not isinstance(array, V.Array):
+   256                                                       raise ProtocolError("First argument must be an Array, not", type(array))
+   257                                                   #try:
+   258         5            7      1.4      0.6          implicit_dim_slices = []
+   259         5           19      3.8      1.7          slices = [None] * array.array.ndim
+   260         5            9      1.8      0.8          apply_to_rest = False
+   261        14           25      1.8      2.2          for index in indices:
+   262         9           34      3.8      3.0              if hasattr(index, 'value'):
+   263                                                           dim = None
+   264                                                           start = end = index.value
+   265                                                           step = 0
+   266         9           18      2.0      1.6              elif len(index.values) == 1:
+   267         4            6      1.5      0.5                  dim = None
+   268         4           30      7.5      2.6                  start = self.GetValue(index.values[0])
+   269         4            7      1.8      0.6                  step = 0
+   270         4            7      1.8      0.6                  end = start
+   271         5            9      1.8      0.8              elif len(index.values) == 2:
+   272                                                           dim = None
+   273                                                           start = self.GetValue(index.values[0])
+   274                                                           step = None
+   275                                                           end = self.GetValue(index.values[1])
+   276         5            9      1.8      0.8              elif len(index.values) == 3:
+   277                                                           dim = None
+   278                                                           start = self.GetValue(index.values[0])
+   279                                                           step = self.GetValue(index.values[1])
+   280                                                           end = self.GetValue(index.values[2])
+   281         5            8      1.6      0.7              elif len(index.values) == 4:
+   282         5           40      8.0      3.5                  dim = self.GetValue(index.values[0], 'dim') # if this is null, then every dim in the input array that isn't specified uses this
+   283         5           34      6.8      3.0                  start = self.GetValue(index.values[1])
+   284         5           28      5.6      2.5                  step = self.GetValue(index.values[2])
+   285         5           28      5.6      2.5                  end = self.GetValue(index.values[3])
+   286                                                       else:
+   287                                                           raise ProtocolError("Each slice must be a tuple that contains 1, 2, 3 or 4 values, not", len(index.values))
+   288         9           20      2.2      1.8              if dim == 'default':
+   289                                                           dim = None
+   290         9           18      2.0      1.6              if step == 'default':
+   291                                                           step = 0
+   292         9           17      1.9      1.5              if end == 'default':
+   293                                                           end = start
+   294                                                       
+   295         9           22      2.4      1.9              if dim != None and not isinstance(dim, V.Null):
+   296         4           10      2.5      0.9                  if dim > array.array.ndim - 1:
+   297                                                               raise ProtocolError("Array only has", array.array.ndim, "dimensions, not", dim + 1) # plus one to account for dimension zero
+   298         4            6      1.5      0.5                  if step == 0:
+   299         3            5      1.7      0.4                      if start != end:
+   300                                                                   raise ProtocolError("Step is zero and start does not equal end")
+   301         3            8      2.7      0.7                      slices[int(dim)] = start
+   302                                                           else:
+   303         1            3      3.0      0.3                      slices[int(dim)] = slice(start, end, step)
+   304                                                       else:
+   305         5            9      1.8      0.8                  if step == 0:
+   306         4            8      2.0      0.7                      if start != end:
+   307                                                                   raise ProtocolError("Step is zero and start does not equal end")
+   308         4           11      2.8      1.0                      if isinstance(dim, V.Null):
+   309                                                                   null_slice = start
+   310                                                                   apply_to_rest = True
+   311                                                               else:
+   312         4            8      2.0      0.7                          implicit_dim_slices.append(start)
+   313                                                           else:
+   314         1            1      1.0      0.1                      if isinstance(dim, V.Null):
+   315         1            2      2.0      0.2                          null_slice = slice(start, end, step)
+   316         1            2      2.0      0.2                          apply_to_rest = True
+   317                                                               else:
+   318                                                                   implicit_dim_slices.append(slice(start, end, step))
+   319                                                       
+   320        19           46      2.4      4.1          for i, each in enumerate(slices):
+   321        14           31      2.2      2.7              dim_len = array.array.shape[i]
+   322        14           26      1.9      2.3              if each is None:
+   323        10           20      2.0      1.8                  if implicit_dim_slices:
+   324         4           12      3.0      1.1                      if isinstance(implicit_dim_slices[0], slice):
+   325                                                                   if implicit_dim_slices[0].start is not None:
+   326                                                                       if implicit_dim_slices[0].start < -dim_len or implicit_dim_slices[0].start >= dim_len:
+   327                                                                           raise ProtocolError("The start of the slice is not within the range of the dimension")
+   328                                                                   if implicit_dim_slices[0].stop is not None:
+   329                                                                       if implicit_dim_slices[0].stop < -(dim_len + 1) or implicit_dim_slices[0].stop >= (dim_len + 1):
+   330                                                                           raise ProtocolError("The end of the slice is not within the range of the dimension")
+   331                                                                   if implicit_dim_slices[0].step is not None and implicit_dim_slices[0].stop is not None and implicit_dim_slices[0].start is not None:
+   332                                                                       if (implicit_dim_slices[0].stop - implicit_dim_slices[0].start) * implicit_dim_slices[0].step <= 0:
+   333                                                                           raise ProtocolError("The sign of the step does not make sense")
+   334                                                                   
+   335         4           15      3.8      1.3                      slices[i] = implicit_dim_slices.pop(0)
+   336                                                           else:
+   337         6           12      2.0      1.1                      if apply_to_rest:
+   338         1            3      3.0      0.3                          slices[i] = null_slice
+   339                                                               else:
+   340         5           13      2.6      1.1                          slices[i] = slice(None, None, 1)
+   341                                           
+   342         5            9      1.8      0.8          try:
+   343         5           30      6.0      2.6              view = array.array[tuple(slices)]
+   344                                                   except IndexError:
+   345                                                       raise ProtocolError("The indices must be in the range of the array")
+   346         5           52     10.4      4.6          return V.Array(view)
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/simulations/ranges.py
+Function: next at line 104
+Total time: 35.9514 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   104                                               def next(self):
+   105   3978156      6085611      1.5     16.9          self.count += 1
+   106   3978156      6379292      1.6     17.7          if self.count >= self.numberOfOutputs:
+   107        78           75      1.0      0.0              self.count = -1
+   108        78          218      2.8      0.0              raise StopIteration
+   109                                                   else:
+   110   3978078     15047059      3.8     41.9              self.value = self.start + self.step * self.count
+   111   3978078      8439155      2.1     23.5              return self.value
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/simulations/simulations.py
+Function: LoopBodyStartHook at line 85
+Total time: 217.361 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    85                                               def LoopBodyStartHook(self):
+    86   3978161      7128001      1.8      3.3          if isinstance(self.range_, R.While) and self.range_.count > 0 and self.range_.GetNumberOfOutputPoints() > self.results.LookUp(self.results.DefinedNames()[0]).array.shape[0]:
+    87                                                       for name in self.results:
+    88                                                           self.results.LookUp(name).array.resize(self.range_.GetNumberOfOutputPoints(), refcheck=False)
+    89   7956402     10052013      1.3      4.6          for modifier in self.modifiers:
+    90   3978241      5812439      1.5      2.7              if modifier.when == AbstractModifier.START_ONLY and self.range_.count == 0:
+    91         1          390    390.0      0.0                  modifier.Apply(self)
+    92   3978240      4570478      1.1      2.1              elif modifier.when == AbstractModifier.EACH_LOOP:
+    93   3978237    189798052     47.7     87.3                  modifier.Apply(self) ## ~96% of time
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/simulations/simulations.py
+Function: AddIterationOutputs at line 127
+Total time: 119.879 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   127                                               def AddIterationOutputs(self, outputsList):
+   128                                                   """Copy model outputs from one simulation step into the overall output arrays for the (possibly nested) simulation."""
+   129   3978080      7309644      1.8      6.1          self_results, results_list = self.results, self.resultsList
+   130   3978080     15787181      4.0     13.2          if self_results is not None and not self_results:
+   131                                                       # First iteration - create empty output arrays of the correct shape
+   132         2           32     16.0      0.0              range_dims = tuple(r.GetNumberOfOutputPoints() for r in self.ranges)
+   133        10           29      2.9      0.0              for name, output in itertools.izip(self.model.outputNames, outputsList):
+   134                                                           # DeprecationWarning in next line: using a non-integer number instead of an integer will result in an error in the future
+   135         8          330     41.2      0.0                  result = V.Array(np.empty(range_dims + output.shape))
+   136         8          107     13.4      0.0                  self_results.DefineName(name, result)
+   137         8           29      3.6      0.0                  results_list.append(result.unwrapped)
+   138   3978080      6445547      1.6      5.4          if results_list:
+   139                                                       # Note that the tuple conversion in the next line is very quick
+   140   3978080     23638870      5.9     19.7              range_indices = tuple(map(attrgetter('count'), self.ranges))  # tuple(r.count for r in self.ranges)
+   141  19890400     35955839      1.8     30.0              for output, result in izip(outputsList, results_list):
+   142  15912320     30740959      1.9     25.6                  result[range_indices] = output
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/simulations/simulations.py
+Function: InternalRun at line 157
+Total time: 599.273 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   157                                               def InternalRun(self):
+   158        79          154      1.9      0.0          r = self.range_
+   159        79          137      1.7      0.0          m = self.model
+   160        79          117      1.5      0.0          start_hook, end_hook = self.LoopBodyStartHook, self.LoopBodyEndHook
+   161        79          109      1.4      0.0          add_outputs, get_outputs = self.AddIterationOutputs, m.GetOutputs
+   162        79          108      1.4      0.0          set_time, simulate = m.SetFreeVariable, m.Simulate
+   163   3978159     65341761     16.4     10.9          for i, t in enumerate(r):
+   164   3978080    254709865     64.0     42.5              start_hook() ## ~ 50% of time
+   165   3978080      5538240      1.4      0.9              if r.count == 0:
+   166                                                           # Record initial conditions
+   167        79          288      3.6      0.0                  set_time(t)
+   168        79         6007     76.0      0.0                  add_outputs(get_outputs())
+   169                                                       else:
+   170   3978001     12519751      3.1      2.1                  simulate(t)
+   171   3978001    245593902     61.7     41.0                  add_outputs(get_outputs())  ## ~45% of time
+   172   3978080     15562115      3.9      2.6              end_hook()
+   173        79          477      6.0      0.0          self.LoopEndHook()
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py
+Function: DefineName at line 58
+Total time: 0.000473 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    58                                               def DefineName(self, name, value):
+    59        67           93      1.4     19.7          if ':' in name:
+    60                                                       raise ProtocolError('Names such as', name, 'with a colon are not allowed.')
+    61        67          103      1.5     21.8          if name in self.bindings:
+    62                                                       raise ProtocolError(name, "is already defined as", self.bindings[name], "and may not be re-bound")
+    63                                                   else:
+    64        67           75      1.1     15.9              self.bindings[name] = value
+    65        67          202      3.0     42.7              self.unwrappedBindings[name] = value.unwrapped
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py
+Function: FindDefiningEnvironment at line 113
+Total time: 0.0001 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   113                                               def FindDefiningEnvironment(self, name):
+   114                                                   """Find which environment the given name is defined in, whether this or one of its delegatees.
+   115                                           
+   116                                                   Returns None if the name isn't defined anywhere.
+   117                                                   """
+   118        13           32      2.5     32.0          if name in self.bindings:
+   119         6            6      1.0      6.0              return self
+   120         7           16      2.3     16.0          parts = name.split(':', 1)
+   121         7            9      1.3      9.0          if len(parts) == 2:
+   122         1            1      1.0      1.0              prefix, local_name = parts
+   123                                                   else:
+   124         6            7      1.2      7.0              prefix, local_name = '', name
+   125         7            7      1.0      7.0          try:
+   126         7           10      1.4     10.0              delegatee = self.delegatees[prefix]
+   127                                                   except KeyError:
+   128                                                       return None
+   129         7           12      1.7     12.0          return delegatee.FindDefiningEnvironment(local_name)
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py
+Function: __getitem__ at line 226
+Total time: 3.5e-05 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   226                                                   def __getitem__(self, key):
+   227         1           18     18.0     51.4              val = self._unwrapped[key] ## ~61%
+   228         1            5      5.0     14.3              if isinstance(val, np.ndarray):
+   229                                                           return V.Array(val)
+   230                                                       else:
+   231         1           12     12.0     34.3                  return V.Simple(val) ## ~21%
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py
+Function: __getitem__ at line 269
+Total time: 12.8797 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   269                                                   def __getitem__(self, key):
+   270                                                       # TODO: Catch KeyError?
+   271   3978079      6842390      1.7     53.1              vector, index = dict.__getitem__(self, key)
+   272   3978079      6037291      1.5     46.9              return vector[index]
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py
+Function: __setitem__ at line 274
+Total time: 13.7228 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   274                                                   def __setitem__(self, key, value):
+   275                                                       # TODO: Catch KeyError?
+   276   3978160      6541291      1.6     47.7              vector, index = dict.__getitem__(self, key)
+   277   3978160      7181046      1.8     52.3              if vector[index] != value:
+   278       159          214      1.3      0.0                  self._model.dirty = True
+   279       159          229      1.4      0.0                  vector[index] = value
+
+File: /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/src/python/fc/utility/environment.py
+Function: DefineName at line 292
+Total time: 0 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   292                                               def DefineName(self, name, value):
+   293                                                   raise ProtocolError("Defining names in a model is not allowed.")
+

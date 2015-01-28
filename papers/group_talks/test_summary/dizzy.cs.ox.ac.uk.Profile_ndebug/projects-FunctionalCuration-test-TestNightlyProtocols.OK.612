@@ -1,0 +1,822 @@
+Running 2 tests
+
+ ***** TestNightlyProtocols.hpp *****
+
+
+Entering TestS1S2Courtemanche
+Got RuntimeError: maximum recursion depth exceeded while calling a Python object
+Increasing recursion limit to 1500
+Running protocol '/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/protocols/S1S2.txt' on model '/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/cellml/courtemanche_ramirez_nattel_1998.cellml' and writing output to /tmp/jonc/testoutput/TestS1S2Courtemanche/
+Generating modified model courtemanche_ramirez_nattel_1998
+scons: Reading SConscript files ...
+Unexpected folder projects/jonc in projects folder.
+
+scons: warning: Using dynamically loaded cell models MAY NOT WORK with chaste_libs=0.
+    If you get unresolved symbol errors, use chaste_libs=1 as an argument to scons.
+File "python/infra/SConsTools.py", line 1037, in DoDynamicallyLoadableModules
+scons: done reading SConscript files.
+scons: Building targets ...
+scons: building associated VariantDir targets: projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311
+RunPyCml(["projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.cpp", "projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.hpp"], ["projects/FunctionalCuration/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.cellml"])
+Running ['/home/jonc/eclipse/workspace/Chaste/python/ConvertCellModel.py', '-A', '-p', '--output-dir', '/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311', '-y', '--conf=/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998-conf.xml', 'projects/FunctionalCuration/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.cellml']
+Statistics about the modified model:
+    # inputs:          3
+    # total outputs:   2
+    # state variables: 21
+    # equations:       99
+    # variables:       316
+/home/jonc/eclipse/workspace/Chaste/python/pycml/translate.py /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.cellml -A -p --expose-annotated-variables --protocol=/tmp/jonc/testoutput/ProtocolConverter/tmpAQLyl3.xml --conf=/home/jonc/eclipse/workspace/Chaste/python/pycml/config.xml --use-chaste-stimulus --convert-interfaces --warn-on-unit-conversions --Wu --conf=/tmp/tmpyxM6YK.xml -y -t CVODE -c Dynamiccourtemanche_ramirez_nattel_1998FromCellMLCvode -o /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.cpp
+/home/bob/petsc-3.1-p8/linux-gnu/bin/mpicxx -o projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.os -c -isystem /home/bob/petsc-3.1-p8/linux-gnu/include -isystem /home/bob/petsc-3.1-p8/include -isystem /usr/share/R/include/ -isystem /usr/local/lib/R/site-library/Rcpp/include/ -isystem /usr/local/lib/R/site-library/RInside/include/ -isystem /usr/include/vtk-5.2 -Wall -Werror -Wnon-virtual-dtor -Woverloaded-virtual -Wextra -Wno-unused-parameter -Wvla -g -O2 -pg -Wno-array-bounds -DNDEBUG -DCHASTE_R -fPIC -DCHASTE_SUNDIALS_VERSION=20500 -DCHASTE_VTK -DCHASTE_CVODE -DCHASTE_XERCES -DTRILIBRARY -DTETLIBRARY -DANSI_DECLARATORS -Iprojects/FunctionalCuration/build/profile_ndebug/dynamic -Iprojects/FunctionalCuration/dynamic -Iprojects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311 -Iprojects/FunctionalCuration/dynamic/tmp_2927_1422353311 -Iprojects/FunctionalCuration/build/profile_ndebug/src -Iprojects/FunctionalCuration/src -Iprojects/FunctionalCuration/build/profile_ndebug/src/modifiers -Iprojects/FunctionalCuration/src/modifiers -Iprojects/FunctionalCuration/build/profile_ndebug/src/fortests -Iprojects/FunctionalCuration/src/fortests -Iprojects/FunctionalCuration/build/profile_ndebug/src/model -Iprojects/FunctionalCuration/src/model -Iprojects/FunctionalCuration/build/profile_ndebug/src/simulation -Iprojects/FunctionalCuration/src/simulation -Iprojects/FunctionalCuration/build/profile_ndebug/src/sedml -Iprojects/FunctionalCuration/src/sedml -Iprojects/FunctionalCuration/build/profile_ndebug/src/utility -Iprojects/FunctionalCuration/src/utility -Iprojects/FunctionalCuration/build/profile_ndebug/src/python -Iprojects/FunctionalCuration/src/python -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc -Iprojects/FunctionalCuration/src/python/fc -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/simulations -Iprojects/FunctionalCuration/src/python/fc/simulations -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/language -Iprojects/FunctionalCuration/src/python/fc/language -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/language/expressions -Iprojects/FunctionalCuration/src/python/fc/language/expressions -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/utility -Iprojects/FunctionalCuration/src/python/fc/utility -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/sundials -Iprojects/FunctionalCuration/src/python/fc/sundials -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build -Iprojects/FunctionalCuration/src/python/build -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build/temp.linux-x86_64-2.6 -Iprojects/FunctionalCuration/src/python/build/temp.linux-x86_64-2.6 -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build/temp.linux-x86_64-2.6/fc -Iprojects/FunctionalCuration/src/python/build/temp.linux-x86_64-2.6/fc -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build/temp.linux-x86_64-2.6/fc/sundials -Iprojects/FunctionalCuration/src/python/build/temp.linux-x86_64-2.6/fc/sundials -Iprojects/FunctionalCuration/build/profile_ndebug/src/steppers -Iprojects/FunctionalCuration/src/steppers -Iprojects/FunctionalCuration/build/profile_ndebug/src/ode -Iprojects/FunctionalCuration/src/ode -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto -Iprojects/FunctionalCuration/src/proto -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/parsing -Iprojects/FunctionalCuration/src/proto/parsing -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/statements -Iprojects/FunctionalCuration/src/proto/statements -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/library -Iprojects/FunctionalCuration/src/proto/library -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/expressions -Iprojects/FunctionalCuration/src/proto/expressions -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/expressions/mathml -Iprojects/FunctionalCuration/src/proto/expressions/mathml -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/values -Iprojects/FunctionalCuration/src/proto/values -Iprojects/FunctionalCuration/build/profile_ndebug/test/private -Iprojects/FunctionalCuration/test/private -Iprojects/FunctionalCuration/build/profile_ndebug/test/private/protocols -Iprojects/FunctionalCuration/test/private/protocols -Iprojects/FunctionalCuration/build/profile_ndebug/test/protocols -Iprojects/FunctionalCuration/test/protocols -Iprojects/FunctionalCuration/build/profile_ndebug/test/protocols/xml -Iprojects/FunctionalCuration/test/protocols/xml -Iprojects/FunctionalCuration/build/profile_ndebug/test/sedml -Iprojects/FunctionalCuration/test/sedml -Iprojects/FunctionalCuration/build/profile_ndebug/test/python -Iprojects/FunctionalCuration/test/python -I. -Icxxtest -Iheart/build/profile_ndebug/src -Iheart/src -Iheart/build/profile_ndebug/src/problem -Iheart/src/problem -Iheart/build/profile_ndebug/src/problem/conductivity_tensors -Iheart/src/problem/conductivity_tensors -Iheart/build/profile_ndebug/src/problem/cell_factories -Iheart/src/problem/cell_factories -Iheart/build/profile_ndebug/src/postprocessing -Iheart/src/postprocessing -Iheart/build/profile_ndebug/src/convergence -Iheart/src/convergence -Iheart/build/profile_ndebug/src/solver -Iheart/src/solver -Iheart/build/profile_ndebug/src/solver/electrics -Iheart/src/solver/electrics -Iheart/build/profile_ndebug/src/solver/electrics/monodomain -Iheart/src/solver/electrics/monodomain -Iheart/build/profile_ndebug/src/solver/electrics/bidomain -Iheart/src/solver/electrics/bidomain -Iheart/build/profile_ndebug/src/solver/electrics/extended_bidomain -Iheart/src/solver/electrics/extended_bidomain -Iheart/build/profile_ndebug/src/solver/mechanics -Iheart/src/solver/mechanics -Iheart/build/profile_ndebug/src/stimulus -Iheart/src/stimulus -Iheart/build/profile_ndebug/src/stimulus/tissue_electrodes -Iheart/src/stimulus/tissue_electrodes -Iheart/build/profile_ndebug/src/odes -Iheart/src/odes -Iheart/build/profile_ndebug/src/odes/cellml -Iheart/src/odes/cellml -Iheart/build/profile_ndebug/src/odes/single_cell -Iheart/src/odes/single_cell -Iheart/build/profile_ndebug/src/odes/contractionmodels -Iheart/src/odes/contractionmodels -Iheart/build/profile_ndebug/src/odes/ionicmodels -Iheart/src/odes/ionicmodels -Iheart/build/profile_ndebug/src/odes/ionicmodels/noncardiac -Iheart/src/odes/ionicmodels/noncardiac -Iheart/build/profile_ndebug/src/fortests -Iheart/src/fortests -Iheart/build/profile_ndebug/src/tissue -Iheart/src/tissue -Iheart/build/profile_ndebug/src/io -Iheart/src/io -Icontinuum_mechanics/build/profile_ndebug/src -Icontinuum_mechanics/src -Icontinuum_mechanics/build/profile_ndebug/src/problem -Icontinuum_mechanics/src/problem -Icontinuum_mechanics/build/profile_ndebug/src/problem/material_laws -Icontinuum_mechanics/src/problem/material_laws -Icontinuum_mechanics/build/profile_ndebug/src/solver -Icontinuum_mechanics/src/solver -Icontinuum_mechanics/build/profile_ndebug/src/common -Icontinuum_mechanics/src/common -Ipde/build/profile_ndebug/src -Ipde/src -Ipde/build/profile_ndebug/src/problem -Ipde/src/problem -Ipde/build/profile_ndebug/src/postprocessing -Ipde/src/postprocessing -Ipde/build/profile_ndebug/src/solver -Ipde/src/solver -Ipde/build/profile_ndebug/src/common -Ipde/src/common -Iode/build/profile_ndebug/src -Iode/src -Iode/build/profile_ndebug/src/solver -Iode/src/solver -Iode/build/profile_ndebug/src/fortests -Iode/src/fortests -Iode/build/profile_ndebug/src/common -Iode/src/common -Imesh/build/profile_ndebug/src -Imesh/src -Imesh/build/profile_ndebug/src/vertex -Imesh/src/vertex -Imesh/build/profile_ndebug/src/reader -Imesh/src/reader -Imesh/build/profile_ndebug/src/common -Imesh/src/common -Imesh/build/profile_ndebug/src/3rdparty -Imesh/src/3rdparty -Imesh/build/profile_ndebug/src/3rdparty/triangle -Imesh/src/3rdparty/triangle -Imesh/build/profile_ndebug/src/3rdparty/tetgen1.4.2 -Imesh/src/3rdparty/tetgen1.4.2 -Imesh/build/profile_ndebug/src/writer -Imesh/src/writer -Imesh/build/profile_ndebug/src/utilities -Imesh/src/utilities -Ilinalg/build/profile_ndebug/src -Ilinalg/src -Iio/build/profile_ndebug/src -Iio/src -Iio/build/profile_ndebug/src/reader -Iio/src/reader -Iio/build/profile_ndebug/src/fortests -Iio/src/fortests -Iio/build/profile_ndebug/src/common -Iio/src/common -Iio/build/profile_ndebug/src/writer -Iio/src/writer -Iglobal/build/profile_ndebug/src -Iglobal/src -Iglobal/build/profile_ndebug/src/timing -Iglobal/src/timing -Iglobal/build/profile_ndebug/src/fortests -Iglobal/src/fortests -Iglobal/build/profile_ndebug/src/parallel -Iglobal/src/parallel -Iglobal/build/profile_ndebug/src/checkpointing -Iglobal/src/checkpointing projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.cpp
+/home/bob/petsc-3.1-p8/linux-gnu/bin/mpicxx -o projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/libcourtemanche_ramirez_nattel_1998.so -pg -rdynamic -shared projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/courtemanche_ramirez_nattel_1998.os
+Install file: "projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353311/libcourtemanche_ramirez_nattel_1998.so" as "projects/FunctionalCuration/dynamic/tmp_2927_1422353311/libcourtemanche_ramirez_nattel_1998.so"
+scons: done building targets.
+Running protocol...
+Running simulation 0  on process 0...
+Running simulation 1 sim on process 0...
+  Nested simulation s2_interval step 0 (value 2000) on process 0...
+  Nested simulation s2_interval step 1 (value 1950) on process 0...
+  Nested simulation s2_interval step 2 (value 1900) on process 0...
+  Nested simulation s2_interval step 3 (value 1850) on process 0...
+  Nested simulation s2_interval step 4 (value 1800) on process 0...
+  Nested simulation s2_interval step 5 (value 1750) on process 0...
+  Nested simulation s2_interval step 6 (value 1700) on process 0...
+  Nested simulation s2_interval step 7 (value 1650) on process 0...
+  Nested simulation s2_interval step 8 (value 1600) on process 0...
+  Nested simulation s2_interval step 9 (value 1550) on process 0...
+  Nested simulation s2_interval step 10 (value 1500) on process 0...
+  Nested simulation s2_interval step 11 (value 1450) on process 0...
+  Nested simulation s2_interval step 12 (value 1400) on process 0...
+  Nested simulation s2_interval step 13 (value 1350) on process 0...
+  Nested simulation s2_interval step 14 (value 1300) on process 0...
+  Nested simulation s2_interval step 15 (value 1250) on process 0...
+  Nested simulation s2_interval step 16 (value 1200) on process 0...
+  Nested simulation s2_interval step 17 (value 1150) on process 0...
+  Nested simulation s2_interval step 18 (value 1100) on process 0...
+  Nested simulation s2_interval step 19 (value 1050) on process 0...
+  Nested simulation s2_interval step 20 (value 1000) on process 0...
+  Nested simulation s2_interval step 21 (value 975) on process 0...
+  Nested simulation s2_interval step 22 (value 950) on process 0...
+  Nested simulation s2_interval step 23 (value 925) on process 0...
+  Nested simulation s2_interval step 24 (value 900) on process 0...
+  Nested simulation s2_interval step 25 (value 875) on process 0...
+  Nested simulation s2_interval step 26 (value 850) on process 0...
+  Nested simulation s2_interval step 27 (value 825) on process 0...
+  Nested simulation s2_interval step 28 (value 800) on process 0...
+  Nested simulation s2_interval step 29 (value 775) on process 0...
+  Nested simulation s2_interval step 30 (value 750) on process 0...
+  Nested simulation s2_interval step 31 (value 725) on process 0...
+  Nested simulation s2_interval step 32 (value 700) on process 0...
+  Nested simulation s2_interval step 33 (value 680) on process 0...
+  Nested simulation s2_interval step 34 (value 660) on process 0...
+  Nested simulation s2_interval step 35 (value 640) on process 0...
+  Nested simulation s2_interval step 36 (value 620) on process 0...
+  Nested simulation s2_interval step 37 (value 600) on process 0...
+  Nested simulation s2_interval step 38 (value 580) on process 0...
+  Nested simulation s2_interval step 39 (value 560) on process 0...
+  Nested simulation s2_interval step 40 (value 540) on process 0...
+  Nested simulation s2_interval step 41 (value 520) on process 0...
+  Nested simulation s2_interval step 42 (value 500) on process 0...
+  Nested simulation s2_interval step 43 (value 490) on process 0...
+  Nested simulation s2_interval step 44 (value 480) on process 0...
+  Nested simulation s2_interval step 45 (value 470) on process 0...
+  Nested simulation s2_interval step 46 (value 460) on process 0...
+  Nested simulation s2_interval step 47 (value 450) on process 0...
+  Nested simulation s2_interval step 48 (value 440) on process 0...
+  Nested simulation s2_interval step 49 (value 430) on process 0...
+  Nested simulation s2_interval step 50 (value 420) on process 0...
+  Nested simulation s2_interval step 51 (value 410) on process 0...
+  Nested simulation s2_interval step 52 (value 400) on process 0...
+  Nested simulation s2_interval step 53 (value 390) on process 0...
+  Nested simulation s2_interval step 54 (value 380) on process 0...
+  Nested simulation s2_interval step 55 (value 370) on process 0...
+  Nested simulation s2_interval step 56 (value 360) on process 0...
+  Nested simulation s2_interval step 57 (value 350) on process 0...
+  Nested simulation s2_interval step 58 (value 340) on process 0...
+  Nested simulation s2_interval step 59 (value 330) on process 0...
+  Nested simulation s2_interval step 60 (value 320) on process 0...
+  Nested simulation s2_interval step 61 (value 310) on process 0...
+  Nested simulation s2_interval step 62 (value 300) on process 0...
+  Nested simulation s2_interval step 63 (value 290) on process 0...
+  Nested simulation s2_interval step 64 (value 280) on process 0...
+  Nested simulation s2_interval step 65 (value 270) on process 0...
+  Nested simulation s2_interval step 66 (value 260) on process 0...
+  Nested simulation s2_interval step 67 (value 250) on process 0...
+  Nested simulation s2_interval step 68 (value 240) on process 0...
+  Nested simulation s2_interval step 69 (value 230) on process 0...
+  Nested simulation s2_interval step 70 (value 220) on process 0...
+  Nested simulation s2_interval step 71 (value 210) on process 0...
+  Nested simulation s2_interval step 72 (value 200) on process 0...
+  Nested simulation s2_interval step 73 (value 190) on process 0...
+  Nested simulation s2_interval step 74 (value 180) on process 0...
+  Nested simulation s2_interval step 75 (value 170) on process 0...
+  Nested simulation s2_interval step 76 (value 160) on process 0...
+  Nested simulation s2_interval step 77 (value 150) on process 0...
+  Nested simulation s2_interval step 78 (value 140) on process 0...
+  Nested simulation s2_interval step 79 (value 130) on process 0...
+  Nested simulation s2_interval step 80 (value 120) on process 0...
+  Nested simulation s2_interval step 81 (value 110) on process 0...
+  Nested simulation s2_interval step 82 (value 100) on process 0...
+  Nested simulation s2_interval step 83 (value 90) on process 0...
+  Nested simulation s2_interval step 84 (value 80) on process 0...
+  Nested simulation s2_interval step 85 (value 70) on process 0...
+  Nested simulation s2_interval step 86 (value 60) on process 0...
+  Nested simulation s2_interval step 87 (value 50) on process 0...
+  Nested simulation s2_interval step 88 (value 40) on process 0...
+  Nested simulation s2_interval step 89 (value 30) on process 0...
+  Nested simulation s2_interval step 90 (value 20) on process 0...
+Running post-processing...
+Recording protocol outputs...
+Finished running protocol.
+Writing results to file...
+Plotting S1-S2 curve:	Action Potential Duration 90% (ms) against Diastolic Interval (ms)...
+Plotting restitution curve:	Action Potential Duration 90% (ms) against Pacing Cycle Length (ms)...
+Plotting Action potential traces:	Transmembrane potential (millivolt) against Time (ms)...
+Done!
+     Load model    Load protocol            Setup         Simulate     Post-process     Run Protocol    Write outputs         Plotting            Total  
+  24.013 (  9%)     0.175 (  0%)     0.000 (  0%)    36.382 ( 13%)   202.127 ( 73%)   238.509 ( 86%)     0.512 (  0%)    13.603 (  5%)   276.830 (100%)  (seconds) 
+Comparing results of S1-S2 protocol: outputs_APD90...done.
+Comparing results of S1-S2 protocol: outputs_DI...done.
+Passed
+Entering TestIcalAslanidi
+Got RuntimeError: maximum recursion depth exceeded while calling a Python object
+Increasing recursion limit to 1500
+Running protocol '/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/protocols/ICaL.txt' on model '/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/cellml/aslanidi_Purkinje_model_2009.cellml' and writing output to /tmp/jonc/testoutput/TestIcalAslanidi/
+Generating modified model aslanidi_Purkinje_model_2009
+scons: Reading SConscript files ...
+Unexpected folder projects/jonc in projects folder.
+
+scons: warning: Using dynamically loaded cell models MAY NOT WORK with chaste_libs=0.
+    If you get unresolved symbol errors, use chaste_libs=1 as an argument to scons.
+File "python/infra/SConsTools.py", line 1037, in DoDynamicallyLoadableModules
+scons: done reading SConscript files.
+scons: Building targets ...
+scons: building associated VariantDir targets: projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595
+RunPyCml(["projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.cpp", "projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.hpp"], ["projects/FunctionalCuration/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.cellml"])
+Running ['/home/jonc/eclipse/workspace/Chaste/python/ConvertCellModel.py', '-A', '-p', '--output-dir', '/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595', '-y', '--conf=/home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009-conf.xml', 'projects/FunctionalCuration/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.cellml']
+Warning: unable to utilise units conversion rule below as required variables missing; this may lead to later units conversion errors:
+   /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/protocols/ICaL.txt:53:40	    convert microamps to uA_per_cm2 by lambda rhs: (rhs / oxmeta:membrane_capacitance) * chaste_membrane_capacitance
+Warning: unable to utilise units conversion rule below as required variables missing; this may lead to later units conversion errors:
+   /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/protocols/ICaL.txt:54:40	    convert uA_per_cm2 to microamps by lambda rhs: (rhs * oxmeta:membrane_capacitance) / chaste_membrane_capacitance
+Statistics about the modified model:
+    # inputs:          2
+    # total outputs:   4
+    # state variables: 27
+    # equations:       144
+    # variables:       450
+/home/jonc/eclipse/workspace/Chaste/python/pycml/translate.py /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.cellml -A -p --expose-annotated-variables --protocol=/tmp/jonc/testoutput/ProtocolConverter/tmpgQwz5B.xml --conf=/home/jonc/eclipse/workspace/Chaste/python/pycml/config.xml --use-chaste-stimulus --convert-interfaces --warn-on-unit-conversions --Wu --conf=/tmp/tmpXcn32n.xml -y -t CVODE -c Dynamicaslanidi_Purkinje_model_2009FromCellMLCvode -o /home/jonc/eclipse/workspace/Chaste/projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.cpp
+/home/bob/petsc-3.1-p8/linux-gnu/bin/mpicxx -o projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.os -c -isystem /home/bob/petsc-3.1-p8/linux-gnu/include -isystem /home/bob/petsc-3.1-p8/include -isystem /usr/share/R/include/ -isystem /usr/local/lib/R/site-library/Rcpp/include/ -isystem /usr/local/lib/R/site-library/RInside/include/ -isystem /usr/include/vtk-5.2 -Wall -Werror -Wnon-virtual-dtor -Woverloaded-virtual -Wextra -Wno-unused-parameter -Wvla -g -O2 -pg -Wno-array-bounds -DNDEBUG -DCHASTE_R -fPIC -DCHASTE_SUNDIALS_VERSION=20500 -DCHASTE_VTK -DCHASTE_CVODE -DCHASTE_XERCES -DTRILIBRARY -DTETLIBRARY -DANSI_DECLARATORS -Iprojects/FunctionalCuration/build/profile_ndebug/dynamic -Iprojects/FunctionalCuration/dynamic -Iprojects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595 -Iprojects/FunctionalCuration/dynamic/tmp_2927_1422353595 -Iprojects/FunctionalCuration/build/profile_ndebug/src -Iprojects/FunctionalCuration/src -Iprojects/FunctionalCuration/build/profile_ndebug/src/modifiers -Iprojects/FunctionalCuration/src/modifiers -Iprojects/FunctionalCuration/build/profile_ndebug/src/fortests -Iprojects/FunctionalCuration/src/fortests -Iprojects/FunctionalCuration/build/profile_ndebug/src/model -Iprojects/FunctionalCuration/src/model -Iprojects/FunctionalCuration/build/profile_ndebug/src/simulation -Iprojects/FunctionalCuration/src/simulation -Iprojects/FunctionalCuration/build/profile_ndebug/src/sedml -Iprojects/FunctionalCuration/src/sedml -Iprojects/FunctionalCuration/build/profile_ndebug/src/utility -Iprojects/FunctionalCuration/src/utility -Iprojects/FunctionalCuration/build/profile_ndebug/src/python -Iprojects/FunctionalCuration/src/python -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc -Iprojects/FunctionalCuration/src/python/fc -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/simulations -Iprojects/FunctionalCuration/src/python/fc/simulations -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/language -Iprojects/FunctionalCuration/src/python/fc/language -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/language/expressions -Iprojects/FunctionalCuration/src/python/fc/language/expressions -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/utility -Iprojects/FunctionalCuration/src/python/fc/utility -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/fc/sundials -Iprojects/FunctionalCuration/src/python/fc/sundials -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build -Iprojects/FunctionalCuration/src/python/build -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build/temp.linux-x86_64-2.6 -Iprojects/FunctionalCuration/src/python/build/temp.linux-x86_64-2.6 -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build/temp.linux-x86_64-2.6/fc -Iprojects/FunctionalCuration/src/python/build/temp.linux-x86_64-2.6/fc -Iprojects/FunctionalCuration/build/profile_ndebug/src/python/build/temp.linux-x86_64-2.6/fc/sundials -Iprojects/FunctionalCuration/src/python/build/temp.linux-x86_64-2.6/fc/sundials -Iprojects/FunctionalCuration/build/profile_ndebug/src/steppers -Iprojects/FunctionalCuration/src/steppers -Iprojects/FunctionalCuration/build/profile_ndebug/src/ode -Iprojects/FunctionalCuration/src/ode -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto -Iprojects/FunctionalCuration/src/proto -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/parsing -Iprojects/FunctionalCuration/src/proto/parsing -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/statements -Iprojects/FunctionalCuration/src/proto/statements -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/library -Iprojects/FunctionalCuration/src/proto/library -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/expressions -Iprojects/FunctionalCuration/src/proto/expressions -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/expressions/mathml -Iprojects/FunctionalCuration/src/proto/expressions/mathml -Iprojects/FunctionalCuration/build/profile_ndebug/src/proto/values -Iprojects/FunctionalCuration/src/proto/values -Iprojects/FunctionalCuration/build/profile_ndebug/test/private -Iprojects/FunctionalCuration/test/private -Iprojects/FunctionalCuration/build/profile_ndebug/test/private/protocols -Iprojects/FunctionalCuration/test/private/protocols -Iprojects/FunctionalCuration/build/profile_ndebug/test/protocols -Iprojects/FunctionalCuration/test/protocols -Iprojects/FunctionalCuration/build/profile_ndebug/test/protocols/xml -Iprojects/FunctionalCuration/test/protocols/xml -Iprojects/FunctionalCuration/build/profile_ndebug/test/sedml -Iprojects/FunctionalCuration/test/sedml -Iprojects/FunctionalCuration/build/profile_ndebug/test/python -Iprojects/FunctionalCuration/test/python -I. -Icxxtest -Iheart/build/profile_ndebug/src -Iheart/src -Iheart/build/profile_ndebug/src/problem -Iheart/src/problem -Iheart/build/profile_ndebug/src/problem/conductivity_tensors -Iheart/src/problem/conductivity_tensors -Iheart/build/profile_ndebug/src/problem/cell_factories -Iheart/src/problem/cell_factories -Iheart/build/profile_ndebug/src/postprocessing -Iheart/src/postprocessing -Iheart/build/profile_ndebug/src/convergence -Iheart/src/convergence -Iheart/build/profile_ndebug/src/solver -Iheart/src/solver -Iheart/build/profile_ndebug/src/solver/electrics -Iheart/src/solver/electrics -Iheart/build/profile_ndebug/src/solver/electrics/monodomain -Iheart/src/solver/electrics/monodomain -Iheart/build/profile_ndebug/src/solver/electrics/bidomain -Iheart/src/solver/electrics/bidomain -Iheart/build/profile_ndebug/src/solver/electrics/extended_bidomain -Iheart/src/solver/electrics/extended_bidomain -Iheart/build/profile_ndebug/src/solver/mechanics -Iheart/src/solver/mechanics -Iheart/build/profile_ndebug/src/stimulus -Iheart/src/stimulus -Iheart/build/profile_ndebug/src/stimulus/tissue_electrodes -Iheart/src/stimulus/tissue_electrodes -Iheart/build/profile_ndebug/src/odes -Iheart/src/odes -Iheart/build/profile_ndebug/src/odes/cellml -Iheart/src/odes/cellml -Iheart/build/profile_ndebug/src/odes/single_cell -Iheart/src/odes/single_cell -Iheart/build/profile_ndebug/src/odes/contractionmodels -Iheart/src/odes/contractionmodels -Iheart/build/profile_ndebug/src/odes/ionicmodels -Iheart/src/odes/ionicmodels -Iheart/build/profile_ndebug/src/odes/ionicmodels/noncardiac -Iheart/src/odes/ionicmodels/noncardiac -Iheart/build/profile_ndebug/src/fortests -Iheart/src/fortests -Iheart/build/profile_ndebug/src/tissue -Iheart/src/tissue -Iheart/build/profile_ndebug/src/io -Iheart/src/io -Icontinuum_mechanics/build/profile_ndebug/src -Icontinuum_mechanics/src -Icontinuum_mechanics/build/profile_ndebug/src/problem -Icontinuum_mechanics/src/problem -Icontinuum_mechanics/build/profile_ndebug/src/problem/material_laws -Icontinuum_mechanics/src/problem/material_laws -Icontinuum_mechanics/build/profile_ndebug/src/solver -Icontinuum_mechanics/src/solver -Icontinuum_mechanics/build/profile_ndebug/src/common -Icontinuum_mechanics/src/common -Ipde/build/profile_ndebug/src -Ipde/src -Ipde/build/profile_ndebug/src/problem -Ipde/src/problem -Ipde/build/profile_ndebug/src/postprocessing -Ipde/src/postprocessing -Ipde/build/profile_ndebug/src/solver -Ipde/src/solver -Ipde/build/profile_ndebug/src/common -Ipde/src/common -Iode/build/profile_ndebug/src -Iode/src -Iode/build/profile_ndebug/src/solver -Iode/src/solver -Iode/build/profile_ndebug/src/fortests -Iode/src/fortests -Iode/build/profile_ndebug/src/common -Iode/src/common -Imesh/build/profile_ndebug/src -Imesh/src -Imesh/build/profile_ndebug/src/vertex -Imesh/src/vertex -Imesh/build/profile_ndebug/src/reader -Imesh/src/reader -Imesh/build/profile_ndebug/src/common -Imesh/src/common -Imesh/build/profile_ndebug/src/3rdparty -Imesh/src/3rdparty -Imesh/build/profile_ndebug/src/3rdparty/triangle -Imesh/src/3rdparty/triangle -Imesh/build/profile_ndebug/src/3rdparty/tetgen1.4.2 -Imesh/src/3rdparty/tetgen1.4.2 -Imesh/build/profile_ndebug/src/writer -Imesh/src/writer -Imesh/build/profile_ndebug/src/utilities -Imesh/src/utilities -Ilinalg/build/profile_ndebug/src -Ilinalg/src -Iio/build/profile_ndebug/src -Iio/src -Iio/build/profile_ndebug/src/reader -Iio/src/reader -Iio/build/profile_ndebug/src/fortests -Iio/src/fortests -Iio/build/profile_ndebug/src/common -Iio/src/common -Iio/build/profile_ndebug/src/writer -Iio/src/writer -Iglobal/build/profile_ndebug/src -Iglobal/src -Iglobal/build/profile_ndebug/src/timing -Iglobal/src/timing -Iglobal/build/profile_ndebug/src/fortests -Iglobal/src/fortests -Iglobal/build/profile_ndebug/src/parallel -Iglobal/src/parallel -Iglobal/build/profile_ndebug/src/checkpointing -Iglobal/src/checkpointing projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.cpp
+/home/bob/petsc-3.1-p8/linux-gnu/bin/mpicxx -o projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/libaslanidi_Purkinje_model_2009.so -pg -rdynamic -shared projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/aslanidi_Purkinje_model_2009.os
+Install file: "projects/FunctionalCuration/build/profile_ndebug/dynamic/tmp_2927_1422353595/libaslanidi_Purkinje_model_2009.so" as "projects/FunctionalCuration/dynamic/tmp_2927_1422353595/libaslanidi_Purkinje_model_2009.so"
+scons: done building targets.
+Running protocol...
+Running simulation 0  on process 0...
+Running simulation 1 sim on process 0...
+  Nested simulation step_calcium step 0 (value 900) on process 0...
+    Nested simulation step_voltage step 0 (value -45.01) on process 0...
+    Nested simulation step_voltage step 1 (value -40.01) on process 0...
+    Nested simulation step_voltage step 2 (value -35.01) on process 0...
+    Nested simulation step_voltage step 3 (value -30.01) on process 0...
+    Nested simulation step_voltage step 4 (value -25.01) on process 0...
+    Nested simulation step_voltage step 5 (value -20.01) on process 0...
+    Nested simulation step_voltage step 6 (value -15.01) on process 0...
+    Nested simulation step_voltage step 7 (value -10.01) on process 0...
+    Nested simulation step_voltage step 8 (value -5.01) on process 0...
+    Nested simulation step_voltage step 9 (value 0.01) on process 0...
+    Nested simulation step_voltage step 10 (value 5.01) on process 0...
+    Nested simulation step_voltage step 11 (value 10.01) on process 0...
+    Nested simulation step_voltage step 12 (value 15.01) on process 0...
+    Nested simulation step_voltage step 13 (value 20.01) on process 0...
+    Nested simulation step_voltage step 14 (value 25.01) on process 0...
+    Nested simulation step_voltage step 15 (value 30.01) on process 0...
+    Nested simulation step_voltage step 16 (value 35.01) on process 0...
+    Nested simulation step_voltage step 17 (value 40.01) on process 0...
+    Nested simulation step_voltage step 18 (value 45.01) on process 0...
+    Nested simulation step_voltage step 19 (value 50.01) on process 0...
+    Nested simulation step_voltage step 20 (value 55.01) on process 0...
+    Nested simulation step_voltage step 21 (value 60.01) on process 0...
+    Nested simulation step_voltage step 22 (value 65.01) on process 0...
+    Nested simulation step_voltage step 23 (value 70.01) on process 0...
+    Nested simulation step_voltage step 24 (value 75.01) on process 0...
+    Nested simulation step_voltage step 25 (value 79.99) on process 0...
+  Nested simulation step_calcium step 1 (value 1800) on process 0...
+    Nested simulation step_voltage step 0 (value -45.01) on process 0...
+    Nested simulation step_voltage step 1 (value -40.01) on process 0...
+    Nested simulation step_voltage step 2 (value -35.01) on process 0...
+    Nested simulation step_voltage step 3 (value -30.01) on process 0...
+    Nested simulation step_voltage step 4 (value -25.01) on process 0...
+    Nested simulation step_voltage step 5 (value -20.01) on process 0...
+    Nested simulation step_voltage step 6 (value -15.01) on process 0...
+    Nested simulation step_voltage step 7 (value -10.01) on process 0...
+    Nested simulation step_voltage step 8 (value -5.01) on process 0...
+    Nested simulation step_voltage step 9 (value 0.01) on process 0...
+    Nested simulation step_voltage step 10 (value 5.01) on process 0...
+    Nested simulation step_voltage step 11 (value 10.01) on process 0...
+    Nested simulation step_voltage step 12 (value 15.01) on process 0...
+    Nested simulation step_voltage step 13 (value 20.01) on process 0...
+    Nested simulation step_voltage step 14 (value 25.01) on process 0...
+    Nested simulation step_voltage step 15 (value 30.01) on process 0...
+    Nested simulation step_voltage step 16 (value 35.01) on process 0...
+    Nested simulation step_voltage step 17 (value 40.01) on process 0...
+    Nested simulation step_voltage step 18 (value 45.01) on process 0...
+    Nested simulation step_voltage step 19 (value 50.01) on process 0...
+    Nested simulation step_voltage step 20 (value 55.01) on process 0...
+    Nested simulation step_voltage step 21 (value 60.01) on process 0...
+    Nested simulation step_voltage step 22 (value 65.01) on process 0...
+    Nested simulation step_voltage step 23 (value 70.01) on process 0...
+    Nested simulation step_voltage step 24 (value 75.01) on process 0...
+    Nested simulation step_voltage step 25 (value 79.99) on process 0...
+  Nested simulation step_calcium step 2 (value 2700) on process 0...
+    Nested simulation step_voltage step 0 (value -45.01) on process 0...
+    Nested simulation step_voltage step 1 (value -40.01) on process 0...
+    Nested simulation step_voltage step 2 (value -35.01) on process 0...
+    Nested simulation step_voltage step 3 (value -30.01) on process 0...
+    Nested simulation step_voltage step 4 (value -25.01) on process 0...
+    Nested simulation step_voltage step 5 (value -20.01) on process 0...
+    Nested simulation step_voltage step 6 (value -15.01) on process 0...
+    Nested simulation step_voltage step 7 (value -10.01) on process 0...
+    Nested simulation step_voltage step 8 (value -5.01) on process 0...
+    Nested simulation step_voltage step 9 (value 0.01) on process 0...
+    Nested simulation step_voltage step 10 (value 5.01) on process 0...
+    Nested simulation step_voltage step 11 (value 10.01) on process 0...
+    Nested simulation step_voltage step 12 (value 15.01) on process 0...
+    Nested simulation step_voltage step 13 (value 20.01) on process 0...
+    Nested simulation step_voltage step 14 (value 25.01) on process 0...
+    Nested simulation step_voltage step 15 (value 30.01) on process 0...
+    Nested simulation step_voltage step 16 (value 35.01) on process 0...
+    Nested simulation step_voltage step 17 (value 40.01) on process 0...
+    Nested simulation step_voltage step 18 (value 45.01) on process 0...
+    Nested simulation step_voltage step 19 (value 50.01) on process 0...
+    Nested simulation step_voltage step 20 (value 55.01) on process 0...
+    Nested simulation step_voltage step 21 (value 60.01) on process 0...
+    Nested simulation step_voltage step 22 (value 65.01) on process 0...
+    Nested simulation step_voltage step 23 (value 70.01) on process 0...
+    Nested simulation step_voltage step 24 (value 75.01) on process 0...
+    Nested simulation step_voltage step 25 (value 79.99) on process 0...
+Running post-processing...
+Recording protocol outputs...
+Finished running protocol.
+Writing results to file...
+Plotting IV curve:	Minimum I_{CaL} current ({/Symbol m}A/cm^2) against Test potential (mV)...
+Done!
+     Load model    Load protocol            Setup         Simulate     Post-process     Run Protocol    Write outputs         Plotting            Total  
+  26.042 (  8%)     0.081 (  0%)     0.000 (  0%)   195.452 ( 63%)    18.766 (  6%)   214.218 ( 70%)    67.693 ( 22%)     0.155 (  0%)   308.205 (100%)  (seconds) 
+Comparing results of ICaL protocol: outputs_min_LCC...done.
+Comparing results of ICaL protocol: outputs_final_membrane_voltage...done.
+Passed
+OK!
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 48.39      0.15     0.15                             CxxTest::OutputStream::~OutputStream()
+ 29.04      0.24     0.09        4    22.50    22.50  std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+ 22.58      0.31     0.07        6    11.67    11.67  std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  0.00      0.31     0.00       19     0.00     0.00  CxxTest::ErrorPrinter::Adapter::operator<<(char const*)
+  0.00      0.31     0.00       15     0.00     0.00  CxxTest::TestTracker::tracker()
+  0.00      0.31     0.00        9     0.00     0.00  CxxTest::ErrorPrinter::Adapter::flush()
+  0.00      0.31     0.00        9     0.00     0.00  CxxTest::TestTracker::dummySuite() const
+  0.00      0.31     0.00        9     0.00     0.00  CxxTest::DummyWorldDescription::suiteDescription(unsigned int) const
+  0.00      0.31     0.00        8     0.00     0.00  CxxTest::TestTracker::setTest(CxxTest::TestDescription const*)
+  0.00      0.31     0.00        8     0.00     0.00  CxxTest::TestTracker::fixTest(CxxTest::TestDescription const*) const
+  0.00      0.31     0.00        8     0.00     0.00  CxxTest::RealTestDescription::suite() const
+  0.00      0.31     0.00        8     0.00     0.00  CxxTest::StaticSuiteDescription::suite() const
+  0.00      0.31     0.00        7     0.00     0.00  CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&))
+  0.00      0.31     0.00        6     0.00     0.00  CxxTest::ErrorFormatter::endl(CxxTest::OutputStream&)
+  0.00      0.31     0.00        6     0.00     0.00  CxxTest::TestTracker::dummyTest() const
+  0.00      0.31     0.00        6     0.00     0.00  CxxTest::DummySuiteDescription::testDescription(unsigned int) const
+  0.00      0.31     0.00        4     0.00     0.00  NumericFileComparison::CompareFiles(double, unsigned int, double, bool)
+  0.00      0.31     0.00        4     0.00     0.00  AbstractFileComparison::SkipHeaderLines(unsigned int)
+  0.00      0.31     0.00        4     0.00     0.00  AbstractFileComparison::Setup()
+  0.00      0.31     0.00        4     0.00     0.00  CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*)
+  0.00      0.31     0.00        4     0.00     0.00  void CxxTest::doAssertEquals<unsigned int, unsigned int>(char const*, unsigned int, char const*, unsigned int, char const*, unsigned int, char const*)
+  0.00      0.31     0.00        4     0.00     0.00  CxxTest::TestTracker::fixSuite(CxxTest::SuiteDescription const*) const
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::TestTracker::setWorld(CxxTest::WorldDescription const*)
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::TestTracker::enterTest(CxxTest::TestDescription const&)
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::TestTracker::leaveTest(CxxTest::TestDescription const&)
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&)
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&)
+  0.00      0.31     0.00        2     0.00    80.01  CxxTest::RealTestDescription::run()
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealTestDescription::next()
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealTestDescription::setUp()
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealTestDescription::tearDown()
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealTestDescription::RealTestDescription(CxxTest::List&, CxxTest::SuiteDescription&, unsigned int, char const*)
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::TestSuite::setUp()
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::TestSuite::tearDown()
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealTestDescription::testName() const
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealSuiteDescription::next() const
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealSuiteDescription::numTests() const
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealWorldDescription::firstSuite() const
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::RealWorldDescription::numTotalTests() const
+  0.00      0.31     0.00        2     0.00     0.00  CxxTest::List::size() const
+  0.00      0.31     0.00        1     0.00     0.00  global constructors keyed to main
+  0.00      0.31     0.00        1     0.00    80.01  TestNightlyProtocols::TestIcalAslanidi()
+  0.00      0.31     0.00        1     0.00    80.01  TestNightlyProtocols::TestS1S2Courtemanche()
+  0.00      0.31     0.00        1     0.00     0.00  TestDescription_TestNightlyProtocols_TestIcalAslanidi::runTest()
+  0.00      0.31     0.00        1     0.00     0.00  TestDescription_TestNightlyProtocols_TestS1S2Courtemanche::runTest()
+  0.00      0.31     0.00        1     0.00   160.02  CxxTest::TestRunner::runAllTests(CxxTest::TestListener&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::TestTracker::enterSuite(CxxTest::SuiteDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::TestTracker::leaveSuite(CxxTest::SuiteDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::TestTracker::leaveWorld(CxxTest::WorldDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::TestTracker::TestTracker()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::ErrorPrinter::Adapter::~Adapter()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::TestListener::leaveSuite(CxxTest::SuiteDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::ErrorFormatter::enterSuite(CxxTest::SuiteDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::ErrorFormatter::leaveWorld(CxxTest::WorldDescription const&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&)
+  0.00      0.31     0.00        1     0.00     0.00  char* CxxTest::numberToString<unsigned int>(unsigned int, char*, unsigned int, unsigned int, unsigned int)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::RealSuiteDescription::next()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::RealSuiteDescription::firstTest()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::RealSuiteDescription::RealSuiteDescription(char const*, unsigned int, char const*, CxxTest::List&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::RealWorldDescription::setUp()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::RealWorldDescription::tearDown()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::DummyWorldDescription::DummyWorldDescription()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::StaticSuiteDescription::setUp()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::StaticSuiteDescription::tearDown()
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::StaticSuiteDescription::StaticSuiteDescription(char const*, unsigned int, char const*, CxxTest::TestSuite&, CxxTest::List&)
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::WorldDescription::strTotalTests(char*) const
+  0.00      0.31     0.00        1     0.00     0.00  CxxTest::RealSuiteDescription::suiteName() const
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 3.23% of 0.31 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     51.6    0.00    0.16                 main [1]
+                0.00    0.16       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+                0.00    0.00       1/15          CxxTest::TestTracker::tracker() [31]
+                0.00    0.00       1/1           CxxTest::ErrorPrinter::Adapter::~Adapter() [74]
+-----------------------------------------------
+                0.00    0.16       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[2]     51.6    0.00    0.16       2         CxxTest::RealTestDescription::run() [2]
+                0.00    0.08       1/1           TestNightlyProtocols::TestIcalAslanidi() [6]
+                0.00    0.08       1/1           TestNightlyProtocols::TestS1S2Courtemanche() [7]
+                0.00    0.00       1/1           TestDescription_TestNightlyProtocols_TestIcalAslanidi::runTest() [67]
+                0.00    0.00       1/1           TestDescription_TestNightlyProtocols_TestS1S2Courtemanche::runTest() [68]
+-----------------------------------------------
+                0.00    0.16       1/1           main [1]
+[3]     51.6    0.00    0.16       1         CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+                0.00    0.16       2/2           CxxTest::RealTestDescription::run() [2]
+                0.00    0.00      10/15          CxxTest::TestTracker::tracker() [31]
+                0.00    0.00       4/8           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+                0.00    0.00       2/2           CxxTest::RealTestDescription::setUp() [55]
+                0.00    0.00       2/2           CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&) [52]
+                0.00    0.00       2/2           CxxTest::TestTracker::enterTest(CxxTest::TestDescription const&) [50]
+                0.00    0.00       2/2           CxxTest::RealTestDescription::tearDown() [56]
+                0.00    0.00       2/2           CxxTest::TestTracker::leaveTest(CxxTest::TestDescription const&) [51]
+                0.00    0.00       2/2           CxxTest::RealTestDescription::next() [54]
+                0.00    0.00       2/4           CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+                0.00    0.00       1/1           CxxTest::RealWorldDescription::setUp() [84]
+                0.00    0.00       1/1           CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&) [77]
+                0.00    0.00       1/1           CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&) [70]
+                0.00    0.00       1/7           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+                0.00    0.00       1/1           CxxTest::ErrorFormatter::enterSuite(CxxTest::SuiteDescription const&) [76]
+                0.00    0.00       1/1           CxxTest::TestTracker::enterSuite(CxxTest::SuiteDescription const&) [69]
+                0.00    0.00       1/1           CxxTest::StaticSuiteDescription::setUp() [87]
+                0.00    0.00       1/1           CxxTest::RealSuiteDescription::firstTest() [82]
+                0.00    0.00       1/1           CxxTest::StaticSuiteDescription::tearDown() [88]
+                0.00    0.00       1/1           CxxTest::TestTracker::leaveSuite(CxxTest::SuiteDescription const&) [71]
+                0.00    0.00       1/1           CxxTest::RealSuiteDescription::next() [81]
+                0.00    0.00       1/1           CxxTest::RealWorldDescription::tearDown() [85]
+                0.00    0.00       1/2           CxxTest::TestTracker::setWorld(CxxTest::WorldDescription const*) [49]
+                0.00    0.00       1/1           CxxTest::TestTracker::leaveWorld(CxxTest::WorldDescription const&) [72]
+-----------------------------------------------
+                                                 <spontaneous>
+[4]     48.4    0.15    0.00                 CxxTest::OutputStream::~OutputStream() [4]
+-----------------------------------------------
+                0.05    0.00       2/4           TestNightlyProtocols::TestIcalAslanidi() [6]
+                0.05    0.00       2/4           TestNightlyProtocols::TestS1S2Courtemanche() [7]
+[5]     29.0    0.09    0.00       4         std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [5]
+-----------------------------------------------
+                0.00    0.08       1/1           CxxTest::RealTestDescription::run() [2]
+[6]     25.8    0.00    0.08       1         TestNightlyProtocols::TestIcalAslanidi() [6]
+                0.05    0.00       2/4           std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [5]
+                0.04    0.00       3/6           std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [8]
+                0.00    0.00       2/4           AbstractFileComparison::Setup() [45]
+                0.00    0.00       2/4           NumericFileComparison::CompareFiles(double, unsigned int, double, bool) [43]
+-----------------------------------------------
+                0.00    0.08       1/1           CxxTest::RealTestDescription::run() [2]
+[7]     25.8    0.00    0.08       1         TestNightlyProtocols::TestS1S2Courtemanche() [7]
+                0.05    0.00       2/4           std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [5]
+                0.04    0.00       3/6           std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [8]
+                0.00    0.00       2/4           AbstractFileComparison::Setup() [45]
+                0.00    0.00       2/4           NumericFileComparison::CompareFiles(double, unsigned int, double, bool) [43]
+-----------------------------------------------
+                0.04    0.00       3/6           TestNightlyProtocols::TestIcalAslanidi() [6]
+                0.04    0.00       3/6           TestNightlyProtocols::TestS1S2Courtemanche() [7]
+[8]     22.6    0.07    0.00       6         std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [8]
+-----------------------------------------------
+                0.00    0.00       1/19          CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&) [77]
+                0.00    0.00       1/19          CxxTest::ErrorFormatter::leaveWorld(CxxTest::WorldDescription const&) [78]
+                0.00    0.00       2/19          CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [79]
+                0.00    0.00       2/19          CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [53]
+                0.00    0.00       3/19          CxxTest::ErrorFormatter::enterSuite(CxxTest::SuiteDescription const&) [76]
+                0.00    0.00       4/19          CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&) [52]
+                0.00    0.00       6/19          CxxTest::ErrorFormatter::endl(CxxTest::OutputStream&) [40]
+[30]     0.0    0.00    0.00      19         CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+-----------------------------------------------
+                0.00    0.00       1/15          main [1]
+                0.00    0.00       1/15          CxxTest::ErrorFormatter::leaveWorld(CxxTest::WorldDescription const&) [78]
+                0.00    0.00       1/15          CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [79]
+                0.00    0.00       2/15          CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [53]
+                0.00    0.00      10/15          CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[31]     0.0    0.00    0.00      15         CxxTest::TestTracker::tracker() [31]
+                0.00    0.00       1/1           CxxTest::TestTracker::TestTracker() [73]
+-----------------------------------------------
+                0.00    0.00       1/9           CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&) [77]
+                0.00    0.00       2/9           CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [53]
+                0.00    0.00       6/9           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+[32]     0.0    0.00    0.00       9         CxxTest::ErrorPrinter::Adapter::flush() [32]
+-----------------------------------------------
+                0.00    0.00       3/9           CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+                0.00    0.00       6/9           CxxTest::TestTracker::dummyTest() const [41]
+[33]     0.0    0.00    0.00       9         CxxTest::TestTracker::dummySuite() const [33]
+-----------------------------------------------
+                0.00    0.00       3/9           CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+                0.00    0.00       6/9           CxxTest::TestTracker::dummyTest() const [41]
+[34]     0.0    0.00    0.00       9         CxxTest::DummyWorldDescription::suiteDescription(unsigned int) const [34]
+-----------------------------------------------
+                0.00    0.00       1/8           CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&) [70]
+                0.00    0.00       1/8           CxxTest::TestTracker::enterSuite(CxxTest::SuiteDescription const&) [69]
+                0.00    0.00       2/8           CxxTest::TestTracker::enterTest(CxxTest::TestDescription const&) [50]
+                0.00    0.00       4/8           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[35]     0.0    0.00    0.00       8         CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+                0.00    0.00       8/8           CxxTest::TestTracker::fixTest(CxxTest::TestDescription const*) const [36]
+                0.00    0.00       6/6           CxxTest::DummySuiteDescription::testDescription(unsigned int) const [42]
+                0.00    0.00       6/6           CxxTest::TestTracker::dummyTest() const [41]
+-----------------------------------------------
+                0.00    0.00       8/8           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+[36]     0.0    0.00    0.00       8         CxxTest::TestTracker::fixTest(CxxTest::TestDescription const*) const [36]
+-----------------------------------------------
+                0.00    0.00       4/8           CxxTest::RealTestDescription::tearDown() [56]
+                0.00    0.00       4/8           CxxTest::RealTestDescription::setUp() [55]
+[37]     0.0    0.00    0.00       8         CxxTest::RealTestDescription::suite() const [37]
+-----------------------------------------------
+                0.00    0.00       4/8           CxxTest::RealTestDescription::tearDown() [56]
+                0.00    0.00       4/8           CxxTest::RealTestDescription::setUp() [55]
+[38]     0.0    0.00    0.00       8         CxxTest::StaticSuiteDescription::suite() const [38]
+-----------------------------------------------
+                0.00    0.00       1/7           CxxTest::TestTracker::leaveWorld(CxxTest::WorldDescription const&) [72]
+                0.00    0.00       1/7           CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&) [77]
+                0.00    0.00       1/7           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+                0.00    0.00       2/7           CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&) [52]
+                0.00    0.00       2/7           CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [53]
+[39]     0.0    0.00    0.00       7         CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+                0.00    0.00       6/9           CxxTest::ErrorPrinter::Adapter::flush() [32]
+                0.00    0.00       6/6           CxxTest::ErrorFormatter::endl(CxxTest::OutputStream&) [40]
+                0.00    0.00       1/1           CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [79]
+-----------------------------------------------
+                0.00    0.00       6/6           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+[40]     0.0    0.00    0.00       6         CxxTest::ErrorFormatter::endl(CxxTest::OutputStream&) [40]
+                0.00    0.00       6/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+-----------------------------------------------
+                0.00    0.00       6/6           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+[41]     0.0    0.00    0.00       6         CxxTest::TestTracker::dummyTest() const [41]
+                0.00    0.00       6/9           CxxTest::DummyWorldDescription::suiteDescription(unsigned int) const [34]
+                0.00    0.00       6/9           CxxTest::TestTracker::dummySuite() const [33]
+-----------------------------------------------
+                0.00    0.00       6/6           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+[42]     0.0    0.00    0.00       6         CxxTest::DummySuiteDescription::testDescription(unsigned int) const [42]
+-----------------------------------------------
+                0.00    0.00       2/4           TestNightlyProtocols::TestIcalAslanidi() [6]
+                0.00    0.00       2/4           TestNightlyProtocols::TestS1S2Courtemanche() [7]
+[43]     0.0    0.00    0.00       4         NumericFileComparison::CompareFiles(double, unsigned int, double, bool) [43]
+                0.00    0.00       4/4           AbstractFileComparison::SkipHeaderLines(unsigned int) [44]
+                0.00    0.00       4/4           void CxxTest::doAssertEquals<unsigned int, unsigned int>(char const*, unsigned int, char const*, unsigned int, char const*, unsigned int, char const*) [47]
+-----------------------------------------------
+                0.00    0.00       4/4           NumericFileComparison::CompareFiles(double, unsigned int, double, bool) [43]
+[44]     0.0    0.00    0.00       4         AbstractFileComparison::SkipHeaderLines(unsigned int) [44]
+-----------------------------------------------
+                0.00    0.00       2/4           TestNightlyProtocols::TestIcalAslanidi() [6]
+                0.00    0.00       2/4           TestNightlyProtocols::TestS1S2Courtemanche() [7]
+[45]     0.0    0.00    0.00       4         AbstractFileComparison::Setup() [45]
+-----------------------------------------------
+                0.00    0.00       1/4           CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&) [70]
+                0.00    0.00       1/4           CxxTest::TestTracker::enterSuite(CxxTest::SuiteDescription const&) [69]
+                0.00    0.00       2/4           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[46]     0.0    0.00    0.00       4         CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+                0.00    0.00       4/4           CxxTest::TestTracker::fixSuite(CxxTest::SuiteDescription const*) const [48]
+                0.00    0.00       3/9           CxxTest::DummyWorldDescription::suiteDescription(unsigned int) const [34]
+                0.00    0.00       3/9           CxxTest::TestTracker::dummySuite() const [33]
+-----------------------------------------------
+                0.00    0.00       4/4           NumericFileComparison::CompareFiles(double, unsigned int, double, bool) [43]
+[47]     0.0    0.00    0.00       4         void CxxTest::doAssertEquals<unsigned int, unsigned int>(char const*, unsigned int, char const*, unsigned int, char const*, unsigned int, char const*) [47]
+-----------------------------------------------
+                0.00    0.00       4/4           CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+[48]     0.0    0.00    0.00       4         CxxTest::TestTracker::fixSuite(CxxTest::SuiteDescription const*) const [48]
+-----------------------------------------------
+                0.00    0.00       1/2           CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&) [70]
+                0.00    0.00       1/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[49]     0.0    0.00    0.00       2         CxxTest::TestTracker::setWorld(CxxTest::WorldDescription const*) [49]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[50]     0.0    0.00    0.00       2         CxxTest::TestTracker::enterTest(CxxTest::TestDescription const&) [50]
+                0.00    0.00       2/8           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[51]     0.0    0.00    0.00       2         CxxTest::TestTracker::leaveTest(CxxTest::TestDescription const&) [51]
+                0.00    0.00       2/2           CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [53]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[52]     0.0    0.00    0.00       2         CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&) [52]
+                0.00    0.00       4/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+                0.00    0.00       2/2           CxxTest::RealTestDescription::testName() const [60]
+                0.00    0.00       2/7           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestTracker::leaveTest(CxxTest::TestDescription const&) [51]
+[53]     0.0    0.00    0.00       2         CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [53]
+                0.00    0.00       2/15          CxxTest::TestTracker::tracker() [31]
+                0.00    0.00       2/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+                0.00    0.00       2/7           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+                0.00    0.00       2/9           CxxTest::ErrorPrinter::Adapter::flush() [32]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[54]     0.0    0.00    0.00       2         CxxTest::RealTestDescription::next() [54]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[55]     0.0    0.00    0.00       2         CxxTest::RealTestDescription::setUp() [55]
+                0.00    0.00       4/8           CxxTest::StaticSuiteDescription::suite() const [38]
+                0.00    0.00       4/8           CxxTest::RealTestDescription::suite() const [37]
+                0.00    0.00       2/2           CxxTest::TestSuite::setUp() [58]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[56]     0.0    0.00    0.00       2         CxxTest::RealTestDescription::tearDown() [56]
+                0.00    0.00       4/8           CxxTest::StaticSuiteDescription::suite() const [38]
+                0.00    0.00       4/8           CxxTest::RealTestDescription::suite() const [37]
+                0.00    0.00       2/2           CxxTest::TestSuite::tearDown() [59]
+-----------------------------------------------
+                0.00    0.00       2/2           global constructors keyed to main [66]
+[57]     0.0    0.00    0.00       2         CxxTest::RealTestDescription::RealTestDescription(CxxTest::List&, CxxTest::SuiteDescription&, unsigned int, char const*) [57]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::RealTestDescription::setUp() [55]
+[58]     0.0    0.00    0.00       2         CxxTest::TestSuite::setUp() [58]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::RealTestDescription::tearDown() [56]
+[59]     0.0    0.00    0.00       2         CxxTest::TestSuite::tearDown() [59]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&) [52]
+[60]     0.0    0.00    0.00       2         CxxTest::RealTestDescription::testName() const [60]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::RealWorldDescription::numTotalTests() const [64]
+[61]     0.0    0.00    0.00       2         CxxTest::RealSuiteDescription::next() const [61]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::RealWorldDescription::numTotalTests() const [64]
+[62]     0.0    0.00    0.00       2         CxxTest::RealSuiteDescription::numTests() const [62]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::RealWorldDescription::numTotalTests() const [64]
+[63]     0.0    0.00    0.00       2         CxxTest::RealWorldDescription::firstSuite() const [63]
+-----------------------------------------------
+                0.00    0.00       1/2           CxxTest::WorldDescription::strTotalTests(char*) const [90]
+                0.00    0.00       1/2           CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [79]
+[64]     0.0    0.00    0.00       2         CxxTest::RealWorldDescription::numTotalTests() const [64]
+                0.00    0.00       2/2           CxxTest::RealWorldDescription::firstSuite() const [63]
+                0.00    0.00       2/2           CxxTest::List::size() const [65]
+                0.00    0.00       2/2           CxxTest::RealSuiteDescription::numTests() const [62]
+                0.00    0.00       2/2           CxxTest::RealSuiteDescription::next() const [61]
+-----------------------------------------------
+                0.00    0.00       2/2           CxxTest::RealWorldDescription::numTotalTests() const [64]
+[65]     0.0    0.00    0.00       2         CxxTest::List::size() const [65]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [352]
+[66]     0.0    0.00    0.00       1         global constructors keyed to main [66]
+                0.00    0.00       2/2           CxxTest::RealTestDescription::RealTestDescription(CxxTest::List&, CxxTest::SuiteDescription&, unsigned int, char const*) [57]
+                0.00    0.00       1/1           CxxTest::StaticSuiteDescription::StaticSuiteDescription(char const*, unsigned int, char const*, CxxTest::TestSuite&, CxxTest::List&) [89]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::RealTestDescription::run() [2]
+[67]     0.0    0.00    0.00       1         TestDescription_TestNightlyProtocols_TestIcalAslanidi::runTest() [67]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::RealTestDescription::run() [2]
+[68]     0.0    0.00    0.00       1         TestDescription_TestNightlyProtocols_TestS1S2Courtemanche::runTest() [68]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[69]     0.0    0.00    0.00       1         CxxTest::TestTracker::enterSuite(CxxTest::SuiteDescription const&) [69]
+                0.00    0.00       1/8           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+                0.00    0.00       1/4           CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[70]     0.0    0.00    0.00       1         CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&) [70]
+                0.00    0.00       1/8           CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [35]
+                0.00    0.00       1/4           CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [46]
+                0.00    0.00       1/2           CxxTest::TestTracker::setWorld(CxxTest::WorldDescription const*) [49]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[71]     0.0    0.00    0.00       1         CxxTest::TestTracker::leaveSuite(CxxTest::SuiteDescription const&) [71]
+                0.00    0.00       1/1           CxxTest::TestListener::leaveSuite(CxxTest::SuiteDescription const&) [75]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[72]     0.0    0.00    0.00       1         CxxTest::TestTracker::leaveWorld(CxxTest::WorldDescription const&) [72]
+                0.00    0.00       1/7           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+                0.00    0.00       1/1           CxxTest::ErrorFormatter::leaveWorld(CxxTest::WorldDescription const&) [78]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestTracker::tracker() [31]
+[73]     0.0    0.00    0.00       1         CxxTest::TestTracker::TestTracker() [73]
+                0.00    0.00       1/1           CxxTest::DummyWorldDescription::DummyWorldDescription() [86]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[74]     0.0    0.00    0.00       1         CxxTest::ErrorPrinter::Adapter::~Adapter() [74]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestTracker::leaveSuite(CxxTest::SuiteDescription const&) [71]
+[75]     0.0    0.00    0.00       1         CxxTest::TestListener::leaveSuite(CxxTest::SuiteDescription const&) [75]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[76]     0.0    0.00    0.00       1         CxxTest::ErrorFormatter::enterSuite(CxxTest::SuiteDescription const&) [76]
+                0.00    0.00       3/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+                0.00    0.00       1/1           CxxTest::RealSuiteDescription::suiteName() const [91]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[77]     0.0    0.00    0.00       1         CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&) [77]
+                0.00    0.00       1/7           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+                0.00    0.00       1/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+                0.00    0.00       1/9           CxxTest::ErrorPrinter::Adapter::flush() [32]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestTracker::leaveWorld(CxxTest::WorldDescription const&) [72]
+[78]     0.0    0.00    0.00       1         CxxTest::ErrorFormatter::leaveWorld(CxxTest::WorldDescription const&) [78]
+                0.00    0.00       1/15          CxxTest::TestTracker::tracker() [31]
+                0.00    0.00       1/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [39]
+[79]     0.0    0.00    0.00       1         CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [79]
+                0.00    0.00       2/19          CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [30]
+                0.00    0.00       1/15          CxxTest::TestTracker::tracker() [31]
+                0.00    0.00       1/1           CxxTest::WorldDescription::strTotalTests(char*) const [90]
+                0.00    0.00       1/2           CxxTest::RealWorldDescription::numTotalTests() const [64]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::WorldDescription::strTotalTests(char*) const [90]
+[80]     0.0    0.00    0.00       1         char* CxxTest::numberToString<unsigned int>(unsigned int, char*, unsigned int, unsigned int, unsigned int) [80]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[81]     0.0    0.00    0.00       1         CxxTest::RealSuiteDescription::next() [81]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[82]     0.0    0.00    0.00       1         CxxTest::RealSuiteDescription::firstTest() [82]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::StaticSuiteDescription::StaticSuiteDescription(char const*, unsigned int, char const*, CxxTest::TestSuite&, CxxTest::List&) [89]
+[83]     0.0    0.00    0.00       1         CxxTest::RealSuiteDescription::RealSuiteDescription(char const*, unsigned int, char const*, CxxTest::List&) [83]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[84]     0.0    0.00    0.00       1         CxxTest::RealWorldDescription::setUp() [84]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[85]     0.0    0.00    0.00       1         CxxTest::RealWorldDescription::tearDown() [85]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestTracker::TestTracker() [73]
+[86]     0.0    0.00    0.00       1         CxxTest::DummyWorldDescription::DummyWorldDescription() [86]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[87]     0.0    0.00    0.00       1         CxxTest::StaticSuiteDescription::setUp() [87]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [3]
+[88]     0.0    0.00    0.00       1         CxxTest::StaticSuiteDescription::tearDown() [88]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to main [66]
+[89]     0.0    0.00    0.00       1         CxxTest::StaticSuiteDescription::StaticSuiteDescription(char const*, unsigned int, char const*, CxxTest::TestSuite&, CxxTest::List&) [89]
+                0.00    0.00       1/1           CxxTest::RealSuiteDescription::RealSuiteDescription(char const*, unsigned int, char const*, CxxTest::List&) [83]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [79]
+[90]     0.0    0.00    0.00       1         CxxTest::WorldDescription::strTotalTests(char*) const [90]
+                0.00    0.00       1/2           CxxTest::RealWorldDescription::numTotalTests() const [64]
+                0.00    0.00       1/1           char* CxxTest::numberToString<unsigned int>(unsigned int, char*, unsigned int, unsigned int, unsigned int) [80]
+-----------------------------------------------
+                0.00    0.00       1/1           CxxTest::ErrorFormatter::enterSuite(CxxTest::SuiteDescription const&) [76]
+[91]     0.0    0.00    0.00       1         CxxTest::RealSuiteDescription::suiteName() const [91]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Index by function name
+
+  [66] global constructors keyed to main (ValueTraits.cpp) [30] CxxTest::ErrorPrinter::Adapter::operator<<(char const*) [87] CxxTest::StaticSuiteDescription::setUp()
+   [6] TestNightlyProtocols::TestIcalAslanidi() [4] CxxTest::OutputStream::~OutputStream() [88] CxxTest::StaticSuiteDescription::tearDown()
+   [7] TestNightlyProtocols::TestS1S2Courtemanche() [75] CxxTest::TestListener::leaveSuite(CxxTest::SuiteDescription const&) [89] CxxTest::StaticSuiteDescription::StaticSuiteDescription(char const*, unsigned int, char const*, CxxTest::TestSuite&, CxxTest::List&)
+  [43] NumericFileComparison::CompareFiles(double, unsigned int, double, bool) [76] CxxTest::ErrorFormatter::enterSuite(CxxTest::SuiteDescription const&) [58] CxxTest::TestSuite::setUp()
+  [44] AbstractFileComparison::SkipHeaderLines(unsigned int) [77] CxxTest::ErrorFormatter::enterWorld(CxxTest::WorldDescription const&) [59] CxxTest::TestSuite::tearDown()
+  [45] AbstractFileComparison::Setup() [78] CxxTest::ErrorFormatter::leaveWorld(CxxTest::WorldDescription const&) [33] CxxTest::TestTracker::dummySuite() const
+  [67] TestDescription_TestNightlyProtocols_TestIcalAslanidi::runTest() [79] CxxTest::ErrorFormatter::totalTests(CxxTest::OutputStream&) [36] CxxTest::TestTracker::fixTest(CxxTest::TestDescription const*) const
+  [68] TestDescription_TestNightlyProtocols_TestS1S2Courtemanche::runTest() [40] CxxTest::ErrorFormatter::endl(CxxTest::OutputStream&) [48] CxxTest::TestTracker::fixSuite(CxxTest::SuiteDescription const*) const
+   [3] CxxTest::TestRunner::runAllTests(CxxTest::TestListener&) [52] CxxTest::ErrorFormatter::enterTest(CxxTest::TestDescription const&) [41] CxxTest::TestTracker::dummyTest() const
+  [69] CxxTest::TestTracker::enterSuite(CxxTest::SuiteDescription const&) [53] CxxTest::ErrorFormatter::leaveTest(CxxTest::TestDescription const&) [90] CxxTest::WorldDescription::strTotalTests(char*) const
+  [70] CxxTest::TestTracker::enterWorld(CxxTest::WorldDescription const&) [47] void CxxTest::doAssertEquals<unsigned int, unsigned int>(char const*, unsigned int, char const*, unsigned int, char const*, unsigned int, char const*) [37] CxxTest::RealTestDescription::suite() const
+  [71] CxxTest::TestTracker::leaveSuite(CxxTest::SuiteDescription const&) [80] char* CxxTest::numberToString<unsigned int>(unsigned int, char*, unsigned int, unsigned int, unsigned int) [60] CxxTest::RealTestDescription::testName() const
+  [72] CxxTest::TestTracker::leaveWorld(CxxTest::WorldDescription const&) [2] CxxTest::RealTestDescription::run() [61] CxxTest::RealSuiteDescription::next() const
+  [35] CxxTest::TestTracker::setTest(CxxTest::TestDescription const*) [54] CxxTest::RealTestDescription::next() [62] CxxTest::RealSuiteDescription::numTests() const
+  [31] CxxTest::TestTracker::tracker() [55] CxxTest::RealTestDescription::setUp() [91] CxxTest::RealSuiteDescription::suiteName() const
+  [46] CxxTest::TestTracker::setSuite(CxxTest::SuiteDescription const*) [56] CxxTest::RealTestDescription::tearDown() [63] CxxTest::RealWorldDescription::firstSuite() const
+  [49] CxxTest::TestTracker::setWorld(CxxTest::WorldDescription const*) [57] CxxTest::RealTestDescription::RealTestDescription(CxxTest::List&, CxxTest::SuiteDescription&, unsigned int, char const*) [64] CxxTest::RealWorldDescription::numTotalTests() const
+  [50] CxxTest::TestTracker::enterTest(CxxTest::TestDescription const&) [81] CxxTest::RealSuiteDescription::next() [42] CxxTest::DummySuiteDescription::testDescription(unsigned int) const
+  [51] CxxTest::TestTracker::leaveTest(CxxTest::TestDescription const&) [82] CxxTest::RealSuiteDescription::firstTest() [34] CxxTest::DummyWorldDescription::suiteDescription(unsigned int) const
+  [73] CxxTest::TestTracker::TestTracker() [83] CxxTest::RealSuiteDescription::RealSuiteDescription(char const*, unsigned int, char const*, CxxTest::List&) [38] CxxTest::StaticSuiteDescription::suite() const
+  [32] CxxTest::ErrorPrinter::Adapter::flush() [84] CxxTest::RealWorldDescription::setUp() [65] CxxTest::List::size() const
+  [74] CxxTest::ErrorPrinter::Adapter::~Adapter() [85] CxxTest::RealWorldDescription::tearDown() [8] std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  [39] CxxTest::ErrorPrinter::Adapter::operator<<(void (*)(CxxTest::OutputStream&)) [86] CxxTest::DummyWorldDescription::DummyWorldDescription() [5] std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)

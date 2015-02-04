@@ -181,6 +181,8 @@ public:
                 result_tester.CompareToHistoricalResults(handler, r_model_name, r_proto_name, r_outputs, 0.005, 1e-4); // 0.5% rel tol
             }
         }
+
+        result_tester.ReportResults();
     }
 };
 

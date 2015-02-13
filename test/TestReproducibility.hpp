@@ -53,6 +53,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolRunner.hpp"
 
 #include "UsefulFunctionsForProtocolTesting.hpp"
+#include "ProtoHelperMacros.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
 /**
@@ -120,7 +121,7 @@ public:
 //        outputs_to_check["Ito_block"] = boost::assign::list_of("scaled_resting_potential")("scaled_APD90")("detailed_voltage");
         outputs_to_check["NCX_block"] = boost::assign::list_of("scaled_resting_potential")("scaled_APD90")("detailed_voltage");
         outputs_to_check["RyR_block"] = boost::assign::list_of("scaled_APD90")("detailed_voltage");
-        outputs_to_check["S1S2"] = boost::assign::list_of("APD90");
+        outputs_to_check["S1S2"] = boost::assign::list_of("S1S2_slope"); // NB: Must be different from outputs checked in TestFunctionalCurationLiteratePaper!
         outputs_to_check["SteadyStateRestitution"] = boost::assign::list_of("APD")("restitution_slope");
         outputs_to_check["SteadyStateRunner"] = boost::assign::list_of("num_paces")("detailed_voltage");
         outputs_to_check["SteadyStateRunner0_5Hz"] = boost::assign::list_of("num_paces")("detailed_voltage");
@@ -171,6 +172,17 @@ public:
                     FileFinder cellml_file("projects/FunctionalCuration/cellml/" + r_model_name + ".cellml", RelativeTo::ChasteSourceRoot);
                     ProtocolFileFinder proto_file("projects/FunctionalCuration/protocols/" + r_proto_name + ".txt", RelativeTo::ChasteSourceRoot);
                     ProtocolRunner runner(cellml_file, proto_file, handler.GetRelativePath());
+                    std::vector<std::string> input_names = boost::assign::list_of("max_paces")("max_steady_state_beats");
+                    BOOST_FOREACH(std::string input, input_names)
+                    {
+                        try
+                        {
+                            runner.GetProtocol()->SetInput(input, CONST(1000));
+                            std::cout << "Set " << input << " to 1000 for " << r_proto_name << std::endl;
+                        }
+                        catch (const Exception &) // Input doesn't exist, so do nothing
+                        {}
+                    }
                     runner.RunProtocol();
                 }
                 catch (Exception& e)
@@ -182,6 +194,8 @@ public:
             }
         }
 
+        /* Turn off process isolation before communicating to summarise results. */
+        PetscTools::IsolateProcesses(false);
         result_tester.ReportResults();
     }
 };

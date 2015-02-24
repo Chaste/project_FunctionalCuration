@@ -183,6 +183,8 @@ public:
                         catch (const Exception &) // Input doesn't exist, so do nothing
                         {}
                     }
+                    // Re-run the protocol's library, since it may depend on protocol inputs
+                    runner.GetProtocol()->InitialiseLibrary(true);
                     runner.RunProtocol();
                 }
                 catch (Exception& e)

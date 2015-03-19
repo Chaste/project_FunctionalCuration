@@ -399,9 +399,11 @@ public:
         unsigned num_local_failures = mFailedCombinations.size();
         unsigned total_num_failures = 0u;
         MPI_Allreduce(&num_local_failures, &total_num_failures, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
+        unsigned total_num_combinations = 0u;
+        MPI_Allreduce(&mNumCombinations, &total_num_combinations, 1, MPI_UNSIGNED, MPI_SUM, PetscTools::GetWorld());
         if (PetscTools::AmMaster())
         {
-            std::cout << std::endl << "Ran " << mNumCombinations << " model / protocol combinations." << std::endl;
+            std::cout << std::endl << "Ran " << total_num_combinations << " model / protocol combinations." << std::endl;
             if (total_num_failures > 0u)
             {
                 std::cout << "Failed " << total_num_failures << " unexpectedly:" << std::endl;

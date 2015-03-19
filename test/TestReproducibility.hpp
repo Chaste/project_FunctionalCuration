@@ -71,31 +71,32 @@ public:
                                                                 ("beeler_reuter_model_1977")
 //                                                                ("benson_epicardial_2008")
 //                                                                ("bernus_wilders_zemlin_verschelde_panfilov_2002")
-                                                                ("bondarenko_szigeti_bett_kim_rasmusson_2004_apical")
+//                                                                ("bondarenko_szigeti_bett_kim_rasmusson_2004_apical")
                                                                 ("carro_2011_epi")
 //                                                                ("clancy_rudy_2002")
-//                                                                ("courtemanche_ramirez_nattel_1998") // -EPV
+//                                                                ("courtemanche_ramirez_nattel_1998")
                                                                 ("decker_2009")
-                                                                ("difrancesco_noble_model_1985") // -EPV
+                                                                ("difrancesco_noble_model_1985")
 //                                                                ("earm_noble_model_1990")
                                                                 ("fink_noble_giles_model_2008")
                                                                 ("grandi_pasqualini_bers_2010_ss")
-                                                                ("iyer_2004") // EPV?
+//                                                                ("iyer_2004")
 //                                                                ("iyer_model_2007")
-                                                                ("li_mouse_2010") // -EPV
+                                                                ("li_mouse_2010")
                                                                 ("luo_rudy_1991")
                                                                 ("mahajan_shiferaw_2008")
-//                                                                ("maleckar_model_2009") // -EPV
+//                                                                ("maleckar_model_2009")
 //                                                                ("matsuoka_model_2003")
 //                                                                ("noble_model_1991")
 //                                                                ("noble_model_1998")
                                                                 ("ohara_rudy_2011_epi")
-                                                                ("priebe_beuckelmann_1998")
+//                                                                ("priebe_beuckelmann_1998")
 //                                                                ("sachse_moreno_abildskov_2008_b")
                                                                 ("shannon_wang_puglisi_weber_bers_2004")
 //                                                                ("ten_tusscher_model_2004_endo")
                                                                 ("ten_tusscher_model_2006_epi")
 //                                                                ("winslow_model_1999")
+//                                                                ("zhang_SAN_model_2000_0D_capable")
                                                                 ;
         if (CommandLineArguments::Instance()->OptionExists("--models"))
         {

@@ -71,7 +71,7 @@ template<typename VECTOR>
 void AbstractTemplatedSystemWithOutputs<VECTOR>::ProcessOutputsInfo()
 {
     const AbstractUntemplatedParameterisedSystem * const p_this = dynamic_cast<const AbstractUntemplatedParameterisedSystem *>(this);
-    assert(p_this);
+    assert(bool(p_this));
 
     this->mOutputNames.reserve(mOutputsInfo.size() + mVectorOutputsInfo.size());
     this->mOutputUnits.reserve(mOutputsInfo.size() + mVectorOutputsInfo.size());

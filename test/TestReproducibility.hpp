@@ -193,7 +193,7 @@ public:
                     OUR_WARN(e.GetMessage(), r_model_name, r_proto_name);
                 }
                 std::vector<std::string>& r_outputs = outputs_to_check[r_proto_name];
-                result_tester.CompareToHistoricalResults(handler, r_model_name, r_proto_name, r_outputs, 0.005, 1e-4); // 0.5% rel tol
+                result_tester.CompareToHistoricalResults(handler, r_model_name, r_proto_name, r_outputs, 0.005, 2.5e-4); // 0.5% rel tol
             }
         }
 

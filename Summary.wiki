@@ -18,7 +18,7 @@ For work on applying Functional Curation to the cell-based side of Chaste, see o
 
 == Installation ==
 
-This project requires the Chaste source tree to be installed, and you to have write access, in order to be usable.
+This project requires the Chaste source tree to be installed, and you to have write access to your local copy, in order to be usable.
 You will thus need to [wiki:InstallGuides/InstallGuide install Chaste's dependencies] and build the Chaste software yourself.
 The easiest way to do this is using an Ubuntu machine (or an Ubuntu virtual machine) as discussed on InstallGuides/UbuntuPackage.
 For manual installation of each dependency, on any version of Linux, see DeveloperInstallGuide.

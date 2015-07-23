@@ -203,9 +203,10 @@ public:
          * @param rStrides  how far the internal pointer should be incremented to progress along each dimension
          * @param rExtents  the shape of the array being iterated over
          */
-        IteratorImpl(VALUE* pEntry, const Indices& rIndices,
-                              const std::vector<RangeIndex>& rStrides,
-                              const Extents& rExtents)
+        IteratorImpl(VALUE* pEntry,
+                     const Indices& rIndices,
+                     const std::vector<RangeIndex>& rStrides,
+                     const Extents& rExtents)
             : mPointer(pEntry),
               mIndices(rIndices),
               mpStrides(&rStrides),

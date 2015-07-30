@@ -42,40 +42,55 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DebugProto.hpp"
 
 AssignmentStatement::AssignmentStatement(const std::string& rNameToAssign,
-                                         const AbstractExpressionPtr pRhs)
+                                         const AbstractExpressionPtr pRhs,
+                                         bool optional)
     : mNamesToAssign(1, rNameToAssign),
-      mpRhs(pRhs)
+      mpRhs(pRhs),
+      mOptional(optional)
 {}
 
 AssignmentStatement::AssignmentStatement(const std::vector<std::string>& rNamesToAssign,
-                                         const AbstractExpressionPtr pRhs)
+                                         const AbstractExpressionPtr pRhs,
+                                         bool optional)
     : mNamesToAssign(rNamesToAssign),
-      mpRhs(pRhs)
+      mpRhs(pRhs),
+      mOptional(optional)
 {}
 
 AbstractValuePtr AssignmentStatement::operator()(Environment& rEnv) const
 {
-    AbstractValuePtr p_rhs_value = (*mpRhs)(rEnv);
-    const unsigned num_names = mNamesToAssign.size();
-    if (num_names > 1)
+    AbstractValuePtr p_rhs_value;
+    try
     {
-        PROTO_ASSERT(p_rhs_value->IsTuple(),
-                     "When assigning multiple names the value to assign must be a tuple.");
-        TupleValue* p_tuple = static_cast<TupleValue*>(p_rhs_value.get());
-        PROTO_ASSERT(p_tuple->GetNumItems() == num_names,
-                     "Cannot assign " << p_tuple->GetNumItems() << " values to " << num_names << " names.");
-        for (unsigned i=0; i<num_names; ++i)
-        {
-            rEnv.DefineName(mNamesToAssign[i], p_tuple->GetItem(i), GetLocationInfo());
-        }
+        p_rhs_value = (*mpRhs)(rEnv);
     }
-    else
+    catch (const Exception& r_e)
     {
-        rEnv.DefineName(mNamesToAssign.front(), p_rhs_value, GetLocationInfo());
-        if (GetTrace())
+        if (!mOptional) throw;
+    }
+    if (p_rhs_value)
+    {
+        const unsigned num_names = mNamesToAssign.size();
+        if (num_names > 1)
         {
-            TRACE_PROTO("Assign " << mNamesToAssign.front() << " <- " << p_rhs_value
-                        << " at " << GetLocationInfo() << std::endl);
+            PROTO_ASSERT(p_rhs_value->IsTuple(),
+                         "When assigning multiple names the value to assign must be a tuple.");
+            TupleValue* p_tuple = static_cast<TupleValue*>(p_rhs_value.get());
+            PROTO_ASSERT(p_tuple->GetNumItems() == num_names,
+                         "Cannot assign " << p_tuple->GetNumItems() << " values to " << num_names << " names.");
+            for (unsigned i=0; i<num_names; ++i)
+            {
+                rEnv.DefineName(mNamesToAssign[i], p_tuple->GetItem(i), GetLocationInfo());
+            }
+        }
+        else
+        {
+            rEnv.DefineName(mNamesToAssign.front(), p_rhs_value, GetLocationInfo());
+            if (GetTrace())
+            {
+                TRACE_PROTO("Assign " << mNamesToAssign.front() << " <- " << p_rhs_value
+                            << " at " << GetLocationInfo() << std::endl);
+            }
         }
     }
     return boost::make_shared<NullValue>();

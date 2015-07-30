@@ -64,6 +64,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VectorStepper.hpp"
 #include "WhileStepper.hpp"
 
+/** The namespace for our protocol language */
+#define PROTO_NS X("https://chaste.cs.ox.ac.uk/nss/protocol/0.1#")
+
 /**
  * Implementation of the protocol file parser, containing methods to parse all the different
  * constructs.  We use a separate class for this, rather than putting all the methods in the
@@ -116,13 +119,18 @@ public:
         }
         // Output specifications for imported protocol
         std::vector<DOMElement*> outputs = XmlTools::FindElements(pDefnElt, "selectOutput");
-        std::vector<std::string> output_specs;
+        std::vector<std::pair<std::string, bool> > output_specs;
         BOOST_FOREACH(DOMElement* p_output, outputs)
         {
             SetContext(p_output);
             PROTO_ASSERT(p_output->hasAttribute(X("name")), "A selectOutput element must specify an output name.");
             std::string output_name = X2C(p_output->getAttribute(X("name")));
-            output_specs.push_back(output_name);
+            bool optional = false;
+            if (p_output->hasAttribute(X("optional")))
+            {
+                optional = (X2C(p_output->getAttribute(X("optional"))) == "true");
+            }
+            output_specs.push_back(std::make_pair(output_name, optional));
         }
         AbstractSimulationPtr p_sim(new NestedProtocol(p_proto, input_specs, output_specs));
         return p_sim;
@@ -529,11 +537,16 @@ public:
                          << children.size() << ".");
             std::string assignee_type = X2C(children[1]->getLocalName());
             AbstractExpressionPtr p_rhs = ParseExpression(children[2]);
+            bool optional = false;
+            if (pElement->hasAttributeNS(PROTO_NS, X("optional")))
+            {
+                optional = (X2C(pElement->getAttributeNS(PROTO_NS, X("optional"))) == "true");
+            }
             if (assignee_type == "ci")
             {
                 // Single assignment
                 std::string assignee = X2C(children[1]->getTextContent());
-                p_stmt = ASSIGN_STMT(assignee, p_rhs);
+                p_stmt = boost::make_shared<AssignmentStatement>(assignee, p_rhs, optional);
             }
             else if (assignee_type == "apply")
             {
@@ -555,7 +568,7 @@ public:
                                  << X2C((*it)->getLocalName()) << ".");
                     assignees.push_back(X2C((*it)->getTextContent()));
                 }
-                p_stmt = ASSIGN_STMT(assignees, p_rhs);
+                p_stmt = boost::make_shared<AssignmentStatement>(assignees, p_rhs, optional);
             }
             else
             {
@@ -966,7 +979,12 @@ public:
             {
                 desc = X2C(p_spec_elt->getAttribute(X("description")));
             }
-            OutputSpecificationPtr p_spec(new OutputSpecification(var_ref, var_name, desc, units, type));
+            bool optional = false;
+            if (p_spec_elt->hasAttribute(X("optional")))
+            {
+                optional = (X2C(p_spec_elt->getAttribute(X("optional"))) == "true");
+            }
+            OutputSpecificationPtr p_spec(new OutputSpecification(var_ref, var_name, desc, units, type, optional));
             TransferContext(p_spec_elt, p_spec);
             variable_specs.push_back(p_spec);
         }

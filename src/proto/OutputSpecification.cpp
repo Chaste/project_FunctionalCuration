@@ -41,12 +41,14 @@ OutputSpecification::OutputSpecification(const std::string& rRef,
                                          const std::string& rName,
                                          const std::string& rDescription,
                                          const std::string& rUnits,
-                                         const std::string& rType)
+                                         const std::string& rType,
+                                         bool optional)
     : mRef(rRef),
       mName(rName),
       mDescription(rDescription),
       mUnits(rUnits),
-      mType(rType)
+      mType(rType),
+      mOptional(optional)
 {
     PROTO_ASSERT(mType == "Raw" || mType == "Post-processed",
                  "Incorrect output type '" << rType << "' specified; must be 'Raw' or 'Post-processed'.");
@@ -75,6 +77,11 @@ const std::string& OutputSpecification::rGetOutputUnits() const
 const std::string& OutputSpecification::rGetOutputType() const
 {
     return mType;
+}
+
+bool OutputSpecification::GetOptional() const
+{
+    return mOptional;
 }
 
 void OutputSpecification::SetOutputDescription(const std::string& rDescription)

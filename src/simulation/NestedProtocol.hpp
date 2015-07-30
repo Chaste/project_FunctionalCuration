@@ -61,11 +61,11 @@ public:
      *
      * @param pProtocol  the protocol itself
      * @param rInputSpecifications  expressions setting the value of some protocol inputs
-     * @param rOutputSpecifications  which protocol outputs are of interest
+     * @param rOutputSpecifications  which protocol outputs are of interest, and whether each is optional
      */
     NestedProtocol(ProtocolPtr pProtocol,
                    const std::map<std::string, AbstractExpressionPtr>& rInputSpecifications,
-                   const std::vector<std::string>& rOutputSpecifications);
+                   const std::vector<std::pair<std::string, bool> >& rOutputSpecifications);
 
     /**
      * Set the model being simulated by the nested protocol.
@@ -90,7 +90,7 @@ private:
     std::map<std::string, AbstractExpressionPtr> mInputSpecifications;
 
     /** Which protocol outputs are of interest. */
-    std::vector<std::string> mOutputSpecifications;
+    std::vector<std::pair<std::string, bool> > mOutputSpecifications;
 };
 
 #endif // NESTEDPROTOCOL_HPP_

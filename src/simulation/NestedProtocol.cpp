@@ -43,7 +43,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 NestedProtocol::NestedProtocol(ProtocolPtr pProtocol,
                                const std::map<std::string, AbstractExpressionPtr>& rInputSpecifications,
-                               const std::vector<std::string>& rOutputSpecifications)
+                               const std::vector<std::pair<std::string, bool> >& rOutputSpecifications)
     : AbstractSimulation(boost::shared_ptr<AbstractSystemWithOutputs>(), AbstractStepperPtr()),
       mpProtocol(pProtocol),
       mInputSpecifications(rInputSpecifications),
@@ -108,10 +108,20 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
     // Add only the selected protocol outputs
     EnvironmentPtr p_selected_outputs(new Environment);
     const Environment& r_proto_outputs = mpProtocol->rGetOutputsCollection();
-    BOOST_FOREACH(const std::string& r_output_name, mOutputSpecifications)
+    typedef std::pair<const std::string, bool> StringBoolPair;
+    BOOST_FOREACH(const StringBoolPair& r_output_spec, mOutputSpecifications)
     {
-        AbstractValuePtr p_value = r_proto_outputs.Lookup(r_output_name, GetLocationInfo());
-        p_selected_outputs->DefineName(r_output_name, p_value, GetLocationInfo());
+        const std::string& r_output_name = r_output_spec.first;
+        bool optional = r_output_spec.second;
+        try
+        {
+            AbstractValuePtr p_value = r_proto_outputs.Lookup(r_output_name, GetLocationInfo());
+            p_selected_outputs->DefineName(r_output_name, p_value, GetLocationInfo());
+        }
+        catch (const Exception& r_e)
+        {
+            if (!optional) throw;
+        }
     }
     AddIterationOutputs(pResults, p_selected_outputs);
     // Re-enable the event handler if it was in use

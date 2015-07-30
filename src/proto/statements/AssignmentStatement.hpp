@@ -55,18 +55,22 @@ public:
      *
      * @param rNameToAssign  the name to assign
      * @param pRhs  the expression to evaluate to obtain the value to assign to it
+     * @param optional  whether we expect that evaluating the RHS might fail
      */
     AssignmentStatement(const std::string& rNameToAssign,
-                        const AbstractExpressionPtr pRhs);
+                        const AbstractExpressionPtr pRhs,
+                        bool optional=false);
 
     /**
      * Create an assignment statement binding multiple names.
      *
      * @param rNamesToAssign  the names to assign
      * @param pRhs  the expression to evaluate to obtain the tuple of values to assign to them
+     * @param optional  whether we expect that evaluating the RHS might fail
      */
     AssignmentStatement(const std::vector<std::string>& rNamesToAssign,
-                        const AbstractExpressionPtr pRhs);
+                        const AbstractExpressionPtr pRhs,
+                        bool optional=false);
 
     /**
      * Execute this statement.
@@ -86,6 +90,9 @@ private:
 
     /** The expression to evaluate to obtain the value(s) to assign. */
     AbstractExpressionPtr mpRhs;
+
+    /** Whether we expect that evaluating the RHS might fail. */
+    bool mOptional;
 };
 
 #endif /* ASSIGNMENTSTATEMENT_HPP_ */

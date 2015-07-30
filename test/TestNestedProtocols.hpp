@@ -49,29 +49,10 @@ public:
     {
         std::string dirname = "TestNestedProtocols";
         ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/xml/test_nested_protocol.xml", RelativeTo::ChasteSourceRoot);
-        DoTest(dirname, proto_xml_file);
-    }
-
-    void TestCompactSyntax() throw (Exception)
-    {
-        std::string dirname = "TestNestedProtocol_Compact";
-        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_nested_protocol.txt", RelativeTo::ChasteSourceRoot);
-        DoTest(dirname, proto_xml_file);
-    }
-
-private:
-    void DoTest(const std::string& rDirName, const ProtocolFileFinder& rProtoFile) throw (Exception)
-    {
-        std::string model_name = "luo_rudy_1991";
-        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
-
-        ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
-        runner.RunProtocol();
-        FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);
-        TS_ASSERT(success_file.Exists());
+        ProtocolPtr p_proto = RunExp(dirname, proto_xml_file);
 
         // Check results
-        const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
+        const Environment& r_outputs = p_proto->rGetOutputsCollection();
         AbstractValuePtr p_peak_V = r_outputs.Lookup("peak_voltage", "test");
         AbstractValuePtr p_apd90 = r_outputs.Lookup("apd90", "test");
         TS_ASSERT_EQUALS(p_peak_V->GetUnits(), "mV");
@@ -90,6 +71,43 @@ private:
         peak_V.IncrementIndices(idxs);
         TS_ASSERT_DELTA(peak_V[idxs], 46.936, 4e-3);
         TS_ASSERT_DELTA(apd90[idxs], 361.847, 1e-3);
+    }
+
+    void TestCompactSyntax() throw (Exception)
+    {
+        std::string dirname = "TestNestedProtocol_Compact";
+        ProtocolFileFinder proto_xml_file("projects/FunctionalCuration/test/protocols/test_nested_protocol.txt", RelativeTo::ChasteSourceRoot);
+        ProtocolPtr p_proto = RunExp(dirname, proto_xml_file);
+
+        const Environment& r_outputs = p_proto->rGetOutputsCollection();
+        NdArray<double> V = GET_ARRAY(r_outputs.Lookup("V", "test"));
+        TS_ASSERT_EQUALS(V.GetNumDimensions(), 2u);
+        TS_ASSERT_EQUALS(V.GetShape()[0], 4u);
+        TS_ASSERT_EQUALS(V.GetShape()[1], 10u);
+        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("always_missing", "test"));
+//        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("some_missing", "test"));
+        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("first_missing", "test"));
+//        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("first_present", "test"));
+        // If only partial data is available the output shoudn't be returned, really
+        NdArray<double> some_missing = GET_ARRAY(r_outputs.Lookup("some_missing", "test"));
+        TS_ASSERT_EQUALS(some_missing.GetNumDimensions(), 1u);
+        TS_ASSERT_EQUALS(some_missing.GetShape()[0], 4u);
+        NdArray<double> first_present = GET_ARRAY(r_outputs.Lookup("first_present", "test"));
+        TS_ASSERT_EQUALS(first_present.GetNumDimensions(), 0u);
+}
+
+private:
+    ProtocolPtr RunExp(const std::string& rDirName, const ProtocolFileFinder& rProtoFile) throw (Exception)
+    {
+        std::string model_name = "luo_rudy_1991";
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/" + model_name + ".cellml", RelativeTo::ChasteSourceRoot);
+
+        ProtocolRunner runner(cellml_file, rProtoFile, rDirName);
+        runner.RunProtocol();
+        FileFinder success_file(rDirName + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+
+        return runner.GetProtocol();
     }
 };
 

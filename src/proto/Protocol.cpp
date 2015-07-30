@@ -265,9 +265,16 @@ void Protocol::Run()
             }
             catch (const Exception& e)
             {
-                std::cerr << mIndent << e.GetMessage();
-                errors.push_back(e);
-                WriteError(e);
+                if (p_spec->GetOptional())
+                {
+                    std::cerr << mIndent << "Ignoring missing optional output " << r_name << std::endl;
+                }
+                else
+                {
+                    std::cerr << mIndent << e.GetMessage();
+                    errors.push_back(e);
+                    WriteError(e);
+                }
             }
         }
     }
@@ -476,6 +483,7 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
     ///\todo Improve format?
     const Environment& r_outputs = rGetOutputsCollection();
     std::set<std::string> missing_outputs;
+    std::set<std::string> optional_outputs;
     // Variable metadata file
     {
         std::string index_file_name = rFileNameBase + "-contents.csv";
@@ -492,8 +500,15 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
             }
             catch (const Exception&)
             {
-                std::cerr << mIndent << "Missing protocol output '" << r_name << "'; ignoring for now." << std::endl;
-                missing_outputs.insert(r_name);
+                if (p_spec->GetOptional())
+                {
+                    optional_outputs.insert(r_name);
+                }
+                else
+                {
+                    std::cerr << mIndent << "Missing protocol output '" << r_name << "'; ignoring for now." << std::endl;
+                    missing_outputs.insert(r_name);
+                }
                 continue;
             }
             if (p_output->IsArray())
@@ -548,8 +563,11 @@ void Protocol::WriteToFile(const std::string& rFileNameBase)
                 }
                 catch (const Exception&)
                 {
-                    std::cerr << mIndent << "Plot requests protocol output '" << r_name << "', which has not been specified as an output." << std::endl;
-                    missing_outputs.insert(r_name);
+                    if (optional_outputs.find(r_name) == optional_outputs.end())
+                    {
+                        std::cerr << mIndent << "Plot requests protocol output '" << r_name << "', which has not been specified as an output." << std::endl;
+                        missing_outputs.insert(r_name);
+                    }
                     all_variables_exist = false;
                 }
             }

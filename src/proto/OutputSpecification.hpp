@@ -57,12 +57,14 @@ public:
      * @param rDescription  a longer human-friendly version of the name
      * @param rUnits  the output's units
      * @param rType  its type - must be "Raw" or "Post-processed"
+     * @param optional  whether this output is allowed to be undefined
      */
     OutputSpecification(const std::string& rRef,
                         const std::string& rName,
                         const std::string& rDescription,
                         const std::string& rUnits,
-                        const std::string& rType);
+                        const std::string& rType,
+                        bool optional=false);
 
     /** Get the name to lookup to find this output. */
     const std::string& rGetOutputRef() const;
@@ -78,6 +80,9 @@ public:
 
     /** Get the type of this output: "Raw" or "Post-processed". */
     const std::string& rGetOutputType() const;
+
+    /** Get whether this output is allowed to be undefined. */
+    bool GetOptional() const;
 
     /** Set the presentation name for this output. */
     void SetOutputDescription(const std::string& rDescription);
@@ -97,6 +102,9 @@ private:
 
     /** The type of this output. */
     std::string mType;
+
+    /** Whether this output is allowed to be undefined. */
+    bool mOptional;
 };
 
 #endif // OUTPUTSPECIFICATION_HPP_

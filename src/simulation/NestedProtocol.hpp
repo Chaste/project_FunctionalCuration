@@ -78,7 +78,8 @@ protected:
     /**
      * Run a simulation, filling in the results if requested.
      *
-     * @param pResults  an Environment to be filled in with results, which must be non-empty
+     * @param pResults  an Environment to be filled in with results, which must be non-empty.
+     *   If an entry in the environment is returned as a null value pointer, this signifies an optional output which was missing.
      */
     void Run(EnvironmentPtr pResults);
 

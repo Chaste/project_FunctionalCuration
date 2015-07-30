@@ -85,15 +85,10 @@ public:
         TS_ASSERT_EQUALS(V.GetShape()[0], 4u);
         TS_ASSERT_EQUALS(V.GetShape()[1], 10u);
         TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("always_missing", "test"));
-//        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("some_missing", "test"));
         TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("first_missing", "test"));
-//        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("first_present", "test"));
-        // If only partial data is available the output shoudn't be returned, really
-        NdArray<double> some_missing = GET_ARRAY(r_outputs.Lookup("some_missing", "test"));
-        TS_ASSERT_EQUALS(some_missing.GetNumDimensions(), 1u);
-        TS_ASSERT_EQUALS(some_missing.GetShape()[0], 4u);
-        NdArray<double> first_present = GET_ARRAY(r_outputs.Lookup("first_present", "test"));
-        TS_ASSERT_EQUALS(first_present.GetNumDimensions(), 0u);
+        // If only partial data is available the output shoudn't be returned either
+        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("some_missing", "test"));
+        TS_ASSERT_THROWS_ANYTHING(r_outputs.Lookup("first_present", "test"));
 }
 
 private:

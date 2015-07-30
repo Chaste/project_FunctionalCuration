@@ -496,7 +496,37 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults,
 
         BOOST_FOREACH(const std::string& r_output_name, pIterationOutputs->GetDefinedNames())
         {
-            AbstractValuePtr p_output = pIterationOutputs->Lookup(r_output_name, GetLocationInfo());
+            AbstractValuePtr p_output;
+            try
+            {
+                p_output = pIterationOutputs->Lookup(r_output_name, GetLocationInfo());
+            }
+            catch (const Exception&)
+            {
+                // Missing optional output.  Remove it from the results environment if it was already there.
+                // Note that we need to do this by remembering the content, clearing, and re-adding everything else!
+                if (!first_run)
+                {
+                    if (pResults->HasName(r_output_name, GetLocationInfo()))
+                    {
+                        std::map<std::string, AbstractValuePtr> other_results;
+                        BOOST_FOREACH(const std::string& r_name, pResults->GetDefinedNames())
+                        {
+                            if (r_name != r_output_name)
+                            {
+                                other_results[r_name] = pResults->Lookup(r_name, GetLocationInfo());
+                            }
+                        }
+                        pResults->Clear();
+                        typedef std::pair<std::string, AbstractValuePtr> NameValuePair;
+                        BOOST_FOREACH(const NameValuePair& r_name_value, other_results)
+                        {
+                            pResults->DefineName(r_name_value.first, r_name_value.second, GetLocationInfo());
+                        }
+                    }
+                }
+                continue; // Skip to next output
+            }
             PROTO_ASSERT(p_output->IsArray(),
                          "Model produced non-array output " << r_output_name << ".");
             const NdArray<double> output_array = GET_ARRAY(p_output);
@@ -525,13 +555,23 @@ void AbstractSimulation::AddIterationOutputs(EnvironmentPtr pResults,
             }
             else
             {
+                // Check for a previously missing optional output
+                AbstractValuePtr p_result;
+                try
+                {
+                    p_result = pResults->Lookup(r_output_name, GetLocationInfo());
+                }
+                catch (const Exception&)
+                {
+                    continue; // Skip to next output
+                }
                 // Check the sub array shape matches the original run
                 PROTO_ASSERT(output_shape == mModelOutputShapes[outputNamePrefix + r_output_name],
                              "The outputs of a model must not change shape during a simulation; output "
                              << outputNamePrefix + r_output_name << " with shape now " << output_shape
                              << " does not match the original shape "
                              << mModelOutputShapes[outputNamePrefix + r_output_name] << ".");
-                result_array = GET_ARRAY(pResults->Lookup(r_output_name, GetLocationInfo()));
+                result_array = GET_ARRAY(p_result);
             }
 
             // Add model output into result array

@@ -113,15 +113,17 @@ void NestedProtocol::Run(EnvironmentPtr pResults)
     {
         const std::string& r_output_name = r_output_spec.first;
         bool optional = r_output_spec.second;
+        AbstractValuePtr p_value;
         try
         {
-            AbstractValuePtr p_value = r_proto_outputs.Lookup(r_output_name, GetLocationInfo());
-            p_selected_outputs->DefineName(r_output_name, p_value, GetLocationInfo());
+            p_value = r_proto_outputs.Lookup(r_output_name, GetLocationInfo());
         }
         catch (const Exception& r_e)
         {
             if (!optional) throw;
         }
+        // An empty p_value signals to the caller that an optional output is missing
+        p_selected_outputs->DefineName(r_output_name, p_value, GetLocationInfo());
     }
     AddIterationOutputs(pResults, p_selected_outputs);
     // Re-enable the event handler if it was in use

@@ -770,7 +770,7 @@ void OdeSystemInformation<Aslanidi_Purkinje_model_2009FromCellMLCvodeLHopitaled>
     this->mVariableUnits.push_back("millimolar");
     this->mInitialConditions.push_back(1.1433050636518596);
 
-    this->mVariableNames.push_back("diadicspace_calcium_concentration");
+    this->mVariableNames.push_back("dyadic_space_calcium_concentration");
     this->mVariableUnits.push_back("millimolar");
     this->mInitialConditions.push_back(0.00022418117117903934);
 

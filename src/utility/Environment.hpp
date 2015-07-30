@@ -128,6 +128,14 @@ public:
     void Clear();
 
     /**
+     * Test whether a name is defined in this environment, or its delegatees (if a prefixed name is given).
+     *
+     * @param rName  the name to check
+     * @param rCallerLocation  location information to use in error backtrace if a prefix doesn't match any delegatee
+     */
+    bool HasName(const std::string& rName, const std::string& rCallerLocation="<anon>") const;
+
+    /**
      * Look up a name in the environment and return the mapped value.
      * @param rName  the name to look up
      * @param rCallerLocation  location information to use in error backtrace if name isn't defined

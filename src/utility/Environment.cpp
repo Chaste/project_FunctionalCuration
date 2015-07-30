@@ -149,6 +149,26 @@ void Environment::Clear()
 }
 
 
+bool Environment::HasName(const std::string& rName, const std::string& rCallerLocation) const
+{
+    bool found = false;
+    if (mBindings.find(rName) != mBindings.end())
+    {
+        found = true;
+    }
+    else if (!mpDelegateeEnvs.empty())
+    {
+        std::string name = rName;
+        EnvironmentCPtr delegatee = FindDelegatee(*this, name, rCallerLocation);
+        if (delegatee)
+        {
+            found = delegatee->HasName(name);
+        }
+    }
+    return found;
+}
+
+
 AbstractValuePtr Environment::Lookup(const std::string& rName, const std::string& rCallerLocation) const
 {
     AbstractValuePtr p_result;
@@ -321,4 +341,3 @@ std::string Environment::FreshIdent()
 
 
 unsigned Environment::mNextFreshIdent = 0u;
-

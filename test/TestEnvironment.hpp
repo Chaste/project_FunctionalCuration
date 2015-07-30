@@ -61,7 +61,9 @@ public:
         const std::string name = "a_test_value";
 
         TS_ASSERT_THROWS_CONTAINS(env.Lookup(name), "Name " + name + " is not defined in this environment.");
+        TS_ASSERT(!env.HasName(name));
         env.DefineName(name, p_val, "");
+        TS_ASSERT(env.HasName(name));
         TS_ASSERT_EQUALS(env.Lookup(name), p_val);
         TS_ASSERT_EQUALS(env.GetNumberOfDefinitions(), 1u);
         TS_ASSERT_EQUALS(env.GetDefinedNames(), boost::assign::list_of(name));
@@ -96,6 +98,7 @@ public:
         // Test clearing an environment
         env.Clear();
         TS_ASSERT_EQUALS(env.GetNumberOfDefinitions(), 0u);
+        TS_ASSERT(!env.HasName(name));
         env.DefineName(name, p_val, "");
         TS_ASSERT_EQUALS(env.Lookup(name), p_val);
         TS_ASSERT_THROWS_CONTAINS(env.RemoveDefinition(name, ""),
@@ -144,6 +147,8 @@ public:
         const std::string name = "test_value";
         AbstractValuePtr p_val = CV(123.4);
         root_env.DefineName(name, p_val, "");
+        TS_ASSERT(root_env.HasName(name));
+        TS_ASSERT(top_env.HasName(name));
         TS_ASSERT_EQUALS(top_env.Lookup(name), p_val);
 
         AbstractValuePtr p_val2 = CV(432.1);
@@ -178,8 +183,12 @@ public:
         TS_ASSERT_THROWS_CONTAINS(env.DefineName("a:b", p_one, ""),
                                   "Names such as 'a:b' containing a colon are not allowed.");
 
+        TS_ASSERT(root_env.HasName("a:a"));
+        TS_ASSERT(root_env.HasName("b:b"));
         TS_ASSERT_EQUALS(root_env.Lookup("a:a"), p_one);
         TS_ASSERT_EQUALS(root_env.Lookup("b:b"), p_two);
+        TS_ASSERT(env.HasName("a:a"));
+        TS_ASSERT(env.HasName("b:b"));
         TS_ASSERT_EQUALS(env.Lookup("a:a"), p_one);
         TS_ASSERT_EQUALS(env.Lookup("b:b"), p_two);
 

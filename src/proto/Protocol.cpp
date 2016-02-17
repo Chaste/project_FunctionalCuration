@@ -734,7 +734,7 @@ void Protocol::GeneratePlots(const std::string& rFileNameBase)
             try
             {
                 AbstractValuePtr p_key = r_outputs.Lookup(r_name);
-                if (!p_key->IsArray() || !GET_ARRAY(p_key).GetNumDimensions() == 1u)
+                if (!p_key->IsArray() || !(GET_ARRAY(p_key).GetNumDimensions() == 1u))
                 {
                     std::cerr << mIndent << "Cannot plot non-vector key variable '" << r_name << "'." << std::endl;
                     missing_array = true;

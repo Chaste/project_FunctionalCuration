@@ -295,7 +295,9 @@ public:
 
         /**
          * Advance this iterator n positions, by repeatedly incrementing it.
-         * This isn't efficient, and is only here to support tests.
+         * This isn't efficient, and is only really here to support tests.
+         * It underlies operator+= and operator+.
+         *
          * @param n  how far to advance
          */
         void advance(typename boost::iterator_facade<IteratorImpl<VALUE>, VALUE, boost::forward_traversal_tag>::difference_type n)
@@ -304,6 +306,37 @@ public:
             {
                 increment();
             }
+        }
+    
+    public:
+        /**
+         * Advance this iterator n positions, by repeatedly incrementing it.
+         * This isn't efficient, and is only really here to support tests.
+         *
+         * We can't use the iterator_facade implementation because in gcc 5 the more stringent checking
+         * of what is allowed for a forward_traversal_tag iterator disables the operator.
+         *
+         * @param n  how far to advance
+         */
+        IteratorImpl<VALUE>& operator+=(typename boost::iterator_facade<IteratorImpl<VALUE>, VALUE, boost::forward_traversal_tag>::difference_type n)
+        {
+            advance(n);
+            return *this;
+        }
+
+        /**
+         * Return an iterator n positions beyond this iterator, by repeatedly incrementing.
+         * This isn't efficient, and is only really here to support tests.
+         *
+         * We can't use the iterator_facade implementation because in gcc 5 the more stringent checking
+         * of what is allowed for a forward_traversal_tag iterator disables the operator.
+         *
+         * @param n  how far to advance
+         */
+        IteratorImpl<VALUE> operator+(typename boost::iterator_facade<IteratorImpl<VALUE>, VALUE, boost::forward_traversal_tag>::difference_type n)
+        {
+            IteratorImpl<VALUE> tmp(*this);
+            return tmp += n;
         }
 
 #ifdef __INTEL_COMPILER

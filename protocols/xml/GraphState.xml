@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<?xml-model href="src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
+<?xml-model href="../../src/proto/parsing/protocol.rnc" type="application/relax-ng-compact-syntax"?>
 <protocol xmlns="https://chaste.cs.ox.ac.uk/nss/protocol/0.1#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:oxmeta="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#">
@@ -9,11 +9,15 @@
         <cellml:units name="ms">
             <cellml:unit units="second" prefix="milli"/>
         </cellml:units>
+        <cellml:units name="mV">
+            <cellml:unit units="volt" prefix="milli"/>
+        </cellml:units>
     </units>
     
     <modelInterface>
         <setIndependentVariableUnits units="ms"/>
         <specifyOutputVariable name="oxmeta:state_variable"/>
+        <specifyOutputVariable name="oxmeta:membrane_voltage" units="mV"/>
         <specifyOutputVariable name="oxmeta:time"/>
     </modelInterface>
     
@@ -126,14 +130,21 @@
     <outputVariables>
         <raw name="raw_state" description="State variables (raw)" ref="sim:state_variable"/>
         <postprocessed units="various" name="state" description="State variables" ref="state_trans"/>
+        <raw name="voltage" ref="sim:membrane_voltage" description="Transmembrane voltage"/>
         <raw name="time" ref="sim:time" description="Time"/>
     </outputVariables>
     
     <plots>
         <plot>
-            <title>State variables</title>
+            <title>All state variables</title>
             <x>time</x>
             <y>state</y>
+            <using>lines</using>
+        </plot>
+        <plot>
+            <title>Transmembrane voltage</title>
+            <x>time</x>
+            <y>voltage</y>
             <using>lines</using>
         </plot>
     </plots>

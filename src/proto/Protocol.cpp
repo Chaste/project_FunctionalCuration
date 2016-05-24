@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Protocol.hpp"
 
 #include <cassert>
+#include <cctype>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -432,16 +433,20 @@ void Protocol::RunAndWrite(const std::string fileNameBase)
 }
 
 
+/**
+ * Strip any potential problem characters from a file name, working on a whitelist basis.
+ * @param rFileName  the input file name
+ * @return  a definitely safe file name
+ */
 std::string SanitiseFileName(const std::string& rFileName)
 {
     std::string name = rFileName;
-    FileFinder::ReplaceSpacesWithUnderscores(name);
-    // Strip quote characters
     for (std::string::iterator it = name.begin(); it != name.end(); ++it)
     {
-        while (*it == '\'' || *it == '"' || *it == '`'  || *it == '(' || *it == ')')
+        // Only allow known-good characters (c.f. http://www.boost.org/doc/libs/1_61_0/libs/filesystem/doc/portability_guide.htm)
+        if (! (isalnum(*it) || *it == '_' || *it == '-' || *it == '.'))
         {
-            it = name.erase(it);
+            *it = '_';
         }
     }
     return name;

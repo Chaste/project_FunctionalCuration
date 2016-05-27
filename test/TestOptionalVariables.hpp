@@ -40,13 +40,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cxxtest/TestSuite.h>
 
 #include "ProtocolRunner.hpp"
-#include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
 
 #include "FileFinder.hpp"
-#include "OutputFileHandler.hpp"
 
-#include "FileComparison.hpp"
+#include "PetscSetupAndFinalize.hpp"
 
 class TestOptionalVariables : public CxxTest::TestSuite
 {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- A CellML version of dV/dt = 1 -->
+<!-- A CellML version of dV/dt = a; a = 1 -->
 <model xmlns="http://www.cellml.org/cellml/1.0#"
     xmlns:cellml="http://www.cellml.org/cellml/1.0#"
     xmlns:cmeta="http://www.cellml.org/metadata/1.0#"
@@ -21,13 +21,20 @@
     <component name="main">
         <variable name="time" units="ms" cmeta:id="time"/>
         <variable name="V" units="mV" cmeta:id="V" initial_value="0"/>
+        <variable name="a" units="mV_per_ms" initial_value="1" cmeta:id="a"/>
+        <variable name="b" units="mV_per_ms" cmeta:id="b"/>
         <math xmlns="http://www.w3.org/1998/Math/MathML"> 
             <apply><eq/> 
                 <apply><diff/> 
                     <bvar><ci>time</ci></bvar> 
                     <ci>V</ci> 
                 </apply>
-                <cn cellml:units="mV_per_ms">1</cn>
+                <ci>a</ci>
+            </apply>
+            <!-- Also have a computed version of the parameter, for covering different cases in tests -->
+            <apply><eq/>
+                <ci>b</ci>
+                <cn cellml:units="mV_per_ms">-1</cn>
             </apply>
         </math>
     </component>
@@ -39,6 +46,12 @@
         </rdf:Description>
         <rdf:Description rdf:about="#V">
             <bqbiol:is rdf:resource="https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#membrane_voltage"/>
+        </rdf:Description>
+        <rdf:Description rdf:about="#a">
+            <bqbiol:is rdf:resource="urn:test-ns#parameter_a"/>
+        </rdf:Description>
+        <rdf:Description rdf:about="#b">
+            <bqbiol:is rdf:resource="urn:test-ns#parameter_b"/>
         </rdf:Description>
     </rdf:RDF>
     

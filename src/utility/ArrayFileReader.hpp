@@ -40,8 +40,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NdArray.hpp"
 
 /**
- * This class reads simple whitespace separated column data files into n-dimensional arrays.
- * The first dimension scans over rows, the second over columns.
+ * This class reads simple whitespace- or comma-separated column data files into 2-dimensional arrays.
+ * The first dimension scans over columns, the second over rows, so a file with 2 columns
+ * and 4 rows would have shape [2, 4].
+ * It is capable of reading 2d data output by the Functional Curation code, but not the generic n-d
+ * array format.
  */
 class ArrayFileReader
 {

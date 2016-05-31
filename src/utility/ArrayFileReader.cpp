@@ -76,53 +76,50 @@ NdArray<double> ArrayFileReader::ReadFile(const FileFinder& rDataFile)
     unsigned num_rows = 1000u; // Guess a value; we'll adjust as we read
     unsigned num_rows_read = 1u;
     // Create the result array
-    NdArray<double>::Extents shape = boost::assign::list_of(num_rows)(num_cols);
+    NdArray<double>::Extents shape = boost::assign::list_of(num_cols)(num_rows);
     NdArray<double> array(shape);
+    NdArray<double>::Indices idxs = array.GetIndices();
     // Fill in the first row (read above)
-    NdArray<double>::Iterator array_it = array.Begin();
-    BOOST_FOREACH(datum, data)
+    for (unsigned i=0; i<num_cols; i++)
     {
-        *array_it++ = datum;
+        idxs[0] = i;
+        array[idxs] = data[i];
     }
     // Read the rest of the file
     while (file.good())
     {
-        if (num_rows_read == shape[0])
+        if (num_rows_read == shape[1])
         {
-            // Record where the iterator will need to point to after resizing
-            NdArray<double>::Indices idxs = shape;
-            idxs[1] = 0u;
             // Extend array
-            shape[0] += 1000u;
+            shape[1] += 1000u;
             array.Resize(shape);
-            // Adjust the iterator to point at the new array location
-            array_it = NdArray<double>::Iterator(idxs, array);
         }
         getline(file, line);
         std::istringstream line_stream(line);
-        unsigned items_read = 0u;
+        idxs[0] = 0u;
+        idxs[1] = num_rows_read;
         while (line_stream.good())
         {
             line_stream >> datum;
             if (!line_stream.fail())
             {
-                EXCEPT_IF_NOT(items_read < num_cols);
-                *array_it++ = datum;
-                items_read++;
+                EXCEPT_IF_NOT(idxs[0] < num_cols);
+                array[idxs] = datum;
+                idxs[0]++;
             }
             if (csv)
             {
                 line_stream.get(); // discard comma
             }
         }
-        EXCEPT_IF_NOT(items_read == num_cols || items_read == 0u);
-        if (items_read > 0u)
+        EXCEPT_IF_NOT(idxs[0] == num_cols || idxs[0] == 0u);
+        if (idxs[0] > 0u)
         {
             num_rows_read++;
         }
     }
     // Adjust final result size
-    shape[0] = num_rows_read;
+    shape[1] = num_rows_read;
     array.Resize(shape);
     return array;
 }

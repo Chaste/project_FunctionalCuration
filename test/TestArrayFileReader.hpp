@@ -54,10 +54,11 @@ public:
         NdArray<double> data = reader.ReadFile(data_file);
 
         TS_ASSERT_EQUALS(data.GetNumDimensions(), 2u);
-        TS_ASSERT_EQUALS(data.GetShape()[0], 135u);
-        TS_ASSERT_EQUALS(data.GetShape()[1], 3u);
+        TS_ASSERT_EQUALS(data.GetShape()[0], 3u);
+        TS_ASSERT_EQUALS(data.GetShape()[1], 135u);
 
         TS_ASSERT_DELTA(*data.Begin(), 0.85, 1e-12);
+        TS_ASSERT_DELTA(*(data.Begin() + 135), 0.833337, 1e-12);
         TS_ASSERT_DELTA(*(data.Begin() + (135*3-1)), 18.556, 1e-12);
     }
 
@@ -70,13 +71,13 @@ public:
         NdArray<double> data = reader.ReadFile(data_file);
 
         TS_ASSERT_EQUALS(data.GetNumDimensions(), 2u);
-        TS_ASSERT_EQUALS(data.GetShape()[0], 4050u);
-        TS_ASSERT_EQUALS(data.GetShape()[1], 3u);
+        TS_ASSERT_EQUALS(data.GetShape()[0], 3u);
+        TS_ASSERT_EQUALS(data.GetShape()[1], 4050u);
 
         TS_ASSERT_DELTA(*data.Begin(), 0.85, 1e-12);
-        TS_ASSERT_DELTA(*(data.Begin() + (135*3-1)), 18.556, 1e-12);
+        TS_ASSERT_DELTA(*(data.Begin() + 1), 1.39167, 1e-12);
+        TS_ASSERT_DELTA(*(data.Begin() + 4050), 0.833337, 1e-12);
         TS_ASSERT_DELTA(*(data.Begin() + (135*9*3)), 0.85, 1e-12);
-        TS_ASSERT_DELTA(*(data.Begin() + (1350*3-1)), 18.556, 1e-12);
         TS_ASSERT_DELTA(*(data.Begin() + (4050*3-1)), 18.556, 1e-12);
     }
 };

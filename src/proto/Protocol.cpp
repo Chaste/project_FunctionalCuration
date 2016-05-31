@@ -56,6 +56,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ExceptionSet.hpp"
 #include "DebugProto.hpp"
 #include "ProtocolTimer.hpp"
+#include "FileLoader.hpp"
 
 // Typedefs for use with BOOST_FOREACH and std::maps
 typedef std::pair<std::string, std::string> StringPair;
@@ -101,6 +102,8 @@ void Protocol::FinaliseSetup()
         plot_titles.insert(p_plot_spec->rGetTitle());
     }
     // Set default input definitions
+    AbstractValuePtr p_file_loader = FileLoader::Create(mSourceFilePath, mpInputs->GetAsDelegatee());
+    mpInputs->DefineName("load", p_file_loader, "(Built-in function)");
     mpInputs->ExecuteStatements(mInputStatements);
     // Add delegatees for any imported libraries
     Environment& r_library = rGetLibrary();

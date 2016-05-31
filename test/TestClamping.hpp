@@ -97,33 +97,14 @@ public:
                                RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
 
-        // Load voltage data from file with ArrayReader
-        FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
-        FileFinder data_file("data/reference_traces/one_pace_voltage.csv", this_test);
-
-        ArrayFileReader reader;
-        NdArray<double> array = reader.ReadFile(data_file);
-
-        RangeSpec view_indices = boost::assign::list_of(R(0, 1, R::END)) // All elements from dim 0
-                                                       (R(0)); // Just the first entry in second dimension
-        NdArray<double> times = array[view_indices];
-
-        view_indices = boost::assign::list_of(R(0, 1, R::END)) // All elements from dim 0
-                                             (R(1)); // Just the second entry in second dimension
-        NdArray<double> voltages = array[view_indices];
-
-        // Wrap in an ArrayValue & set as protocol input
-        AbstractExpressionPtr p_times = VALUE(ArrayValue, times);
-        AbstractExpressionPtr p_voltages = VALUE(ArrayValue, voltages);
-
-        // Run protocol
-        runner.GetProtocol()->SetInput("time_trace", p_times);
-        runner.GetProtocol()->SetInput("voltage_trace", p_voltages);
+        // Run protocol, which will load data from file itself
         runner.RunProtocol();
 
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
 
+        // Check results here as well as in the protocol, to be doubly sure the load() code is working
+        FileFinder this_test(__FILE__, RelativeTo::ChasteSourceRoot);
         FileFinder reference_trace("data/reference_traces/tt04_I_Kr_under_AP_clamp.csv", this_test);
         FileFinder generated_trace(dirname + "/outputs_I_Kr.csv", RelativeTo::ChasteTestOutput);
 

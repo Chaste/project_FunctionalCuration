@@ -86,7 +86,7 @@ public:
         TS_ASSERT(success_file.Exists());
     }
 
-    void TestClampingToTimecourse() throw(Exception)
+    void TestClampingToTimecourse() throw (Exception)
     {
         std::string dirname = "TestClampingToTimecourse";
 
@@ -110,6 +110,19 @@ public:
 
         NumericFileComparison comparer(reference_trace, generated_trace);
         TS_ASSERT(comparer.CompareFiles(1e-6)); // Abs tol to account for compiler variation
+    }
+
+    void TestInterpolationClamp() throw (Exception)
+    {
+        std::string dirname = "TestClamping_TestInterpolationClamp";
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_model_interpolation.txt",
+                                      RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/test/data/simple_ode.cellml",
+                               RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, proto_file, dirname);runner.RunProtocol();
+
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
     }
 };
 

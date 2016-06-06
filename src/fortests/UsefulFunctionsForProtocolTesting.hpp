@@ -418,7 +418,7 @@ public:
             PetscTools::BeginRoundRobin();
             BOOST_FOREACH(const std::string& r_combo, mFailedCombinations)
             {
-                std::cout << "    " << r_combo << std::endl;
+                std::cout << "    fail: " << r_combo << std::endl;
             }
             PetscTools::EndRoundRobin();
         }
@@ -435,7 +435,7 @@ public:
             PetscTools::BeginRoundRobin();
             BOOST_FOREACH(const std::string& r_combo, mMissingHistoricalData)
             {
-                std::cout << "    " << r_combo << std::endl;
+                std::cout << "    new: " << r_combo << std::endl;
             }
             PetscTools::EndRoundRobin();
         }

@@ -45,6 +45,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OutputFileHandler.hpp"
 #include "NumericFileComparison.hpp"
 
+#include "FakePetscSetup.hpp"
+
 /**
  * Test longer runs of our "standard" protocols against historic data.
  */

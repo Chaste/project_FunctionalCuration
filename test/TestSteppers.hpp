@@ -56,6 +56,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtocolLanguage.hpp"
 #include "ProtoHelperMacros.hpp"
 
+#include "FakePetscSetup.hpp"
+
 using boost::assign::list_of;
 using boost::make_shared;
 

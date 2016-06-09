@@ -48,6 +48,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtoHelperMacros.hpp"
 #include "DebugProto.hpp"
 
+#include "FakePetscSetup.hpp"
+
 #define NEW_ENV_A(name, args)  EnvironmentPtr _p_##name(new Environment args); Environment& name = *_p_##name;
 #define NEW_ENV(name)  NEW_ENV_A(name, ())
 

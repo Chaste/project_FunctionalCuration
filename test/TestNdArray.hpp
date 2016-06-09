@@ -41,6 +41,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "NdArray.hpp"
 
+#include "FakePetscSetup.hpp"
+
 // Save typing...
 typedef NdArray<double> Array;
 typedef Array::Extents Extents;

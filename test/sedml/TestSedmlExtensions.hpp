@@ -51,6 +51,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileComparison.hpp"
 #include "Exception.hpp"
 
+#include "FakePetscSetup.hpp"
+
 class TestSedmlExtensions : public CxxTest::TestSuite
 {
 public:

@@ -46,6 +46,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SimpleStimulus.hpp"
 #include "EulerIvpOdeSolver.hpp"
 
+#include "FakePetscSetup.hpp"
+
 class TestModelStateCollection : public CxxTest::TestSuite
 {
 public:

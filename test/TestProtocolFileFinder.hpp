@@ -42,6 +42,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "OutputFileHandler.hpp"
 
+#include "FakePetscSetup.hpp"
+
 class TestProtocolFileFinder : public CxxTest::TestSuite
 {
 public:

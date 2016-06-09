@@ -50,6 +50,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileFinder.hpp"
 #include "NumericFileComparison.hpp"
 
+#include "FakePetscSetup.hpp"
+
 class TestWhileLoops : public CxxTest::TestSuite
 {
 public:

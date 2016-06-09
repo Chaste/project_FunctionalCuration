@@ -42,6 +42,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NdArray.hpp"
 #include "FileFinder.hpp"
 
+#include "FakePetscSetup.hpp"
+
 class TestArrayFileReader : public CxxTest::TestSuite
 {
 public:

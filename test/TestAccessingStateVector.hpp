@@ -47,6 +47,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileComparison.hpp"
 #include "NumericFileComparison.hpp"
 
+#include "FakePetscSetup.hpp"
+
 class TestAccessingStateVector : public CxxTest::TestSuite
 {
 public:

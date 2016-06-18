@@ -57,7 +57,7 @@ private:
      * @param rCellMLFileBaseName  the cellml file to dynamically load and use.
      * @return  whether the protocol was completed successfully
      */
-    void RunProtocol(std::string& rCellMLFileBaseName)
+    void RunProtocol(const std::string& rCellMLFileBaseName)
     {
         std::string protocol_name = "INa_IV_curve";
         std::string dirname = "FunctionalCuration/" + rCellMLFileBaseName + "/" + protocol_name;
@@ -86,8 +86,21 @@ public:
             cellml_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--models");
         }
 
+        // Collectively ensure the root output folder exists, then isolate processes
+        {
+            PetscTools::IsolateProcesses(false); // Just in case any previous test threw
+            OutputFileHandler("FunctionalCuration", false);
+            PetscTools::IsolateProcesses(true);
+        }
+
         for (unsigned i=0; i<cellml_files.size(); ++i)
         {
+            if (PetscTools::IsParallel() && i % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
+            {
+                // Let someone else do this model
+                continue;
+            }
+
             std::cout << "\nRunning protocols for " << cellml_files[i] << std::endl << std::flush;
 
             // Protocols and graphs must be done together so that

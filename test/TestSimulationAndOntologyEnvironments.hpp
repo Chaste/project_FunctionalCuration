@@ -33,8 +33,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef TESTSIMULATIONENVIRONMENTS_HPP_
-#define TESTSIMULATIONENVIRONMENTS_HPP_
+#ifndef TESTSIMULATIONANDONTOLOGYENVIRONMENTS_HPP_
+#define TESTSIMULATIONANDONTOLOGYENVIRONMENTS_HPP_
 
 #include <cxxtest/TestSuite.h>
 
@@ -47,12 +47,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PetscSetupAndFinalize.hpp"
 
-class TestSimulationEnvironments : public CxxTest::TestSuite
+class TestSimulationAndOntologyEnvironments : public CxxTest::TestSuite
 {
 public:
-    void TestCompactSyntax() throw (Exception)
+    void TestSimulationEnvironments() throw (Exception)
     {
-        std::string dirname = "TestSimulationEnvironments";
+        std::string dirname = "TestSimulationAndOntologyEnvironments_TestSimulationEnvironments";
         ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_sim_environments.txt", RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/cellml/luo_rudy_1991.cellml", RelativeTo::ChasteSourceRoot);
         ProtocolRunner runner(cellml_file, proto_file, dirname);
@@ -60,6 +60,17 @@ public:
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());
     }
+
+    void TestUsingOtherOntologies() throw (Exception)
+    {
+        std::string dirname = "TestSimulationAndOntologyEnvironments_TestUsingOtherOntologies";
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_other_ontologies.txt", RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/test/data/test_lr91.cellml", RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, proto_file, dirname);
+        runner.RunProtocol();
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+    }
 };
 
-#endif // TESTSIMULATIONENVIRONMENTS_HPP_
+#endif // TESTSIMULATIONANDONTOLOGYENVIRONMENTS_HPP_

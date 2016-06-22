@@ -50,10 +50,19 @@ NdArray<double> ArrayFileReader::ReadFile(const FileFinder& rDataFile)
     {
         EXCEPTION("Failed to open data file: " << rDataFile.GetAbsolutePath());
     }
-    // Read the first line to determine the number of columns
     std::string line;
-    getline(file, line);
-    std::istringstream line_stream(line);
+    std::istringstream line_stream;
+    // Read the first non-header line to determine the number of columns
+    while (true)
+    {
+        getline(file, line);
+        line_stream.str(line);
+        line_stream >> std::ws; // Ignore leading spaces
+        if (line_stream.peek() != '#' || !line_stream.good() || !file.good())
+        {
+            break; // Line is not a header, or file is only headers!
+        }
+    }
     std::vector<double> data;
     double datum;
     bool csv = false;

@@ -1,0 +1,71 @@
+documentation {
+# Inner protocol for the recovery from inactivation protocol
+}
+
+namespace oxmeta = "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#"
+
+inputs {
+    holding_potential = -90 # mV
+
+    # Timing parameters, in ms
+    segment_interval     = 100
+    max_segment_interval = 100
+    pulse1_length        = 500
+    pulse2_length        = 120
+    interval_length      = 5000
+}
+
+import std = "BasicLibrary.txt"
+
+library {
+    # Construct the time vector for simulation.
+    # Each segment consists of an initial interval, pulse 1, segment interval, pulse 2, end interval.
+    # The sampling varies: we sample at 0.01ms in a window [-30ms, 100ms] around the start of each pulse, and just jump the rest,
+    # except that we ensure we sample at each end of each pulse so the modifiers take effect.
+    # The first pulse is considered to start at time 0.
+    assert interval_length > 30
+    assert pulse1_length > 150
+    assert pulse2_length > 100
+    part1 = std:Join([-interval_length], [i*0.01 for i in -3000:10001])
+    part2 = if segment_interval > 30 then [pulse1_length-0.01, pulse1_length] else
+            if segment_interval == 30 then [pulse1_length-0.02, pulse1_length-0.01] else [105, 110]
+    part3 = std:Join([pulse1_length+segment_interval+i*0.01 for i in -3000:10001],
+                     [pulse1_length+segment_interval+pulse2_length-0.01,
+                      pulse1_length+segment_interval+pulse2_length,
+                      pulse1_length+segment_interval+pulse2_length+0.01,
+                      pulse1_length+segment_interval+pulse2_length+interval_length])
+    sim_time = std:Join(std:Join(part1, part2), part3)
+}
+
+tasks {
+    simulation sim = timecourse {
+        range time units ms vector sim_time
+        modifiers {
+            at each loop set oxmeta:membrane_voltage = \
+                if MathML:abs(time) < 1e-6 || MathML:abs(time - pulse1_length - segment_interval) < 1e-6 then 0.01 :: mV else
+                    if MathML:abs(time - pulse1_length) < 1e-6 || MathML:abs(time - pulse1_length - segment_interval - pulse2_length) < 1e-6
+                        then holding_potential else oxmeta:membrane_voltage
+        }
+    }
+}
+
+post-processing {
+    # Figure out if we need to pad the raw simulation results for output
+    # TODO: This doesn't work, as the different time vectors are the same length but have different points!
+    #padding_duration = max_segment_interval - segment_interval
+    #time = if padding_duration > 0 then std:Join(sim:time, [sim:time[-1] + padding_duration]) else sim:time
+    #voltage = if padding_duration > 0 then std:Join(sim:membrane_voltage, [holding_potential]) else sim:membrane_voltage
+    #raw_LCC = if padding_duration > 0 then std:Join(sim:membrane_L_type_calcium_current, [0]) else sim:membrane_L_type_calcium_current
+
+    # Isolate the tail currents in our two sampling windows
+    tailA = sim:membrane_L_type_calcium_current[1:13002]
+    tailB = sim:membrane_L_type_calcium_current[-13005:-4]
+    normalised_current = std:Min(tailB)[0] / std:Min(tailA)[0]
+}
+
+outputs {
+    time               = sim:time                            "Time"
+    voltage            = sim:membrane_voltage                "Voltage"
+    raw_LCC            = sim:membrane_L_type_calcium_current "L-type calcium current"
+    normalised_current units dimensionless                   "Normalised recovery current"
+}

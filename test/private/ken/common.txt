@@ -1,0 +1,45 @@
+documentation {
+# Common settings for Ken's protocols.
+
+This file contains components that are common to all the protocols written for Ken,
+such as units definitions and ionic concentration clamps.
+}
+
+namespace oxmeta = "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#"
+
+import std = "BasicLibrary.txt"
+
+units {
+    mV = milli volt
+    ms = milli second
+    uA_per_cm2 = micro ampere . centi metre^-2 "{/Symbol m}A/cm^2" # Desired units of currents
+    uF_per_cm2 = micro farad . centi metre^-2
+    microamps = micro ampere
+    A_per_F = ampere . farad^-1
+    uM = micro mole . litre^-1 "{/Symbol m}M"
+    mM = milli mole . litre^-1 "{/Symbol m}M"
+}
+
+model interface {
+    # Standard model outputs
+    output oxmeta:membrane_L_type_calcium_current units uA_per_cm2
+    output oxmeta:membrane_voltage units mV
+    output oxmeta:time units ms
+
+    # Clamp extracellular concs to fixed values
+    # This is a convenience shorthand for 'define var = val'
+    clamp oxmeta:extracellular_sodium_concentration to 140 :: mM
+    clamp oxmeta:extracellular_potassium_concentration to 5 :: mM
+    clamp oxmeta:extracellular_calcium_concentration to 1.8 :: mM
+
+    # Clamp some intracellular concentrations too
+    clamp oxmeta:cytosolic_sodium_concentration to 10 :: mM
+    clamp oxmeta:cytosolic_potassium_concentration to 140 :: mM
+
+    # Units conversion rules
+    var chaste_membrane_capacitance units uF_per_cm2 = 1 # Used by units conversion rules
+    convert A_per_F to uA_per_cm2 by lambda rhs: rhs * chaste_membrane_capacitance
+    convert uA_per_cm2 to A_per_F by lambda rhs: rhs / chaste_membrane_capacitance
+    convert microamps to uA_per_cm2 by lambda rhs: (rhs / oxmeta:membrane_capacitance) * chaste_membrane_capacitance
+    convert uA_per_cm2 to microamps by lambda rhs: (rhs * oxmeta:membrane_capacitance) / chaste_membrane_capacitance
+}

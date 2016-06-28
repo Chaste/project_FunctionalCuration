@@ -84,6 +84,6 @@ outputs {
 
 # Create plots
 plots {
-    plot "Voltage Clamp"   using lines { voltage against time }
     plot "I_{CaL} current" using lines { I_CaL   against time }
+    plot "Voltage Clamp"   using lines { voltage against time }
 }

@@ -174,10 +174,11 @@ tasks {
             pulse1_length        = pulse1_length_recovery
             pulse2_length        = pulse2_length_recovery
             interval_length      = interval_length_recovery
-            select output time
-            select output voltage
-            select output raw_LCC
             select output normalised_current
+            select output clamp_time
+            select output voltage
+            select output window_coords
+            select output raw_LCC
         }
     }
 #    simulation recovery = timecourse {
@@ -224,12 +225,11 @@ post-processing {
     normalised_LCC_inact = map(lambda I: -(I - global_max_inact)/MathML:abs(global_min_inact - global_max_inact), min_LCC_inact)
 
     # Post-processing for recovery protocol done in nested protocol
-    plot_time_recovery = recovery:time[0]
 }
 
 outputs {
     membrane_L_type_calcium_current = sim:membrane_L_type_calcium_current "L-type calcium current"
-    membrane_voltage                = sim:membrane_voltage                "Transmembrane potential"
+    membrane_voltage                = sim:membrane_voltage                "Applied potential"
 
     recorded_LCC    units uA_per_cm2    "I_{CaL} after test potentials applied"
     min_LCC         units uA_per_cm2    "Minimum I_{CaL} current"
@@ -244,33 +244,33 @@ outputs {
     normalised_LCC_inact  units dimensionless "Inactivation: Normalised peak I_{CaL} current"
     test_potentials_inact units mV            "Inactivation: Test potential"
     time_inact            units ms            "Time"
-    voltage_inact = inact:membrane_voltage    "Inactivation: Transmembrane potential"
+    voltage_inact = inact:membrane_voltage    "Inactivation: Applied potential"
     raw_LCC_inact = inact:membrane_L_type_calcium_current "Inactivation: Raw L-type calcium current"
 
     # Recovery protocol outputs
 
     recorded_LCC_recovery   = recovery:raw_LCC            "Recovery: I_{CaL} after test potentials applied"
     normalised_LCC_recovery = recovery:normalised_current "Recovery: Normalised I_{CaL} current"
-    voltage_recovery        = recovery:voltage            "Recovery: Transmembrane potential"
-    time_recovery           = recovery:time               "Time"
-    plot_time_recovery      units ms                      "Time"
+    voltage_recovery        = recovery:voltage            "Recovery: Applied potential"
+    time_recovery           = recovery:clamp_time         "Time"
+    window_coords           = recovery:window_coords      "Time proxy"
     between_pulses_recovery units ms                      "Time between pulses"
 }
 
 plots {
     plot "normalised IV curve" using linespoints  { normalised_LCC against test_potentials }
     plot "IV curve"            using linespoints  { min_LCC        against test_potentials }
-    plot "Raw L-type calcium current" using lines { membrane_L_type_calcium_current against time }#key test_potentials }
-    plot "Applied voltage"            using lines { membrane_voltage                against time }#key test_potentials }
+    plot "Raw L-type calcium current" using lines { membrane_L_type_calcium_current against time key test_potentials }
+    plot "Applied voltage"            using lines { membrane_voltage                against time key test_potentials }
 
     # Inactivation protocol
     plot "Inactivation: normalised IV curve" using linespoints { normalised_LCC_inact against test_potentials_inact }
     plot "Inactivation: IV curve"            using linespoints { min_LCC_inact        against test_potentials_inact }
-    plot "Inactivation: raw L-type calcium current" using lines { raw_LCC_inact against time_inact }#key test_potentials_inact }
-    plot "Inactivation: applied voltage"            using lines { voltage_inact against time_inact }#key test_potentials_inact }
+    plot "Inactivation: raw L-type calcium current" using lines { raw_LCC_inact against time_inact key test_potentials_inact }
+    plot "Inactivation: applied voltage"            using lines { voltage_inact against time_inact key test_potentials_inact }
 
     # Recovery protocol
     plot "Recovery: current vs interval" using linespoints { normalised_LCC_recovery against between_pulses_recovery }
-    plot "Recovery: raw L-type calcium current" using lines { recorded_LCC_recovery  against plot_time_recovery }#key between_pulses_recovery }
-    plot "Recovery: applied voltage"            using lines { voltage_recovery       against plot_time_recovery }#key between_pulses_recovery }
+    plot "Recovery: raw L-type calcium current" using lines { recorded_LCC_recovery  against window_coords key between_pulses_recovery }
+    plot "Recovery: applied voltage"            using lines { voltage_recovery       against time_recovery key between_pulses_recovery }
 }

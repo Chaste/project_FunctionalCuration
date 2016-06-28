@@ -6,6 +6,7 @@ namespace oxmeta = "https://chaste.comlab.ox.ac.uk/cellml/ns/oxford-metadata#"
 
 inputs {
     holding_potential = -90 # mV
+    pulse_potential = 0.01  # mV
 
     # Timing parameters, in ms
     segment_interval     = 100
@@ -42,7 +43,7 @@ tasks {
         range time units ms vector sim_time
         modifiers {
             at each loop set oxmeta:membrane_voltage = \
-                if MathML:abs(time) < 1e-6 || MathML:abs(time - pulse1_length - segment_interval) < 1e-6 then 0.01 :: mV else
+                if MathML:abs(time) < 1e-6 || MathML:abs(time - pulse1_length - segment_interval) < 1e-6 then pulse_potential else
                     if MathML:abs(time - pulse1_length) < 1e-6 || MathML:abs(time - pulse1_length - segment_interval - pulse2_length) < 1e-6
                         then holding_potential else oxmeta:membrane_voltage
         }
@@ -50,22 +51,28 @@ tasks {
 }
 
 post-processing {
-    # Figure out if we need to pad the raw simulation results for output
-    # TODO: This doesn't work, as the different time vectors are the same length but have different points!
-    #padding_duration = max_segment_interval - segment_interval
-    #time = if padding_duration > 0 then std:Join(sim:time, [sim:time[-1] + padding_duration]) else sim:time
-    #voltage = if padding_duration > 0 then std:Join(sim:membrane_voltage, [holding_potential]) else sim:membrane_voltage
-    #raw_LCC = if padding_duration > 0 then std:Join(sim:membrane_L_type_calcium_current, [0]) else sim:membrane_L_type_calcium_current
-
     # Isolate the tail currents in our two sampling windows
     tailA = sim:membrane_L_type_calcium_current[1:13002]
     tailB = sim:membrane_L_type_calcium_current[-13005:-4]
     normalised_current = std:Min(tailB)[0] / std:Min(tailA)[0]
+
+    # Output the real voltage clamp on a timescale that allows for consistent plotting with all segment intervals.
+    max_length = interval_length*2 + pulse1_length + max_segment_interval + pulse2_length
+    clamp_time = [ i - interval_length for i in 0:10:max_length ]
+    voltage = [ if clamp_time[t] < 0
+                   || (clamp_time[t]>pulse1_length && clamp_time[t]<pulse1_length+segment_interval)
+                   || clamp_time[t]>pulse1_length+segment_interval+pulse2_length
+                then holding_potential else pulse_potential for t in 0:clamp_time.NUM_ELEMENTS ]
+
+    # Create an output containing the sampled tail currents stitched together, with a corresponding x axis.
+    raw_LCC = std:Join(tailA, tailB)
+    window_coords = std:Join( [i*0.01 for i in -3000:10001], [300+i*0.01 for i in -3000:10001])
 }
 
 outputs {
-    time               = sim:time                            "Time"
-    voltage            = sim:membrane_voltage                "Voltage"
-    raw_LCC            = sim:membrane_L_type_calcium_current "L-type calcium current"
-    normalised_current units dimensionless                   "Normalised recovery current"
+    normalised_current units dimensionless  "Normalised recovery current"
+    clamp_time         units ms             "Time"
+    voltage            units mV             "Voltage"
+    window_coords      units dimensionless  "Time index"
+    raw_LCC            units uA_per_cm2     "L-type calcium current"
 }

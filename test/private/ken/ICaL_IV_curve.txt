@@ -154,7 +154,7 @@ tasks {
                 # Step to next test potential
                 #at start set oxmeta:membrane_voltage = step_voltage
                 at each loop set oxmeta:membrane_voltage = \
-                    if MathML:abs(time - pulse1_length_inact) < 1e-6 then 0 :: mV else
+                    if MathML:abs(time - pulse1_length_inact) < 1e-6 then 0.01 :: mV else
                         if MathML:abs(time - (pulse1_length_inact+pulse2_length_inact)) < 1e-6 then holding_potential
                                                                                                else oxmeta:membrane_voltage
             }

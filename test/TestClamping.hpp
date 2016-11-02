@@ -86,6 +86,20 @@ public:
         TS_ASSERT(success_file.Exists());
     }
 
+    void TestClampingWithVariableUnits() throw (Exception)
+    {
+        std::string dirname = "TestClampingWithVariableUnits";
+        ProtocolFileFinder proto_file("projects/FunctionalCuration/test/protocols/test_clamping3.txt",
+                                      RelativeTo::ChasteSourceRoot);
+        FileFinder cellml_file("projects/FunctionalCuration/cellml/beeler_reuter_model_1977.cellml",
+                               RelativeTo::ChasteSourceRoot);
+        ProtocolRunner runner(cellml_file, proto_file, dirname);
+        runner.RunProtocol();
+
+        FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
+        TS_ASSERT(success_file.Exists());
+    }
+
     void TestClampingToTimecourse() throw (Exception)
     {
         std::string dirname = "TestClampingToTimecourse";

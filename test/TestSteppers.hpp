@@ -59,7 +59,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FakePetscSetup.hpp"
 
 using boost::assign::list_of;
-using boost::make_shared;
 
 #define MAKE_PTR_A(ABS_TYPE, TYPE, NAME, ARGS) boost::shared_ptr<ABS_TYPE> NAME(new TYPE ARGS)
 #define MAKE_PTR(TYPE, NAME, ARGS) MAKE_PTR_A(TYPE, TYPE, NAME, ARGS)
@@ -257,7 +256,7 @@ public:
     {
         // Create a "2*i" functional stepper
         std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(2));
-        DEFINE(expr, make_shared<MathmlTimes>(args));
+        DEFINE(expr, boost::make_shared<MathmlTimes>(args));
         AbstractStepperPtr p_fn_stepper(new FunctionalStepper("double", "ms", expr));
         TS_ASSERT_EQUALS(p_fn_stepper->GetIndexName(), "double");
         TS_ASSERT_EQUALS(p_fn_stepper->GetUnits(), "ms");
@@ -302,7 +301,7 @@ public:
 
         // New interface allows expressions for the arguments
         std::vector<AbstractExpressionPtr> args = EXPR_LIST(CONST(1000))(CONST(1000));
-        DEFINE(stst_time_expr, make_shared<MathmlTimes>(args));
+        DEFINE(stst_time_expr, boost::make_shared<MathmlTimes>(args));
         args = EXPR_LIST(CONST(0))(stst_time_expr);
         boost::shared_ptr<AbstractStepper> p_stst_runner(new VectorStepper("time", "ms", args));
         TS_ASSERT_EQUALS(p_stst_runner->GetNumberOfOutputPoints(), 0u);
@@ -322,7 +321,7 @@ public:
 
         // Timecourse stepper
         args = EXPR_LIST(CONST(2))(CONST(1000));
-        DEFINE(timecourse_end, make_shared<MathmlTimes>(args));
+        DEFINE(timecourse_end, boost::make_shared<MathmlTimes>(args));
         MAKE_PTR_A(AbstractStepper, UniformStepper, p_timecourse, ("timecourse", "ms", CONST(0), timecourse_end, CONST(1)));
         TS_ASSERT_EQUALS(p_timecourse->GetNumberOfOutputPoints(), 0u);
         TS_ASSERT_EQUALS(p_timecourse->GetCurrentOutputNumber(), 0u);
@@ -346,7 +345,7 @@ public:
         // While i<10
         unsigned N = 10;
         std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(N));
-        DEFINE(cond, make_shared<MathmlLt>(args));
+        DEFINE(cond, boost::make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper, ("i", "number", cond));
         EnvironmentPtr p_env(new Environment);
         p_stepper->SetEnvironment(p_env);
@@ -370,7 +369,7 @@ public:
         // While i<2000 - test extending the range
         N = 2000;
         args = EXPR_LIST(LOOKUP("i2"))(CONST(N));
-        DEFINE(cond2, make_shared<MathmlLt>(args));
+        DEFINE(cond2, boost::make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper2, ("i2", "number", cond2));
         p_stepper2->SetEnvironment(p_env);
         p_stepper2->Initialise();
@@ -391,7 +390,7 @@ public:
         // While i<0 - empty loop is impossble
         N = 0;
         args = EXPR_LIST(LOOKUP("i3"))(CONST(N));
-        DEFINE(cond3, make_shared<MathmlLt>(args));
+        DEFINE(cond3, boost::make_shared<MathmlLt>(args));
         MAKE_PTR_A(AbstractStepper, WhileStepper, p_stepper3, ("i3", "number", cond3));
         p_stepper3->SetEnvironment(p_env);
         p_stepper3->Initialise();

@@ -49,9 +49,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FakePetscSetup.hpp"
 
-using boost::assign::list_of;
-using boost::make_shared;
-
 class TestCoreProtocolLanguage : public CxxTest::TestSuite
 {
     NdArray<double> LookupArray(const Environment& rEnv, const std::string& rName)
@@ -74,11 +71,11 @@ public:
             DEFINE(a, LOOKUP("a"));
             DEFINE(dim, LOOKUP("dim"));
             DEFINE(zero, CONST(0.0));
-            DEFINE(fold, make_shared<Fold>(plus, a, zero, dim));
-            std::vector<std::string> fps = list_of("a")("dim");
+            DEFINE(fold, boost::make_shared<Fold>(plus, a, zero, dim));
+            std::vector<std::string> fps = {"a", "dim"};
             std::vector<AbstractValuePtr> defaults(2u);
-            defaults.back() = make_shared<DefaultParameter>();
-            DEFINE(sum, make_shared<LambdaExpression>(fps, fold, defaults)); // Second constructor - implicit return stmt
+            defaults.back() = boost::make_shared<DefaultParameter>();
+            DEFINE(sum, boost::make_shared<LambdaExpression>(fps, fold, defaults)); // Second constructor - implicit return stmt
             program.push_back(ASSIGN_STMT("sum", sum)); LOC(program.back());
         }
         // max = lambda a, dim: fold(mathml.max, a, DOUBLE_UNSET<default>, dim)
@@ -87,9 +84,9 @@ public:
             DEFINE(a, LOOKUP("a"));
             DEFINE(dim, LOOKUP("dim"));
             DEFINE(default_, DEFAULT_EXPR);
-            DEFINE(fold, make_shared<Fold>(mathml_max, a, default_, dim));
-            std::vector<std::string> fps = list_of("a")("dim");
-            DEFINE(max, make_shared<LambdaExpression>(fps, fold)); // Second constructor - implicit return stmt
+            DEFINE(fold, boost::make_shared<Fold>(mathml_max, a, default_, dim));
+            std::vector<std::string> fps = {"a", "dim"};
+            DEFINE(max, boost::make_shared<LambdaExpression>(fps, fold)); // Second constructor - implicit return stmt
             program.push_back(ASSIGN_STMT("max", max)); LOC(program.back());
         }
         // input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
@@ -99,14 +96,14 @@ public:
             {
                 elements.push_back(CONST(i+1)); LOC(elements.back());
             }
-            DEFINE(array, make_shared<ArrayCreate>(elements));
+            DEFINE(array, boost::make_shared<ArrayCreate>(elements));
             program.push_back(ASSIGN_STMT("input", array)); LOC(program.back());
         }
         // input_sum = sum(input)  --> 55
         {
             std::vector<AbstractExpressionPtr> inputs;
             inputs.push_back(LOOKUP("input")); LOC(inputs.back());
-            DEFINE(call, make_shared<FunctionCall>("sum", inputs));
+            DEFINE(call, boost::make_shared<FunctionCall>("sum", inputs));
             program.push_back(ASSIGN_STMT("input_sum", call)); LOC(program.back());
         }
         // input2d = { { 1, 3, 5 }, { 6, 4, 2 } }
@@ -116,15 +113,15 @@ public:
             {
                 elements.push_back(CONST(i*2+1)); LOC(elements.back());
             }
-            DEFINE(array1, make_shared<ArrayCreate>(elements));
+            DEFINE(array1, boost::make_shared<ArrayCreate>(elements));
             elements.clear();
             for (unsigned i=0; i<3; ++i)
             {
                 elements.push_back(CONST(6 - i*2)); LOC(elements.back());
             }
-            DEFINE(array2, make_shared<ArrayCreate>(elements));
-            elements = list_of(array1)(array2);
-            DEFINE(array, make_shared<ArrayCreate>(elements));
+            DEFINE(array2, boost::make_shared<ArrayCreate>(elements));
+            elements = {array1, array2};
+            DEFINE(array, boost::make_shared<ArrayCreate>(elements));
             program.push_back(ASSIGN_STMT("input2d", array)); LOC(program.back());
         }
         // input2d_max = max(input2d, 0)  --> {{ 6, 4, 5 }}
@@ -132,20 +129,20 @@ public:
             std::vector<AbstractExpressionPtr> inputs;
             inputs.push_back(LOOKUP("input2d")); LOC(inputs.back());
             inputs.push_back(VALUE(SimpleValue, 0.0)); LOC(inputs.back());
-            AbstractExpressionPtr call = make_shared<FunctionCall>("max", inputs); LOC(call);
+            AbstractExpressionPtr call = boost::make_shared<FunctionCall>("max", inputs); LOC(call);
             program.push_back(ASSIGN_STMT("input2d_max", call)); LOC(program.back());
         }
         // input2d_slice = input2d[<1>1:2]  --> {{3}, {4}}
         {
             DEFINE_TUPLE(dim_default, EXPR_LIST(NULL_EXPR)(NULL_EXPR)(CONST(1))(NULL_EXPR));
             DEFINE_TUPLE(dim1, EXPR_LIST(CONST(1))(CONST(1))(CONST(1))(CONST(2)));
-            std::vector<AbstractExpressionPtr> view_args = list_of(dim1)(dim_default);
-            AbstractExpressionPtr view = make_shared<View>(LOOKUP("input2d"), view_args); LOC(view);
+            std::vector<AbstractExpressionPtr> view_args = {dim1, dim_default};
+            AbstractExpressionPtr view = boost::make_shared<View>(LOOKUP("input2d"), view_args); LOC(view);
             program.push_back(ASSIGN_STMT("input2d_slice", view)); LOC(program.back());
         }
         // input2 = { 1, 2, 3 }
         {
-            NdArray<double>::Extents extents = list_of(3u);
+            NdArray<double>::Extents extents = {3u};
             NdArray<double> input2(extents);
             int i=1;
             for (NdArray<double>::Iterator it = input2.Begin(); it != input2.End(); ++it)
@@ -158,13 +155,13 @@ public:
         {
             DEFINE_TUPLE(dim0, EXPR_LIST(CONST(0))(CONST(0))(CONST(0)));
             DEFINE_TUPLE(dim1, EXPR_LIST(NULL_EXPR)(CONST(1))(NULL_EXPR));
-            std::vector<AbstractExpressionPtr> view_args = list_of(dim0)(dim1);
-            AbstractExpressionPtr view = make_shared<View>(LOOKUP("input2d_max"), view_args); LOC(view);
+            std::vector<AbstractExpressionPtr> view_args = {dim0, dim1};
+            AbstractExpressionPtr view = boost::make_shared<View>(LOOKUP("input2d_max"), view_args); LOC(view);
             std::vector<AbstractExpressionPtr> map_args;
             map_args.push_back(LambdaExpression::WrapMathml<MathmlPlus>(2)); LOC(map_args.back());
             map_args.push_back(view);
             map_args.push_back(LOOKUP("input2")); LOC(map_args.back());
-            AbstractExpressionPtr map = make_shared<Map>(map_args); LOC(map);
+            AbstractExpressionPtr map = boost::make_shared<Map>(map_args); LOC(map);
             program.push_back(ASSIGN_STMT("map_result", map)); LOC(program.back());
         }
         // adder = lambda input: map(mathml.plus, input, input2)
@@ -173,15 +170,15 @@ public:
             map_args.push_back(LambdaExpression::WrapMathml<MathmlPlus>(2));
             map_args.push_back(LOOKUP("input")); LOC(map_args.back());
             map_args.push_back(LOOKUP("input2")); LOC(map_args.back());
-            AbstractExpressionPtr map = make_shared<Map>(map_args); LOC(map);
-            std::vector<std::string> fps = list_of("input");
-            AbstractExpressionPtr lambda = make_shared<LambdaExpression>(fps, map); LOC(lambda); // Second constructor - implicit return stmt
+            AbstractExpressionPtr map = boost::make_shared<Map>(map_args); LOC(map);
+            std::vector<std::string> fps = {"input"};
+            AbstractExpressionPtr lambda = boost::make_shared<LambdaExpression>(fps, map); LOC(lambda); // Second constructor - implicit return stmt
             program.push_back(ASSIGN_STMT("adder", lambda)); LOC(program.back());
         }
         // double_input2 = adder(input2)  --> {2,4,6}
         {
-            std::vector<AbstractExpressionPtr> args = list_of(LOOKUP("input2")); LOC(args.back());
-            AbstractExpressionPtr call = make_shared<FunctionCall>("adder", args); LOC(call);
+            std::vector<AbstractExpressionPtr> args = {LOOKUP("input2")}; LOC(args.back());
+            AbstractExpressionPtr call = boost::make_shared<FunctionCall>("adder", args); LOC(call);
             program.push_back(ASSIGN_STMT("double_input2", call)); LOC(program.back());
         }
 
@@ -263,7 +260,7 @@ public:
             inputs.push_back(DEFAULT_EXPR); LOC(inputs.back());
             AbstractExpressionPtr call = boost::make_shared<FunctionCall>("sum", inputs); LOC(call);
             AbstractStatementPtr stmt = boost::make_shared<AssignmentStatement>("bad_sum", call); LOC(stmt);
-            std::vector<AbstractStatementPtr> stmts = boost::assign::list_of(stmt);
+            std::vector<AbstractStatementPtr> stmts = {stmt};
             std::string error_msg(
                     "Protocol backtrace (most recent call last):\n"
                     "  ./projects/FunctionalCuration/test/TestCoreProtocolLanguage.hpp:236:0     stmt\n"
@@ -297,13 +294,13 @@ public:
         Environment& env = *p_env; // Save typing!
 
         // Create a 2d array to operate on
-        NdArray<double>::Extents input_shape = boost::assign::list_of(3)(5);
+        NdArray<double>::Extents input_shape = {3, 5};
         NdArray<double> input(input_shape);
         for (unsigned i=0; i<input_shape[0]; ++i)
         {
             for (unsigned j=0; j<input_shape[1]; ++j)
             {
-                NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
+                NdArray<double>::Indices ij = {i, j};
                 input[ij] = i*input_shape[1] + j;
             }
         }
@@ -313,22 +310,22 @@ public:
         DEFINE(one, CONST(1));
         DEFINE(two, CONST(2));
         DEFINE(minus_one, CONST(-1));
-        std::vector<std::string> single_anon_param = list_of("_1");
+        std::vector<std::string> single_anon_param = {"_1"};
         AbstractExpressionPtr lookup_anon_param = LOOKUP("_1");
 
         {
             std::cout << " - All but one entry" << std::endl;
             std::vector<AbstractStatementPtr> program;
             DEFINE(largest_number, CONST(input_max));
-            std::vector<AbstractExpressionPtr> lt_args = list_of(lookup_anon_param)(largest_number);
-            AbstractExpressionPtr f = make_shared<LambdaExpression>(single_anon_param, make_shared<MathmlLt>(lt_args)); LOC(f);
-            std::vector<AbstractExpressionPtr> map_args = list_of(f)(LOOKUP("input"));
-            AbstractExpressionPtr map = make_shared<Map>(map_args); LOC(map);
-            program.push_back(make_shared<AssignmentStatement>("all_bar_largest", map)); LOC(program.back());
-            AbstractExpressionPtr find = make_shared<Find>(LOOKUP("all_bar_largest")); LOC(find);
+            std::vector<AbstractExpressionPtr> lt_args = {lookup_anon_param, largest_number};
+            AbstractExpressionPtr f = boost::make_shared<LambdaExpression>(single_anon_param, boost::make_shared<MathmlLt>(lt_args)); LOC(f);
+            std::vector<AbstractExpressionPtr> map_args = {f, LOOKUP("input")};
+            AbstractExpressionPtr map = boost::make_shared<Map>(map_args); LOC(map);
+            program.push_back(boost::make_shared<AssignmentStatement>("all_bar_largest", map)); LOC(program.back());
+            AbstractExpressionPtr find = boost::make_shared<Find>(LOOKUP("all_bar_largest")); LOC(find);
             program.push_back(ASSIGN_STMT("all_bar_largest_idxs", find)); LOC(program.back());
             DEFINE(replace_with, CONST(-1));
-            AbstractExpressionPtr index = make_shared<Index>(LOOKUP("input"), LOOKUP("all_bar_largest_idxs"),
+            AbstractExpressionPtr index = boost::make_shared<Index>(LOOKUP("input"), LOOKUP("all_bar_largest_idxs"),
                                                              zero, DEFAULT_EXPR, one, replace_with); LOC(index);
             program.push_back(ASSIGN_STMT("all_bar_largest_indexed", index)); LOC(program.back());
             env.ExecuteStatements(program);
@@ -356,15 +353,15 @@ public:
             std::cout << " - Whole array" << std::endl;
             std::vector<AbstractStatementPtr> program;
             DEFINE(largest_number, CONST(input_max+1));
-            std::vector<AbstractExpressionPtr> lt_args = list_of(lookup_anon_param)(largest_number);
-            AbstractExpressionPtr f = make_shared<LambdaExpression>(single_anon_param, make_shared<MathmlLt>(lt_args)); LOC(f);
-            std::vector<AbstractExpressionPtr> map_args = list_of(f)(LOOKUP("input"));
-            AbstractExpressionPtr map = make_shared<Map>(map_args); LOC(map);
-            program.push_back(make_shared<AssignmentStatement>("all_entries", map)); LOC(program.back());
-            AbstractExpressionPtr find = make_shared<Find>(LOOKUP("all_entries")); LOC(find);
+            std::vector<AbstractExpressionPtr> lt_args = {lookup_anon_param, largest_number};
+            AbstractExpressionPtr f = boost::make_shared<LambdaExpression>(single_anon_param, boost::make_shared<MathmlLt>(lt_args)); LOC(f);
+            std::vector<AbstractExpressionPtr> map_args = {f, LOOKUP("input")};
+            AbstractExpressionPtr map = boost::make_shared<Map>(map_args); LOC(map);
+            program.push_back(boost::make_shared<AssignmentStatement>("all_entries", map)); LOC(program.back());
+            AbstractExpressionPtr find = boost::make_shared<Find>(LOOKUP("all_entries")); LOC(find);
             program.push_back(ASSIGN_STMT("all_entries_idxs", find)); LOC(program.back());
             // Shouldn't need padding this time
-            AbstractExpressionPtr index = make_shared<Index>(LOOKUP("input"), LOOKUP("all_entries_idxs"), zero); LOC(index);
+            AbstractExpressionPtr index = boost::make_shared<Index>(LOOKUP("input"), LOOKUP("all_entries_idxs"), zero); LOC(index);
             program.push_back(ASSIGN_STMT("all_entries_indexed", index)); LOC(program.back());
             env.ExecuteStatements(program);
 
@@ -384,12 +381,12 @@ public:
             std::cout << " - Odd entries" << std::endl;
             // Find odd entries
             std::vector<AbstractStatementPtr> program;
-            std::vector<AbstractExpressionPtr> rem_args = list_of(lookup_anon_param)(two);
-            AbstractExpressionPtr f = make_shared<LambdaExpression>(single_anon_param, make_shared<MathmlRem>(rem_args)); LOC(f);
-            std::vector<AbstractExpressionPtr> map_args = list_of(f)(LOOKUP("input"));
-            AbstractExpressionPtr map = make_shared<Map>(map_args); LOC(map);
+            std::vector<AbstractExpressionPtr> rem_args = {lookup_anon_param, two};
+            AbstractExpressionPtr f = boost::make_shared<LambdaExpression>(single_anon_param, boost::make_shared<MathmlRem>(rem_args)); LOC(f);
+            std::vector<AbstractExpressionPtr> map_args = {f, LOOKUP("input")};
+            AbstractExpressionPtr map = boost::make_shared<Map>(map_args); LOC(map);
             program.push_back(ASSIGN_STMT("odd_entries", map)); LOC(program.back());
-            AbstractExpressionPtr find = make_shared<Find>(LOOKUP("odd_entries")); LOC(find);
+            AbstractExpressionPtr find = boost::make_shared<Find>(LOOKUP("odd_entries")); LOC(find);
             program.push_back(ASSIGN_STMT("odd_indices", find)); LOC(program.back());
             env.ExecuteStatements(program);
 
@@ -411,14 +408,14 @@ public:
             TS_ASSERT_EQUALS(*ptr++, 3); // [0,3] is odd
 
             // Basic exceptions
-            //TS_ASSERT_THROWS_CONTAINS((*make_shared<Index>(not_2d_array, odd_indices))(env), "Indices are the wrong size for this operand");
-            //TS_ASSERT_THROWS_CONTAINS((*make_shared<Index>(not_array, odd_indices))(env), "First argument to index must be an array");
+            //TS_ASSERT_THROWS_CONTAINS((*boost::make_shared<Index>(not_2d_array, odd_indices))(env), "Indices are the wrong size for this operand");
+            //TS_ASSERT_THROWS_CONTAINS((*boost::make_shared<Index>(not_array, odd_indices))(env), "First argument to index must be an array");
             // Indexing using odd_indices should fail because it would give an irregular array
-            TS_ASSERT_THROWS_CONTAINS((*make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices")))(env),
+            TS_ASSERT_THROWS_CONTAINS((*boost::make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices")))(env),
                                       "Cannot index if the result is irregular");
             // However, if we tell it to shrink the output, we're ok...
-            env.ExecuteStatement(ASSIGN_STMT("shrink_right", make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, one)));
-            env.ExecuteStatement(ASSIGN_STMT("shrink_left", make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, minus_one)));
+            env.ExecuteStatement(ASSIGN_STMT("shrink_right", boost::make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, one)));
+            env.ExecuteStatement(ASSIGN_STMT("shrink_left", boost::make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, minus_one)));
             NdArray<double> shrink_right = LookupArray(env, "shrink_right");
             TS_ASSERT_EQUALS(shrink_right.GetShape()[0], 3u);
             TS_ASSERT_EQUALS(shrink_right.GetShape()[1], 2u);
@@ -427,9 +424,9 @@ public:
             TS_ASSERT_EQUALS(shrink_left.GetShape()[1], 2u);
 
             // Explicitly construct a regular index
-            NdArray<double>::Extents shape = list_of(6)(2);
+            NdArray<double>::Extents shape = {6, 2};
             NdArray<double> indices(shape);
-            std::vector<unsigned> indices_2 = (list_of(1),3,0,2,1,3);
+            std::vector<unsigned> indices_2 = ({1},3,0,2,1,3);
             NdArray<double>::Indices idxs = indices.GetIndices();
             for (unsigned i=0; i<shape[0]; ++i)
             {
@@ -438,7 +435,7 @@ public:
                 indices[idxs] = indices_2[i];
                 indices.IncrementIndices(idxs);
             }
-            env.ExecuteStatement(ASSIGN_STMT("some_odd_entries", make_shared<Index>(LOOKUP("input"), VALUE(ArrayValue, indices), one)));
+            env.ExecuteStatement(ASSIGN_STMT("some_odd_entries", boost::make_shared<Index>(LOOKUP("input"), VALUE(ArrayValue, indices), one)));
             NdArray<double> some_odd_entries = LookupArray(env, "some_odd_entries");
             TS_ASSERT_EQUALS(some_odd_entries.GetShape()[0], 3u);
             TS_ASSERT_EQUALS(some_odd_entries.GetShape()[1], 2u);
@@ -458,7 +455,7 @@ public:
             {
                 for (unsigned j=0; j<2u; ++j)
                 {
-                    NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
+                    NdArray<double>::Indices ij = {i, j};
                     TS_ASSERT_EQUALS(fmod(some_odd_entries[ij], 2), 1.0);
                     TS_ASSERT_EQUALS(fmod(shrink_right[ij], 2), 1.0);
                     TS_ASSERT_EQUALS(fmod(shrink_left[ij], 2), 1.0);
@@ -487,12 +484,12 @@ public:
              *   P  11 13
              * for left padding.
              */
-            TS_ASSERT_THROWS_CONTAINS((*make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, one, one))(env),
+            TS_ASSERT_THROWS_CONTAINS((*boost::make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, one, one))(env),
                                       "You cannot both pad and shrink!");
-            env.ExecuteStatement(ASSIGN_STMT("pad_right", make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, zero, one)));
+            env.ExecuteStatement(ASSIGN_STMT("pad_right", boost::make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, zero, one)));
             double padding = 55.55;
             DEFINE(pad_value, CONST(padding));
-            env.ExecuteStatement(ASSIGN_STMT("pad_left", make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, zero, minus_one, pad_value)));
+            env.ExecuteStatement(ASSIGN_STMT("pad_left", boost::make_shared<Index>(LOOKUP("input"), LOOKUP("odd_indices"), one, zero, minus_one, pad_value)));
             NdArray<double> pad_right = LookupArray(env, "pad_right");
             NdArray<double> pad_left = LookupArray(env, "pad_left");
             TS_ASSERT_EQUALS(pad_right.GetShape()[0], 3u);
@@ -504,7 +501,7 @@ public:
             {
                 for (unsigned j=0; j<3; ++j)
                 {
-                    NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
+                    NdArray<double>::Indices ij = {i, j};
                     double r = pad_right[ij];
                     double l = pad_left[ij];
                     if (i == 1)
@@ -545,14 +542,14 @@ public:
         EnvironmentPtr p_env(new Environment);
         // if (1, 2, 3)  --> 2
         {
-            DEFINE(if_t, make_shared<If>(CONST(1), CONST(2), CONST(3)));
+            DEFINE(if_t, boost::make_shared<If>(CONST(1), CONST(2), CONST(3)));
             AbstractValuePtr p_result = (*if_t)(*p_env);
             TS_ASSERT(p_result->IsDouble());
             TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(p_result), 2.0);
         }
         // if (0, 2, 3)  --> 3
         {
-            DEFINE(if_t, make_shared<If>(CONST(0), CONST(2), CONST(3)));
+            DEFINE(if_t, boost::make_shared<If>(CONST(0), CONST(2), CONST(3)));
             AbstractValuePtr p_result = (*if_t)(*p_env);
             TS_ASSERT(p_result->IsDouble());
             TS_ASSERT_EQUALS(GET_SIMPLE_VALUE(p_result), 3.0);
@@ -565,8 +562,8 @@ public:
         // counting1d = { i for #0#i=0:10 }  --> {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
         {
             DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(10))(VALUE(StringValue, "i")));
-            std::vector<AbstractExpressionPtr> comp_args = list_of(i_range);
-            DEFINE(array_exp, make_shared<ArrayCreate>(LOOKUP("i"), comp_args));
+            std::vector<AbstractExpressionPtr> comp_args = {i_range};
+            DEFINE(array_exp, boost::make_shared<ArrayCreate>(LOOKUP("i"), comp_args));
             AbstractValuePtr p_array = (*array_exp)(*p_env);
             TS_ASSERT(p_array->IsArray());
             NdArray<double> array = static_cast<ArrayValue*>(p_array.get())->GetArray();
@@ -584,12 +581,12 @@ public:
         {
             DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(1))(CONST(1))(CONST(3))(VALUE(StringValue, "i")));
             DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(3))(VALUE(StringValue, "j")));
-            std::vector<AbstractExpressionPtr> comp_args = list_of(i_range)(j_range);
-            std::vector<AbstractExpressionPtr> args = list_of<AbstractExpressionPtr>(LOOKUP("i"))(CONST(3));
-            DEFINE(times, make_shared<MathmlTimes>(args));
-            args = list_of<AbstractExpressionPtr>(times)(LOOKUP("j"));
-            DEFINE(plus, make_shared<MathmlPlus>(args));
-            DEFINE(array_exp, make_shared<ArrayCreate>(plus, comp_args));
+            std::vector<AbstractExpressionPtr> comp_args = {i_range, j_range};
+            std::vector<AbstractExpressionPtr> args = boost::assign::list_of<AbstractExpressionPtr>(LOOKUP("i"))(CONST(3));
+            DEFINE(times, boost::make_shared<MathmlTimes>(args));
+            args = boost::assign::list_of<AbstractExpressionPtr>(times)(LOOKUP("j"));
+            DEFINE(plus, boost::make_shared<MathmlPlus>(args));
+            DEFINE(array_exp, boost::make_shared<ArrayCreate>(plus, comp_args));
             AbstractValuePtr p_array = (*array_exp)(*p_env);
             TS_ASSERT(p_array->IsArray());
             NdArray<double> array = static_cast<ArrayValue*>(p_array.get())->GetArray();
@@ -607,23 +604,23 @@ public:
         // blocks = { {{-10+j,j},{10+j,20+j}} for #1#j=0:2 }  --> {{{-10,0}, {-9,1}},  {{10,20}, {11,21}}}
         {
             DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(2))(VALUE(StringValue, "j")));
-            std::vector<AbstractExpressionPtr> comp_args = list_of(j_range);
+            std::vector<AbstractExpressionPtr> comp_args = {j_range};
 
-            std::vector<AbstractExpressionPtr> args = list_of<AbstractExpressionPtr>(CONST(-10))(LOOKUP("j"));
-            DEFINE(elt1, make_shared<MathmlPlus>(args));
+            std::vector<AbstractExpressionPtr> args = boost::assign::list_of<AbstractExpressionPtr>(CONST(-10))(LOOKUP("j"));
+            DEFINE(elt1, boost::make_shared<MathmlPlus>(args));
             DEFINE(elt2, LOOKUP("j"));
-            args = list_of<AbstractExpressionPtr>(CONST(10))(LOOKUP("j"));
-            std::vector<AbstractExpressionPtr> sub_array_elts = list_of(elt1)(elt2);
-            DEFINE(subarray1, make_shared<ArrayCreate>(sub_array_elts));
-            DEFINE(elt3, make_shared<MathmlPlus>(args));
-            args = list_of<AbstractExpressionPtr>(CONST(20))(LOOKUP("j"));
-            DEFINE(elt4, make_shared<MathmlPlus>(args));
-            sub_array_elts = list_of(elt3)(elt4);
-            DEFINE(subarray2, make_shared<ArrayCreate>(sub_array_elts));
-            sub_array_elts = list_of(subarray1)(subarray2);
-            DEFINE(subarray, make_shared<ArrayCreate>(sub_array_elts));
+            args = boost::assign::list_of<AbstractExpressionPtr>(CONST(10))(LOOKUP("j"));
+            std::vector<AbstractExpressionPtr> sub_array_elts = {elt1, elt2};
+            DEFINE(subarray1, boost::make_shared<ArrayCreate>(sub_array_elts));
+            DEFINE(elt3, boost::make_shared<MathmlPlus>(args));
+            args = boost::assign:list_of<AbstractExpressionPtr>(CONST(20))(LOOKUP("j"));
+            DEFINE(elt4, boost::make_shared<MathmlPlus>(args));
+            sub_array_elts = {elt3, elt4};
+            DEFINE(subarray2, boost::make_shared<ArrayCreate>(sub_array_elts));
+            sub_array_elts = {subarray1, subarray2};
+            DEFINE(subarray, boost::make_shared<ArrayCreate>(sub_array_elts));
 
-            DEFINE(array_exp, make_shared<ArrayCreate>(subarray, comp_args));
+            DEFINE(array_exp, boost::make_shared<ArrayCreate>(subarray, comp_args));
             AbstractValuePtr p_array = (*array_exp)(*p_env);
             TS_ASSERT(p_array->IsArray());
             NdArray<double> array = static_cast<ArrayValue*>(p_array.get())->GetArray();
@@ -648,18 +645,18 @@ public:
 
         // swap = lambda a, b: return b, a
         {
-            std::vector<std::string> fps = list_of("a")("b");
+            std::vector<std::string> fps = {"a", "b"};
             std::vector<AbstractExpressionPtr> ret_args = EXPR_LIST(LOOKUP("b"))(LOOKUP("a"));
             DEFINE_STMT(ret, RETURN_STMT(ret_args));
-            std::vector<AbstractStatementPtr> fn_body = list_of(ret);
-            DEFINE(swap, make_shared<LambdaExpression>(fps, fn_body));
+            std::vector<AbstractStatementPtr> fn_body = {ret};
+            DEFINE(swap, boost::make_shared<LambdaExpression>(fps, fn_body));
             env.ExecuteStatement(ASSIGN_STMT("swap", swap));
         }
         // one, two = swap(2, 1)
         {
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(CONST(2))(CONST(1));
-            DEFINE(call, make_shared<FunctionCall>("swap", args));
-            std::vector<std::string> dests = list_of("one")("two");
+            DEFINE(call, boost::make_shared<FunctionCall>("swap", args));
+            std::vector<std::string> dests = {"one", "two"};
             env.ExecuteStatement(ASSIGN_STMT(dests, call));
         }
 

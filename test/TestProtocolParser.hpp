@@ -355,20 +355,20 @@ public:
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 1u);
             TS_ASSERT_EQUALS(array.GetNumElements(), 3u);
             std::vector<double> result_values(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, boost::assign::list_of(1)(2)(4));
+            TS_ASSERT_EQUALS(result_values, {1, 2, 4});
         }
 
         {
             std::cout << " - stretch" << std::endl;
             // Stretch a 1x3x1 array to 3x3x2
-            NdArray<double>::Extents input_shape = list_of(1)(3)(1);
-            NdArray<double>::Extents intermediate_shape = list_of(3)(3)(1);
-            NdArray<double>::Extents result_shape = list_of(3)(3)(2);
+            NdArray<double>::Extents input_shape = {1, 3, 1};
+            NdArray<double>::Extents intermediate_shape = {3, 3, 1};
+            NdArray<double>::Extents result_shape = {3, 3, 2};
             NdArray<double> input(input_shape);
             NdArray<double>::Iterator it = input.Begin();
             *it++ = 1; *it++ = 2; *it = 3;
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(VALUE(ArrayValue, input))(CONST(3))(CONST(0));
-            AbstractExpressionPtr p_call = make_shared<FunctionCall>("Stretch", args);
+            AbstractExpressionPtr p_call = boost::make_shared<FunctionCall>("Stretch", args);
             AbstractValuePtr p_result = (*p_call)(env);
 
             TS_ASSERT(p_result->IsArray());
@@ -377,12 +377,12 @@ public:
             TS_ASSERT_EQUALS(array.GetNumElements(), 9u);
             TS_ASSERT_EQUALS(array.GetShape(), intermediate_shape);
             std::vector<double> result_values(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, list_of(1)(2)(3)(1)(2)(3)(1)(2)(3));
+            TS_ASSERT_EQUALS(result_values, {1, 2, 3, 1, 2, 3, 1, 2, 3});
 
             args = EXPR_LIST(CONST(3))(CONST(3))(CONST(2));
-            DEFINE(p_shape, make_shared<ArrayCreate>(args));
+            DEFINE(p_shape, boost::make_shared<ArrayCreate>(args));
             args = EXPR_LIST(VALUE(ArrayValue, array))(CONST(2))(DEFAULT_EXPR);
-            p_call = make_shared<FunctionCall>("Stretch", args);
+            p_call = boost::make_shared<FunctionCall>("Stretch", args);
             p_result = (*p_call)(env);
 
             TS_ASSERT(p_result->IsArray());
@@ -391,7 +391,7 @@ public:
             TS_ASSERT_EQUALS(array.GetNumElements(), 18u);
             TS_ASSERT_EQUALS(array.GetShape(), result_shape);
             result_values.assign(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, list_of(1)(1)(2)(2)(3)(3)(1)(1)(2)(2)(3)(3)(1)(1)(2)(2)(3)(3));
+            TS_ASSERT_EQUALS(result_values, {1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3});
         }
 
         {
@@ -400,12 +400,12 @@ public:
             const unsigned shape[] = {3, 5};
             DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(shape[0]))(VALUE(StringValue, "i")));
             DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(shape[1]))(VALUE(StringValue, "j")));
-            std::vector<AbstractExpressionPtr> comp_args = list_of(i_range)(j_range);
+            std::vector<AbstractExpressionPtr> comp_args = {i_range, j_range};
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(shape[1]));
-            DEFINE(times, make_shared<MathmlTimes>(args));
+            DEFINE(times, boost::make_shared<MathmlTimes>(args));
             args = EXPR_LIST(times)(LOOKUP("j"));
-            DEFINE(plus, make_shared<MathmlPlus>(args));
-            DEFINE(array_exp, make_shared<ArrayCreate>(plus, comp_args));
+            DEFINE(plus, boost::make_shared<MathmlPlus>(args));
+            DEFINE(array_exp, boost::make_shared<ArrayCreate>(plus, comp_args));
             AbstractValuePtr p_array = (*array_exp)(env);
             NdArray<double> input = GET_ARRAY(p_array);
             TS_ASSERT_EQUALS(input.GetShape()[0], 3u);
@@ -413,7 +413,7 @@ public:
 
             // Create a window of the "time" (j) dimension: window(input, 2, default)
             args = EXPR_LIST(VALUE(ArrayValue, input))(CONST(2))(DEFAULT_EXPR);
-            DEFINE(window_call, make_shared<FunctionCall>(LOOKUP("Window"), args));
+            DEFINE(window_call, boost::make_shared<FunctionCall>(LOOKUP("Window"), args));
             AbstractValuePtr p_window = (*window_call)(env);
             NdArray<double> window = GET_ARRAY(p_window);
             /* It should look like:
@@ -438,7 +438,7 @@ public:
                         if (shifted_j < 0) shifted_j = 0;
                         if ((unsigned)shifted_j >= shape[1]) shifted_j = shape[1]-1;
                         NdArray<double>::Indices window_idx = boost::assign::list_of<unsigned>(shift+2)(i)(j);
-                        NdArray<double>::Indices input_idx = boost::assign::list_of(i)(shifted_j);
+                        NdArray<double>::Indices input_idx = {i, shifted_j};
                         TS_ASSERT_EQUALS(window[window_idx], input[input_idx]);
                     }
                 }
@@ -448,7 +448,7 @@ public:
         {
             std::cout << " - interp" << std::endl;
             // Create two 2d arrays (xs & ys) to operate on - we're going to interpolate multiple functions
-            NdArray<double>::Extents shape = list_of(2u)(3u); // "Simulation number" x "Time"
+            NdArray<double>::Extents shape = {2u, 3u}; // "Simulation number" x "Time"
             NdArray<double> xs(shape);  // [ [2, 3, 4], [2, 3, 4] ]
             NdArray<double> ys(shape);  // [ [ 0, 2, 4 ], [ 16, 14, 12 ] ]
             const double xs_values[] = {2, 3, 4, 2, 3, 4};
@@ -470,7 +470,7 @@ public:
             std::vector<AbstractExpressionPtr> args
                 = EXPR_LIST(VALUE(ArrayValue, xs))(VALUE(ArrayValue, ys))(VALUE(ArrayValue, targets))
                            (VALUE(ArrayValue, starts))(DEFAULT_EXPR)(DEFAULT_EXPR);
-            AbstractValuePtr p_result = (*make_shared<FunctionCall>("Interp", args))(env);
+            AbstractValuePtr p_result = (*boost::make_shared<FunctionCall>("Interp", args))(env);
             NdArray<double> result = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(result.GetNumDimensions(), 2u);
             TS_ASSERT_EQUALS(result.GetShape()[0], shape[0]);
@@ -486,7 +486,7 @@ public:
             }
             args = EXPR_LIST(VALUE(ArrayValue, xs))(VALUE(ArrayValue, ys))(VALUE(ArrayValue, targets))
                             (VALUE(ArrayValue, starts))(CONST(0))(DEFAULT_EXPR);
-            p_result = (*make_shared<FunctionCall>("Interp", args))(env);
+            p_result = (*boost::make_shared<FunctionCall>("Interp", args))(env);
             result = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(result.GetNumDimensions(), 2u);
             TS_ASSERT_EQUALS(result.GetShape()[0], shape[0]);

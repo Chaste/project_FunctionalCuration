@@ -147,7 +147,7 @@ bool NestedSimulation::CanParallelise()
             p_parallel_sim->SetParallelMultipliers(loop_index_multipliers);
         }
     }
-    return p_parallel_sim;
+    return (bool)p_parallel_sim;
 }
 
 

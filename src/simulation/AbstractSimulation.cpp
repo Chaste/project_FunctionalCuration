@@ -40,7 +40,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/foreach.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/scoped_array.hpp>
 
 #include "PetscTools.hpp"
@@ -639,7 +638,7 @@ void AbstractSimulation::CreateResultViews()
         EnvironmentPtr p_view_env = boost::const_pointer_cast<Environment>(rGetEnvironment().GetDelegateeEnvironment(prefix));
         DEFINE_TUPLE(dim_default, EXPR_LIST(NULL_EXPR)(NULL_EXPR)(CONST(1))(NULL_EXPR));
         DEFINE_TUPLE(dim0, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(view_size)));
-        std::vector<AbstractExpressionPtr> view_args = boost::assign::list_of(dim0)(dim_default);
+        std::vector<AbstractExpressionPtr> view_args = {dim0, dim_default};
         BOOST_FOREACH(const std::string& r_name, output_names)
         {
             DEFINE(view, boost::make_shared<View>(LOOKUP(r_name), view_args));

@@ -37,7 +37,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
 #include <boost/foreach.hpp>
-#include <boost/assign/list_of.hpp>
 
 #include "OutputFileHandler.hpp"
 #include "AbstractCvodeCell.hpp"
@@ -234,7 +233,7 @@ AbstractSimulationPtr SedmlParser::ParseSimulation(const DOMElement* pSimElt,
         if (t_output_start > t_start)
         {
             // Create an extra simulation for the portion that isn't recorded
-            std::vector<double> values = boost::assign::list_of(t_start)(t_output_start);
+            std::vector<double> values = {t_start, t_output_start};
             AbstractStepperPtr p_stepper(new VectorStepper(sim_id + "_init", "", values));
             AbstractSimulationPtr p_init_sim(new TimecourseSimulation(pModel, p_stepper));
             if (p_initial_reset)
@@ -643,7 +642,7 @@ void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
         // Assign the call result to the data generator id
         AbstractStatementPtr p_assign = ASSIGN_STMT(data_gen_id, p_call);
         TransferContext(p_data_gen, p_assign);
-        std::vector<AbstractStatementPtr> post_proc = boost::assign::list_of(p_assign);
+        std::vector<AbstractStatementPtr> post_proc = {p_assign};
         mpProtocol->AddPostProcessing(post_proc);
 
         // Create an output specification for this data generator
@@ -652,7 +651,7 @@ void SedmlParser::ParseDataGenerators(const DOMElement* pRootElt)
                 new OutputSpecification(data_gen_id, data_gen_id, name.empty() ? data_gen_id : name,
                                         "", "Post-processed"));
         TransferContext(p_data_gen, p_output_spec);
-        std::vector<OutputSpecificationPtr> output_specs = boost::assign::list_of(p_output_spec);
+        std::vector<OutputSpecificationPtr> output_specs = {p_output_spec};
         mpProtocol->AddOutputSpecs(output_specs);
     }
 }
@@ -823,7 +822,7 @@ boost::shared_ptr<AbstractSystemWithOutputs> SedmlParser::CreateModel(const std:
     OutputFileHandler handler(rHandler.FindFile(rModel));
     FileFinder copied_model = handler.CopyFileTo(model_file);
     std::string model_name = copied_model.GetLeafNameNoExtension();
-    std::vector<std::string> options = boost::assign::list_of("--cvode");//("--expose-annotated-variables");
+    std::vector<std::string> options = {"--cvode"};//,"--expose-annotated-variables"};
     FileFinder this_file(__FILE__, RelativeTo::ChasteSourceRoot);
     FileFinder proto_wrapper("SedmlWrapper.py", this_file);
     options.push_back("--protocol=" + proto_wrapper.GetAbsolutePath());

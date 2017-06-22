@@ -36,7 +36,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Fold.hpp"
 
 #include <vector>
-#include <boost/assign/list_of.hpp>
 #include <boost/make_shared.hpp>
 
 #include "LambdaClosure.hpp"
@@ -52,7 +51,7 @@ Fold::Fold(const AbstractExpressionPtr pFunc,
            const AbstractExpressionPtr pArray,
            const AbstractExpressionPtr pInit,
            const AbstractExpressionPtr pDim)
-    : FunctionCall("~fold", boost::assign::list_of(pFunc)(pArray)(pInit)(pDim))
+    : FunctionCall("~fold", {pFunc, pArray, pInit, pDim})
 {}
 
 AbstractValuePtr Fold::operator()(const Environment& rEnv) const

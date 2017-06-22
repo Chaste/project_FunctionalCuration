@@ -35,8 +35,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PlotSpecification.hpp"
 
-#include <boost/assign/list_of.hpp>
-
 PlotSpecification::PlotSpecification(const std::string& rTitle,
                                      const std::string& rXVariable,
                                      const std::string& rYVariable)
@@ -44,7 +42,7 @@ PlotSpecification::PlotSpecification(const std::string& rTitle,
       mDisplayTitle(rTitle),
       mStyle("linespoints")
 {
-    mVariableNames = boost::assign::list_of(rXVariable)(rYVariable);
+    mVariableNames = {rXVariable, rYVariable};
 }
 
 PlotSpecification::PlotSpecification(const std::string& rTitle,

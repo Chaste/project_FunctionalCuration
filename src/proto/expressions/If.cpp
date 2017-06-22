@@ -35,7 +35,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "If.hpp"
 
-#include <boost/assign/list_of.hpp>
 #include "ProtoHelperMacros.hpp"
 #include "BacktraceException.hpp"
 
@@ -44,7 +43,7 @@ If::If(const AbstractExpressionPtr pTest,
        const AbstractExpressionPtr pElse)
     : AbstractExpression()
 {
-    mChildren = boost::assign::list_of(pTest)(pThen)(pElse);
+    mChildren = {pTest, pThen, pElse};
 }
 
 AbstractValuePtr If::operator()(const Environment& rEnv) const

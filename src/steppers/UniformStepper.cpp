@@ -36,7 +36,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UniformStepper.hpp"
 
 #include <cmath>
-#include <boost/assign/list_of.hpp>
 
 #include "BacktraceException.hpp"
 #include "ProtoHelperMacros.hpp"
@@ -68,7 +67,7 @@ UniformStepper::UniformStepper(const std::string& rIndexName,
       mInterval(DOUBLE_UNSET)
 
 {
-    mExpressions = boost::assign::list_of(pStartPoint)(pEndPoint)(pStepInterval);
+    mExpressions = {pStartPoint, pEndPoint, pStepInterval};
     mNumSteps = (unsigned)(-1); // Unknown as yet
     SetCurrentOutputPoint(mStartPoint);
 }

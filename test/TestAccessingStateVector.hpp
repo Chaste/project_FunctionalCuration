@@ -38,7 +38,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cxxtest/TestSuite.h>
 #include <boost/foreach.hpp>
-#include <boost/assign/list_of.hpp>
 
 #include "ProtocolRunner.hpp"
 #include "OutputFileHandler.hpp"
@@ -93,7 +92,7 @@ private:
         FileFinder out_dir(rDirName, RelativeTo::ChasteTestOutput);
 
         // Test metadata files
-        std::vector<std::string> filenames = boost::assign::list_of("-contents.csv")("-default-plots.csv");
+        std::vector<std::string> filenames {"-contents.csv", "-default-plots.csv"};
         BOOST_FOREACH(std::string filename, filenames)
         {
             FileFinder ref_file("outputs" + filename, ref_dir);
@@ -102,7 +101,7 @@ private:
             TS_ASSERT( comparer.CompareFiles() );
         }
 
-        filenames = boost::assign::list_of("outputs_raw_state")("outputs_state");
+        filenames = {"outputs_raw_state", "outputs_state"};
         BOOST_FOREACH(std::string output_name, filenames)
         {
             FileFinder ref_output(output_name + ".csv", ref_dir);

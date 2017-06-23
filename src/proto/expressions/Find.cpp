@@ -35,7 +35,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Find.hpp"
 
-#include <boost/assign/list_of.hpp>
 #include <boost/make_shared.hpp>
 
 #include "BacktraceException.hpp"
@@ -44,7 +43,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtoHelperMacros.hpp"
 
 Find::Find(const AbstractExpressionPtr pOperand)
-    : FunctionCall("~find", boost::assign::list_of(pOperand))
+    : FunctionCall("~find", {pOperand})
 {}
 
 AbstractValuePtr Find::operator()(const Environment& rEnv) const

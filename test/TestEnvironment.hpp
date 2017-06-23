@@ -76,8 +76,8 @@ public:
 
         TS_ASSERT_THROWS_CONTAINS(env.Lookup(env.FreshIdent()), " is not defined in this environment.");
 
-        std::vector<std::string> names = boost::assign::list_of("n1")("n2")("n3");
-        std::vector<AbstractValuePtr> values = boost::assign::list_of(p_val)(p_val)(p_val);
+        std::vector<std::string> names {"n1", "n2", "n3"};
+        std::vector<AbstractValuePtr> values {p_val, p_val, p_val};
         env.DefineNames(names, values, "");
         TS_ASSERT_EQUALS(env.GetNumberOfDefinitions(), 4u);
         TS_ASSERT_EQUALS(env.GetDefinedNames(), boost::assign::list_of(name).range(names));
@@ -252,7 +252,7 @@ public:
         TS_ASSERT(env.GetDelegateeEnvironment("b").get() == env_b.GetAsDelegatee().get());
         TS_ASSERT(env.GetDelegateeEnvironment("c").get() == env_c.GetAsDelegatee().get());
 
-        std::vector<std::string> sub_env_names = boost::assign::list_of("b")("c");
+        std::vector<std::string> sub_env_names {"b", "c"};
         TS_ASSERT_EQUALS(env.rGetSubEnvironmentNames(), sub_env_names);
 
         // Clear should also clear sub-envs

@@ -37,8 +37,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TESTHYPOKALAEMIAPROTOCOL_HPP_
 
 #include <cxxtest/TestSuite.h>
-#include <boost/assign/list_of.hpp>
-using boost::assign::list_of;
 
 #include "ProtocolRunner.hpp"
 #include "ProtocolLanguage.hpp"
@@ -103,8 +101,8 @@ public:
             TS_ASSERT_EQUALS(resting_potential.GetNumElements(), 10u);
 
             // These are the results that came out first attempt (they look sensible)
-            std::vector<double> reference_apd90 = list_of(570.496)(476.702)(418.564)(375.742)(361.8457)(343.841)(318.821)(298.139)(280.4469)(264.9502);
-            std::vector<double> reference_resting = list_of(-98.9795)(-95.7858)(-90.6683)(-86.0988)(-84.4384)(-82.1074)(-78.5914)(-75.4569)(-72.6291)(-70.0511);
+            std::vector<double> reference_apd90 {570.496, 476.702, 418.564, 375.742, 361.8457, 343.841, 318.821, 298.139, 280.4469, 264.9502};
+            std::vector<double> reference_resting {-98.9795, -95.7858, -90.6683, -86.0988, -84.4384, -82.1074, -78.5914, -75.4569, -72.6291, -70.0511};
 
             NdArray<double> apd90 = GET_ARRAY(r_outputs.Lookup("APD90"));
             NdArray<double>::Indices apd90_indices = apd90.GetIndices();

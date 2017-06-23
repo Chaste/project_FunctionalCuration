@@ -42,7 +42,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/assign/list_of.hpp>
 
 #include <cxxtest/TestSuite.h>
 
@@ -57,8 +56,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ProtoHelperMacros.hpp"
 
 #include "FakePetscSetup.hpp"
-
-using boost::assign::list_of;
 
 #define MAKE_PTR_A(ABS_TYPE, TYPE, NAME, ARGS) boost::shared_ptr<ABS_TYPE> NAME(new TYPE ARGS)
 #define MAKE_PTR(TYPE, NAME, ARGS) MAKE_PTR_A(TYPE, TYPE, NAME, ARGS)
@@ -158,8 +155,8 @@ public:
 
     void TestVectorStepper() throw (Exception)
     {
-        DoVectorTest("bcl", "ms", boost::assign::list_of(1000)(900)(750));
-        DoVectorTest("odd", "num", boost::assign::list_of(999)(1.3)(-55)(79.97));
+        DoVectorTest("bcl", "ms", {1000, 900, 750});
+        DoVectorTest("odd", "num", {999, 1.3, -55, 79.97});
 
         std::vector<double> empty;
         TS_ASSERT_THROWS_CONTAINS(VectorStepper("x", "u", empty),
@@ -172,7 +169,7 @@ public:
         {
             AbstractStepperPtr p_stepper1(new UniformStepper("uniform1", uname, 0, 4, 1));
             AbstractStepperPtr p_stepper2(new UniformStepper("uniform2", uname, 4, 12, 2));
-            std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_stepper1)(p_stepper2);
+            std::vector<AbstractStepperPtr> steppers {p_stepper1, p_stepper2};
             AbstractStepperPtr p_stepper(new MultipleStepper(steppers));
             // The multiple stepper should behave like its first member for normal operation
             DoAbstractTest(p_stepper, "uniform1", uname);
@@ -214,11 +211,11 @@ public:
 
         // Basic test with vector members
         {
-            std::vector<double> values1 = boost::assign::list_of(5)(10)(20);
-            std::vector<double> values2 = boost::assign::list_of(15)(10)(0);
+            std::vector<double> values1 {5 ,10, 20};
+            std::vector<double> values2 {15, 10 ,0};
             AbstractStepperPtr p_stepper1(new VectorStepper("vector1", uname, values1));
             AbstractStepperPtr p_stepper2(new VectorStepper("vector2", uname, values2));
-            std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_stepper1)(p_stepper2);
+            std::vector<AbstractStepperPtr> steppers {p_stepper1, p_stepper2};
             AbstractStepperPtr p_stepper(new MultipleStepper(steppers));
             DoAbstractTest(p_stepper, "vector1", uname);
             DoVectorTestBody(p_stepper, values1);
@@ -226,11 +223,11 @@ public:
 
         // It's an error if a subsidiary stepper is exhausted too soon (but not v.v.)
         {
-            std::vector<double> values1 = boost::assign::list_of(5)(10)(20)(40);
-            std::vector<double> values2 = boost::assign::list_of(15)(10)(0);
+            std::vector<double> values1 {5, 10, 20, 40};
+            std::vector<double> values2 {15, 10, 0};
             AbstractStepperPtr p_stepper1(new VectorStepper("vector1", uname, values1));
             AbstractStepperPtr p_stepper2(new VectorStepper("vector2", uname, values2));
-            std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_stepper1)(p_stepper2);
+            std::vector<AbstractStepperPtr> steppers {p_stepper1, p_stepper2};
             AbstractStepperPtr p_stepper(new MultipleStepper(steppers));
             for (unsigned i=0; i<3u; i++)
             {
@@ -241,7 +238,7 @@ public:
             TS_ASSERT(p_stepper2->AtEnd());
             TS_ASSERT_THROWS_CONTAINS(p_stepper->Step(), "A subsidiary range for this task has been exhausted.");
 
-            steppers = boost::assign::list_of(p_stepper2)(p_stepper1);
+            steppers = {p_stepper2, p_stepper1};
             AbstractStepperPtr p_stepper3(new MultipleStepper(steppers));
             for (p_stepper3->Reset(); !p_stepper3->AtEnd(); p_stepper3->Step())
             {
@@ -268,7 +265,7 @@ public:
 
         // Add it to a MultipleStepper so it can be used as in real life
         AbstractStepperPtr p_primary(new UniformStepper("i", "ms", 1, 5, 1));
-        std::vector<AbstractStepperPtr> steppers = boost::assign::list_of(p_primary)(p_fn_stepper);
+        std::vector<AbstractStepperPtr> steppers {p_primary, p_fn_stepper};
         AbstractStepperPtr p_multi_stepper(new MultipleStepper(steppers));
         EnvironmentPtr p_env(new Environment);
         p_multi_stepper->SetEnvironment(p_env);
@@ -286,7 +283,7 @@ public:
 
     void TestS1S2Steppers() throw (Exception)
     {
-        std::vector<double> s2_intervals = list_of(1000)(900)(800)(700)(600)(500);
+        std::vector<double> s2_intervals {1000, 900, 800, 700, 600, 500};
         boost::shared_ptr<AbstractStepper> p_s2_stepper(new VectorStepper("S2_interval", "ms", s2_intervals));
         TS_ASSERT_EQUALS(p_s2_stepper->GetNumberOfOutputPoints(), 6u);
         TS_ASSERT_EQUALS(p_s2_stepper->GetCurrentOutputNumber(), 0u);

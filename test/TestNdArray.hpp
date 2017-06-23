@@ -37,8 +37,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cxxtest/TestSuite.h>
 
-#include <boost/assign/list_of.hpp>
-
 #include "NdArray.hpp"
 
 #include "FakePetscSetup.hpp"
@@ -82,7 +80,7 @@ public:
 
     void TestBasicFunctionality() throw (Exception)
     {
-        Extents extents = boost::assign::list_of(3)(4)(2);
+        Extents extents {3, 4, 2};
 
         Array arr(extents);
         const Index num_elements = extents[0]*extents[1]*extents[2];
@@ -130,9 +128,9 @@ public:
         }
 
         // Look at views
-        RangeSpec view3d_indices = boost::assign::list_of(R(0,2))        // Take elements 0,1 from dim 0 ext 3
-                                                         (R(0,2,R::END)) // Take elements 0,2 from dim 1 ext 4
-                                                         (R(1,R::END));  // Take element 1 from dim 2 ext 2
+        RangeSpec view3d_indices {R(0,2),        // Take elements 0,1 from dim 0 ext 3
+                                  R(0,2,R::END), // Take elements 0,2 from dim 1 ext 4
+                                  R(1,R::END)};  // Take element 1 from dim 2 ext 2
         Array view3d = arr[view3d_indices];
         TS_ASSERT_EQUALS(view3d.GetNumDimensions(), 3u);
         TS_ASSERT_EQUALS(view3d.GetNumElements(), 2u*2u*1u);
@@ -140,7 +138,7 @@ public:
         TS_ASSERT_EQUALS(view3d.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(view3d.GetShape()[1], 2u);
         TS_ASSERT_EQUALS(view3d.GetShape()[2], 1u);
-        std::vector<double> expected = boost::assign::list_of(1)(5)(9)(13);
+        std::vector<double> expected {1, 5, 9, 13};
         unsigned i=0;
         for (ConstIterator it=view3d.Begin(); it != view3d.End(); ++it)
         {
@@ -151,9 +149,9 @@ public:
         }
 
         // Now a 2d view of the same data
-        RangeSpec view2d_indices = boost::assign::list_of(R(0,2))   // Take elements 0,1 from dim 0 ext 3
-                                                         (R(0,2,4)) // Take elements 0,2 from dim 1 ext 4
-                                                         (R(1));    // Take element 1 from dim 2 ext 2
+        RangeSpec view2d_indices {R(0,2),   // Take elements 0,1 from dim 0 ext 3
+                                  R(0,2,4), // Take elements 0,2 from dim 1 ext 4
+                                  R(1)};    // Take element 1 from dim 2 ext 2
         Array view2d = arr[view2d_indices];
         TS_ASSERT_EQUALS(view2d.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(view2d.GetNumElements(), 2u*2u*1u);
@@ -165,9 +163,7 @@ public:
         }
 
         // We can use negative indices to count from the end; same data as above
-        RangeSpec view_neg_indices = boost::assign::list_of(R(R::END, -1))
-                                                           (R(-4, 2, -1))
-                                                           (R(-1));
+        RangeSpec view_neg_indices {R(R::END, -1), R(-4, 2, -1), R(-1)};
         Array view_neg = arr[view_neg_indices];
         TS_ASSERT_EQUALS(view_neg.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(view_neg.GetNumElements(), 2u*2u*1u);
@@ -179,15 +175,15 @@ public:
         }
 
         // We can do reverse views too
-        view2d_indices = boost::assign::list_of(R(2))             // Last element from dim 0
-                                               (R(R::END, -2, 0)) // Dim 1 reversed step 2 (elts 3, 1)
-                                               (R(-1, -1, -3));   // Whole of dim 2 reversed
+        view2d_indices = {R(2),             // Last element from dim 0
+                          R(R::END, -2, 0), // Dim 1 reversed step 2 (elts 3, 1)
+                          R(-1, -1, -3)};   // Whole of dim 2 reversed
         view2d = arr[view2d_indices];
         TS_ASSERT_EQUALS(view2d.GetNumDimensions(), 2u);
         TS_ASSERT_EQUALS(view2d.GetNumElements(), 1u*2u*2u);
         TS_ASSERT_EQUALS(view2d.GetShape()[0], 2u);
         TS_ASSERT_EQUALS(view2d.GetShape()[1], 2u);
-        expected = boost::assign::list_of(23)(22)(19)(18);
+        expected = {23, 22, 19, 18};
         i=0;
         for (ConstIterator it=view2d.Begin(); it != view2d.End(); ++it)
         {
@@ -219,8 +215,8 @@ public:
         *arr.Begin() = 0.0;
 
         // PostProcFind uses a resize operation
-        Array::Extents changed_extents = boost::assign::list_of(3)(3)(3); // Was 3x4x2
-        Array::Extents min_extents = boost::assign::list_of(3)(3)(2);
+        Array::Extents changed_extents {3, 3, 3}; // Was 3x4x2
+        Array::Extents min_extents {3, 3, 2};
         Array copy_alias = copy; // Check any aliases are also resized
         copy.Resize(changed_extents);
         TS_ASSERT_EQUALS(copy.GetShape(), copy_alias.GetShape());
@@ -247,7 +243,7 @@ public:
 
     void TestMoreIterationAndViews() throw (Exception)
     {
-        Extents extents = boost::assign::list_of(3)(4)(2)(7);
+        Extents extents {3, 4, 2, 7};
 
         Array arr(extents);
         TS_ASSERT_EQUALS(arr.GetNumDimensions(), 4u);
@@ -261,10 +257,10 @@ public:
         }
 
         // Check we can take a view missing 'internal' dimensions
-        RangeSpec view_indices = boost::assign::list_of(R(0, 2, R::END))  // First & last elements from dim 0
-                                                       (R(R::END, -2, 0)) // Dim 1 reversed step 2 (elts 3, 1)
-                                                       (R(-1))            // Last element of dim 2
-                                                       (R(1, -1, -8));    // First 2 elements of dim 3 reversed
+        RangeSpec view_indices {R(0, 2, R::END),  // First & last elements from dim 0
+                                R(R::END, -2, 0), // Dim 1 reversed step 2 (elts 3, 1)
+                                R(-1),            // Last element of dim 2
+                                R(1, -1, -8)};    // First 2 elements of dim 3 reversed
         Array view = arr[view_indices];
         TS_ASSERT_EQUALS(view.GetNumDimensions(), 3u);
         TS_ASSERT_EQUALS(view.GetNumElements(), 2u*2u*2u);
@@ -273,8 +269,8 @@ public:
         TS_ASSERT_EQUALS(view.GetShape()[2], 2u);
         // Original array multipliers are: 56, 14, 7, 1
         // So offsets into it are 50,49,22,21, 162,161,134,133
-        std::vector<double> expected = boost::assign::list_of(-25.0)(-49.0/2)(-11.0)(-21.0/2)
-                                                             (-81.0)(-161.0/2)(-67.0)(-133.0/2);
+        std::vector<double> expected {-25.0, -49.0/2, -11.0, -21.0/2,
+                                      -81.0, -161.0/2, -67.0, -133.0/2};
         unsigned i=0;
         for (ConstIterator it=view.Begin(); it != view.End(); ++it)
         {
@@ -293,7 +289,7 @@ public:
         }
 
         // And check that a 0d view works
-        view_indices = boost::assign::list_of(R(1))(R(2))(R(1))(R(3));
+        view_indices = {R(1), R(2), R(1), R(3)};
         view = arr[view_indices];
         TS_ASSERT_EQUALS(view.GetNumDimensions(), 0u);
         TS_ASSERT_EQUALS(view.GetNumElements(), 1u);

@@ -38,7 +38,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include "Exception.hpp"
@@ -85,7 +84,7 @@ NdArray<double> ArrayFileReader::ReadFile(const FileFinder& rDataFile)
     unsigned num_rows = 1000u; // Guess a value; we'll adjust as we read
     unsigned num_rows_read = 1u;
     // Create the result array
-    NdArray<double>::Extents shape = boost::assign::list_of(num_cols)(num_rows);
+    NdArray<double>::Extents shape {num_cols, num_rows};
     NdArray<double> array(shape);
     NdArray<double>::Indices idxs = array.GetIndices();
     // Fill in the first row (read above)

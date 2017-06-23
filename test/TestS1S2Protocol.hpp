@@ -130,16 +130,35 @@ private:
                 ("cpp", "text/plain")
                 ("gp", "text/plain")
                 ("so", "application/octet-stream");
-        std::set<std::string> entries = boost::assign::list_of("machine_info_0.txt")("model_info.txt")("provenance_info_0.txt")
-                ("trace.txt")("outputs-contents.csv")("outputs-default-plots.csv")
-                ("Action_potential_traces.eps")("outputs_Action_potential_traces_gnuplot_data.csv")("outputs_Action_potential_traces_gnuplot_data.gp")
-                ("S1-S2_curve.eps")("outputs_S1-S2_curve_gnuplot_data.csv")("outputs_S1-S2_curve_gnuplot_data.gp")
-                ("outputs_APD90.csv")("outputs_DI.csv")("outputs_max_S1S2_slope.csv")("outputs_membrane_voltage.csv")
-                ("outputs_raw_APD90.csv")("outputs_raw_DI.csv")("outputs_S1S2_slope.csv")("outputs_s2_intervals.csv")("outputs_time_1d.csv")
-                ("outputs_PCLs.csv")("outputs_restitution_curve_gnuplot_data.csv")
-                ("restitution_curve.eps")("outputs_restitution_curve_gnuplot_data.gp");
+        std::set<std::string> entries {
+                "machine_info_0.txt",
+                "model_info.txt",
+                "provenance_info_0.txt",
+                "trace.txt",
+                "outputs-contents.csv",
+                "outputs-default-plots.csv",
+                "Action_potential_traces.eps",
+                "outputs_Action_potential_traces_gnuplot_data.csv",
+                "outputs_Action_potential_traces_gnuplot_data.gp",
+                "S1-S2_curve.eps",
+                "outputs_S1-S2_curve_gnuplot_data.csv",
+                "outputs_S1-S2_curve_gnuplot_data.gp",
+                "outputs_APD90.csv",
+                "outputs_DI.csv",
+                "outputs_max_S1S2_slope.csv",
+                "outputs_membrane_voltage.csv",
+                "outputs_raw_APD90.csv",
+                "outputs_raw_DI.csv",
+                "outputs_S1S2_slope.csv",
+                "outputs_s2_intervals.csv",
+                "outputs_time_1d.csv",
+                "outputs_PCLs.csv",
+                "outputs_restitution_curve_gnuplot_data.csv",
+                "restitution_curve.eps",
+                "outputs_restitution_curve_gnuplot_data.gp"
+                };
         entries.insert("lib" + rModelName + ".so");
-        std::vector<std::string> suffixes = boost::assign::list_of(".cellml")("-conf.xml")(".cpp")(".hpp");
+        std::vector<std::string> suffixes {".cellml", "-conf.xml", ".cpp", ".hpp"};
         BOOST_FOREACH(std::string suffix, suffixes)
         {
             entries.insert(rModelName + suffix);

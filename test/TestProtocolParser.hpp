@@ -38,6 +38,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cxxtest/TestSuite.h>
 #include <boost/foreach.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "ProtocolLanguage.hpp"
 #include "ProtocolParser.hpp"
@@ -177,7 +178,7 @@ class TestProtocolParser : public CxxTest::TestSuite
         {
             NdArray<double> blocks = LookupArray(env, "blocks");
             NdArray<double>::Iterator it = blocks.Begin();
-            double values[] = {-10, 0, -9, 1, 10, 20, 11, 21};
+            double values[] {-10, 0, -9, 1, 10, 20, 11, 21};
             for (NdArray<double>::Index i=0; i<8u; ++i)
             {
                 TS_ASSERT_EQUALS(*it++, values[i]);
@@ -355,15 +356,15 @@ public:
             TS_ASSERT_EQUALS(array.GetNumDimensions(), 1u);
             TS_ASSERT_EQUALS(array.GetNumElements(), 3u);
             std::vector<double> result_values(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, {1, 2, 4});
+            TS_ASSERT_EQUALS(result_values, boost::assign::list_of(1)(2)(4));
         }
 
         {
             std::cout << " - stretch" << std::endl;
             // Stretch a 1x3x1 array to 3x3x2
-            NdArray<double>::Extents input_shape = {1, 3, 1};
-            NdArray<double>::Extents intermediate_shape = {3, 3, 1};
-            NdArray<double>::Extents result_shape = {3, 3, 2};
+            NdArray<double>::Extents input_shape {1, 3, 1};
+            NdArray<double>::Extents intermediate_shape {3, 3, 1};
+            NdArray<double>::Extents result_shape {3, 3, 2};
             NdArray<double> input(input_shape);
             NdArray<double>::Iterator it = input.Begin();
             *it++ = 1; *it++ = 2; *it = 3;
@@ -377,7 +378,7 @@ public:
             TS_ASSERT_EQUALS(array.GetNumElements(), 9u);
             TS_ASSERT_EQUALS(array.GetShape(), intermediate_shape);
             std::vector<double> result_values(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, {1, 2, 3, 1, 2, 3, 1, 2, 3});
+            TS_ASSERT_EQUALS(result_values, boost::assign::list_of(1)(2)(3)(1)(2)(3)(1)(2)(3));
 
             args = EXPR_LIST(CONST(3))(CONST(3))(CONST(2));
             DEFINE(p_shape, boost::make_shared<ArrayCreate>(args));
@@ -391,16 +392,16 @@ public:
             TS_ASSERT_EQUALS(array.GetNumElements(), 18u);
             TS_ASSERT_EQUALS(array.GetShape(), result_shape);
             result_values.assign(array.Begin(), array.End());
-            TS_ASSERT_EQUALS(result_values, {1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3});
+            TS_ASSERT_EQUALS(result_values, boost::assign::list_of(1)(1)(2)(2)(3)(3)(1)(1)(2)(2)(3)(3)(1)(1)(2)(2)(3)(3));
         }
 
         {
             std::cout << " - window, shift, join" << std::endl;
             // Create a 2d array to operate on - comprehension of i*5+j for i=0:3, j=0:5
-            const unsigned shape[] = {3, 5};
+            const unsigned shape[] {3, 5};
             DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(shape[0]))(VALUE(StringValue, "i")));
             DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(shape[1]))(VALUE(StringValue, "j")));
-            std::vector<AbstractExpressionPtr> comp_args = {i_range, j_range};
+            std::vector<AbstractExpressionPtr> comp_args {i_range, j_range};
             std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(shape[1]));
             DEFINE(times, boost::make_shared<MathmlTimes>(args));
             args = EXPR_LIST(times)(LOOKUP("j"));
@@ -438,7 +439,7 @@ public:
                         if (shifted_j < 0) shifted_j = 0;
                         if ((unsigned)shifted_j >= shape[1]) shifted_j = shape[1]-1;
                         NdArray<double>::Indices window_idx = boost::assign::list_of<unsigned>(shift+2)(i)(j);
-                        NdArray<double>::Indices input_idx = {i, shifted_j};
+                        NdArray<double>::Indices input_idx (i, shifted_j);
                         TS_ASSERT_EQUALS(window[window_idx], input[input_idx]);
                     }
                 }
@@ -448,12 +449,12 @@ public:
         {
             std::cout << " - interp" << std::endl;
             // Create two 2d arrays (xs & ys) to operate on - we're going to interpolate multiple functions
-            NdArray<double>::Extents shape = {2u, 3u}; // "Simulation number" x "Time"
+            NdArray<double>::Extents shape {2u, 3u}; // "Simulation number" x "Time"
             NdArray<double> xs(shape);  // [ [2, 3, 4], [2, 3, 4] ]
             NdArray<double> ys(shape);  // [ [ 0, 2, 4 ], [ 16, 14, 12 ] ]
-            const double xs_values[] = {2, 3, 4, 2, 3, 4};
+            const double xs_values[] {2, 3, 4, 2, 3, 4};
             std::copy(xs_values, xs_values+6, xs.Begin());
-            const double ys_values[] = {0, 2, 4, 16, 14, 12};
+            const double ys_values[] {0, 2, 4, 16, 14, 12};
             std::copy(ys_values, ys_values+6, ys.Begin());
 
             // Targets to find

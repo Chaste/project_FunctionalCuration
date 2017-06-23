@@ -36,7 +36,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTWHILELOOPS_HPP_
 #define TESTWHILELOOPS_HPP_
 
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include <cxxtest/TestSuite.h>
@@ -87,7 +86,7 @@ private:
 
         // Check the final Vs are correct
         const Environment& r_outputs = runner.GetProtocol()->rGetOutputsCollection();
-        std::vector<std::string> V_names = boost::assign::list_of("V0")("V1")("V2")("V3")("V4")("V5");
+        std::vector<std::string> V_names {"V0", "V1", "V2", "V3", "V4", "V5"};
         BOOST_FOREACH(const std::string& r_name, V_names)
         {
             CheckFinalV(r_outputs, r_name, N);

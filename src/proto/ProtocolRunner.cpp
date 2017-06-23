@@ -39,7 +39,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include "AbstractCvodeCell.hpp"
@@ -110,7 +109,7 @@ boost::shared_ptr<AbstractSystemWithOutputs> ProtocolRunner::LoadModel(const Fil
     std::string model_name = rModelFile.GetLeafNameNoExtension();
     std::cout << "Generating modified model " << model_name << std::endl;
     FileFinder copied_model = mHandler.CopyFileTo(rModelFile);
-    std::vector<std::string> options = boost::assign::list_of("--cvode")("--expose-annotated-variables");
+    std::vector<std::string> options {"--cvode", "--expose-annotated-variables"};
     options.push_back("--protocol=" + rProtoXmlFile.GetAbsolutePath());
     if (optimiseModel)
     {

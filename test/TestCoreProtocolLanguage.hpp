@@ -426,7 +426,7 @@ public:
             // Explicitly construct a regular index
             NdArray<double>::Extents shape = {6, 2};
             NdArray<double> indices(shape);
-            std::vector<unsigned> indices_2 = ({1},3,0,2,1,3);
+            std::vector<unsigned> indices_2 = (boost::assign::list_of(1),3,0,2,1,3);
             NdArray<double>::Indices idxs = indices.GetIndices();
             for (unsigned i=0; i<shape[0]; ++i)
             {
@@ -582,9 +582,11 @@ public:
             DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(1))(CONST(1))(CONST(3))(VALUE(StringValue, "i")));
             DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(3))(VALUE(StringValue, "j")));
             std::vector<AbstractExpressionPtr> comp_args = {i_range, j_range};
-            std::vector<AbstractExpressionPtr> args = boost::assign::list_of<AbstractExpressionPtr>(LOOKUP("i"))(CONST(3));
+            //std::vector<AbstractExpressionPtr> args = boost::assign::list_of<AbstractExpressionPtr>(LOOKUP("i"))(CONST(3));
+            std::vector<AbstractExpressionPtr> args = {LOOKUP("i"), CONST(3)};
             DEFINE(times, boost::make_shared<MathmlTimes>(args));
-            args = boost::assign::list_of<AbstractExpressionPtr>(times)(LOOKUP("j"));
+            //args = boost::assign::list_of<AbstractExpressionPtr>(times)(LOOKUP("j"));
+            args = {times, LOOKUP("j")};
             DEFINE(plus, boost::make_shared<MathmlPlus>(args));
             DEFINE(array_exp, boost::make_shared<ArrayCreate>(plus, comp_args));
             AbstractValuePtr p_array = (*array_exp)(*p_env);
@@ -609,11 +611,13 @@ public:
             std::vector<AbstractExpressionPtr> args = boost::assign::list_of<AbstractExpressionPtr>(CONST(-10))(LOOKUP("j"));
             DEFINE(elt1, boost::make_shared<MathmlPlus>(args));
             DEFINE(elt2, LOOKUP("j"));
-            args = boost::assign::list_of<AbstractExpressionPtr>(CONST(10))(LOOKUP("j"));
+            //args = boost::assign::list_of<AbstractExpressionPtr>(CONST(10))(LOOKUP("j"));
+            args = {CONST(10), LOOKUP("j")};
             std::vector<AbstractExpressionPtr> sub_array_elts = {elt1, elt2};
             DEFINE(subarray1, boost::make_shared<ArrayCreate>(sub_array_elts));
             DEFINE(elt3, boost::make_shared<MathmlPlus>(args));
-            args = boost::assign:list_of<AbstractExpressionPtr>(CONST(20))(LOOKUP("j"));
+            //args = boost::assign::list_of<AbstractExpressionPtr>(CONST(20))(LOOKUP("j"));
+            args = {CONST(20), LOOKUP("j")};
             DEFINE(elt4, boost::make_shared<MathmlPlus>(args));
             sub_array_elts = {elt3, elt4};
             DEFINE(subarray2, boost::make_shared<ArrayCreate>(sub_array_elts));

@@ -38,7 +38,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cxxtest/TestSuite.h>
 
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include "SedmlParser.hpp"
@@ -75,12 +74,12 @@ public:
         std::cout << "Checking results..." << std::endl;
         const Environment& r_outputs = p_proto->rGetOutputsCollection();
 
-        std::vector<std::string> tasks = boost::assign::list_of("utc")("repeat")("utc_repeat")("utc_set_model")
-                ("functional_range1")("functional_range2");
-        std::vector<double> t_offsets = boost::assign::list_of(0)(0)(1)(1)(1)(1);
-        std::vector<double> V_offsets = boost::assign::list_of(0)(4)(1)(1)(11)(11);
-        std::vector<double> V_increments = boost::assign::list_of(1)(1)(1)(0)(1)(1);
-        std::vector<unsigned> extra_dim_sizes = boost::assign::list_of(0)(3)(0)(0)(0)(0);
+        std::vector<std::string> tasks {"utc", "repeat", "utc_repeat", 
+                "utc_set_model", "functional_range1", "functional_range2"};
+        std::vector<double> t_offsets {0, 0 ,1, 1 ,1, 1};
+        std::vector<double> V_offsets {0, 4 ,1, 1, 11, 11};
+        std::vector<double> V_increments {1, 1, 1, 0, 1, 1};
+        std::vector<unsigned> extra_dim_sizes {0, 3, 0, 0, 0, 0};
 
         for (unsigned i=0; i<6u; ++i)
         {
@@ -133,10 +132,14 @@ public:
             pclose(pipe);
             if (output.substr(0, 11) == "gnuplot 4.2")
             {
-                std::vector<std::string> graph_names = boost::assign::list_of("Simple_uniform_timecourse_-_c1")
-                    ("Simple_repetition_-_c2")("Uniform_timecourse_by_repeatedTask_-_c3")
-                    ("Setting_model_variable_-_c4")("Test_functional_range_-_c5")
-                    ("Test_functional_range_with_shorthands_-_c6");
+                std::vector<std::string> graph_names {
+                    "Simple_uniform_timecourse_-_c1",
+                    "Simple_repetition_-_c2",
+                    "Uniform_timecourse_by_repeatedTask_-_c3",
+                    "Setting_model_variable_-_c4",
+                    "Test_functional_range_-_c5",
+                    "Test_functional_range_with_shorthands_-_c6"
+                    };
                 BOOST_FOREACH(const std::string& r_graph_name, graph_names)
                 {
                     FileFinder ref_graph("data/repeated_task_graphs/" + r_graph_name + ".eps", this_test);
@@ -171,7 +174,7 @@ public:
         // Test the results
         std::cout << "Checking results..." << std::endl;
         const Environment& r_outputs = p_proto->rGetOutputsCollection();
-        std::vector<std::string> time1_names = boost::assign::list_of("time1")("time1p")("time1c")("time1n");
+        std::vector<std::string> time1_names {"time1", "time1p", "time1c", "time1n"};
         BOOST_FOREACH(std::string name, time1_names)
         {
             NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
@@ -188,7 +191,7 @@ public:
                 }
             }
         }
-        std::vector<std::string> time2_names = boost::assign::list_of("time2")("time2p")("time2c")("time2n");
+        std::vector<std::string> time2_names {"time2", "time2p", "time2c", "time2n"};
         BOOST_FOREACH(std::string name, time2_names)
         {
             NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
@@ -205,7 +208,7 @@ public:
                 }
             }
         }
-        std::vector<std::string> V1_names = boost::assign::list_of("V1")("V1p")("V1c")("V1n");
+        std::vector<std::string> V1_names {"V1", "V1p", "V1c", "V1n"};
         BOOST_FOREACH(std::string name, V1_names)
         {
             NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));
@@ -222,7 +225,7 @@ public:
                 }
             }
         }
-        std::vector<std::string> V2_names = boost::assign::list_of("V2")("V2p")("V2c")("V2n");
+        std::vector<std::string> V2_names {"V2", "V2p", "V2c", "V2n"};
         BOOST_FOREACH(std::string name, V2_names)
         {
             NdArray<double> result = GET_ARRAY(r_outputs.Lookup(name, "TestCombinedTask"));

@@ -36,7 +36,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Index.hpp"
 
 #include <algorithm>
-#include <boost/assign/list_of.hpp>
 #include <boost/make_shared.hpp>
 
 #include "BacktraceException.hpp"
@@ -53,7 +52,7 @@ Index::Index(const AbstractExpressionPtr pOperand,
              const AbstractExpressionPtr pShrink,
              const AbstractExpressionPtr pPad,
              const AbstractExpressionPtr pPadValue)
-    : FunctionCall("~index", boost::assign::list_of(pOperand)(pIndices)(pDim)(pShrink)(pPad)(pPadValue))
+    : FunctionCall("~index", {pOperand, pIndices, pDim, pShrink, pPad, pPadValue})
 {}
 
 AbstractValuePtr Index::operator()(const Environment& rEnv) const
@@ -131,7 +130,7 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         // Get the indices of the next operand element
         for (unsigned j=0; j<operand_dimensions; ++j)
         {
-            NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
+            NdArray<double>::Indices ij(i, j);
             idxs[j] = (NdArray<double>::Index)indices[ij];
         }
         idxs[dimension] = 0;
@@ -179,7 +178,7 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         // Get the indices of the next operand element
         for (unsigned j=0; j<operand_dimensions; ++j)
         {
-            NdArray<double>::Indices ij = boost::assign::list_of(i)(j);
+            NdArray<double>::Indices ij(i, j);
             idxs[j] = (NdArray<double>::Index)indices[ij];
         }
         double value = operand[idxs];

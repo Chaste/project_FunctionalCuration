@@ -41,7 +41,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <string>
 #include <iostream>
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include "SedmlParser.hpp"
@@ -73,7 +72,7 @@ public:
         // Test the results
         std::cout << "Comparing results against saved data..." << std::endl;
         FileFinder data_folder("data", this_test);
-        std::vector<std::string> output_names = boost::assign::list_of("tim1")("tim2")("per_tim")("per_tim2")("time")("tim1_norm");
+        std::vector<std::string> output_names {"tim1", "tim2", "per_tim", "per_tim2", "time", "tim1_norm"};
         BOOST_FOREACH(std::string output_name, output_names)
         {
             std::string filename = "outputs_" + output_name + ".csv";

@@ -91,7 +91,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/pointer_cast.hpp> // NB: Not available on Boost 1.33.1
 #include <boost/shared_ptr.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
 #include <cxxtest/TestSuite.h>
@@ -154,9 +153,10 @@ private:
         runner.GetProtocol()->SetInput("s1_interval", CONST(s1PacingCycleLength));
 
         // Special case for non-conservative models which break after lots of paces.
-        std::set<std::string> non_conservative_models =
-                boost::assign::list_of("jafri_rice_winslow_model_1998")
-                                      ("winslow_model_1999");
+        std::set<std::string> non_conservative_models {
+            "jafri_rice_winslow_model_1998",
+            "winslow_model_1999"
+            };
         if (non_conservative_models.find(rCellMLFileBaseName) != non_conservative_models.end())
         {
             runner.GetProtocol()->SetInput("steady_state_beats", CONST(10));
@@ -307,8 +307,8 @@ public:
             cellml_files = CommandLineArguments::Instance()->GetStringsCorrespondingToOption("--models");
         }
 
-        std::vector<std::string> ical_outputs = boost::assign::list_of("min_LCC")("final_membrane_voltage");
-        std::vector<std::string> s1s2_outputs = boost::assign::list_of("APD90")("DI");
+        std::vector<std::string> ical_outputs {"min_LCC", "final_membrane_voltage"};
+        std::vector<std::string> s1s2_outputs {"APD90", "DI"};
 
         /* We use Chaste's process isolation facility to process models in parallel, if running on multiple processes.
          * The main output folder needs to be created with a collective call (so we don't have multiple processes
@@ -320,18 +320,18 @@ public:
         }
 
         // Models corresponding to particular species
-        std::set<std::string> dog_models = boost::assign::list_of("decker_2009")
-                                                                 ("hund_rudy_2004")
-                                                                 ("livshitz_rudy_2007")
-                                                                 ("fox_mcharg_gilmour_2002")
-                                                                 ("winslow_model_1999");
-        std::set<std::string> human_models = boost::assign::list_of("fink_noble_giles_model_2008")
-                                                                   ("grandi_pasqualini_bers_2010_ss")
-                                                                   ("iyer_2004_s1s2_curve")
-                                                                   ("iyer_model_2007_s1s2_curve")
-                                                                   ("priebe_beuckelmann_1998_s1s2_curve")
-                                                                   ("ten_tusscher_model_2004_epi_s1s2_curve")
-                                                                   ("ten_tusscher_model_2006_epi_s1s2_curve");
+        std::set<std::string> dog_models {"decker_2009",
+                                          "hund_rudy_2004",
+                                          "livshitz_rudy_2007",
+                                          "fox_mcharg_gilmour_2002",
+                                          "winslow_model_1999"};
+        std::set<std::string> human_models {"fink_noble_giles_model_2008",
+                                            "grandi_pasqualini_bers_2010_ss",
+                                            "iyer_2004_s1s2_curve",
+                                            "iyer_model_2007_s1s2_curve",
+                                            "priebe_beuckelmann_1998_s1s2_curve",
+                                            "ten_tusscher_model_2004_epi_s1s2_curve",
+                                            "ten_tusscher_model_2006_epi_s1s2_curve"};
 
         /* This utility class handles comparing virtual experiment results against stored reference data.
          */

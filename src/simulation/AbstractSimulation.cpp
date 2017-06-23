@@ -636,8 +636,8 @@ void AbstractSimulation::CreateResultViews()
         const unsigned view_size = mpStepper->GetCurrentOutputNumber() + 1;
         const std::vector<std::string> output_names = mpResultsEnvironment->GetDefinedNames();
         EnvironmentPtr p_view_env = boost::const_pointer_cast<Environment>(rGetEnvironment().GetDelegateeEnvironment(prefix));
-        DEFINE_TUPLE(dim_default, EXPR_LIST(NULL_EXPR)(NULL_EXPR)(CONST(1))(NULL_EXPR));
-        DEFINE_TUPLE(dim0, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(view_size)));
+        DEFINE_TUPLE(dim_default, EXPR_LIST(NULL_EXPR)(NULL_EXPR)(CONST(1))(NULL_EXPR)EXPR_LIST_END);
+        DEFINE_TUPLE(dim0, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(view_size))EXPR_LIST_END);
         std::vector<AbstractExpressionPtr> view_args = {dim0, dim_default};
         BOOST_FOREACH(const std::string& r_name, output_names)
         {

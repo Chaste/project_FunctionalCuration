@@ -182,5 +182,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Shorthand for when defining a list of expressions on-the-fly.
  */
 #define EXPR_LIST  boost::assign::list_of<AbstractExpressionPtr>
+#define EXPR_LIST_END .convert_to_container<std::vector<AbstractExpressionPtr>>()
 
 #endif /* PROTOHELPERMACROS_HPP_ */

@@ -325,9 +325,9 @@ public:
 
         {
             std::cout << " - max, min" << std::endl;
-            std::vector<AbstractExpressionPtr> values = EXPR_LIST(CONST(1))(CONST(-2))(CONST(4))(CONST(2));
+            std::vector<AbstractExpressionPtr> values {CONST(1), CONST(-2), CONST(4), CONST(2)};
             DEFINE(input, boost::make_shared<ArrayCreate>(values));
-            std::vector<AbstractExpressionPtr> args = EXPR_LIST(input)(DEFAULT_EXPR);
+            std::vector<AbstractExpressionPtr> args {input, DEFAULT_EXPR};
 
             AbstractValuePtr p_result = (*boost::make_shared<FunctionCall>("Max", args))(env);
             TS_ASSERT(p_result->IsArray());
@@ -346,9 +346,9 @@ public:
 
         {
             std::cout << " - diff" << std::endl;
-            std::vector<AbstractExpressionPtr> values = EXPR_LIST(CONST(1))(CONST(2))(CONST(4))(CONST(8));
+            std::vector<AbstractExpressionPtr> values {CONST(1), CONST(2), CONST(4), CONST(8)};
             DEFINE(input, boost::make_shared<ArrayCreate>(values));
-            std::vector<AbstractExpressionPtr> args = EXPR_LIST(input)(DEFAULT_EXPR);
+            std::vector<AbstractExpressionPtr> args {input, DEFAULT_EXPR};
             DEFINE(call, boost::make_shared<FunctionCall>("Diff", args));
             AbstractValuePtr p_result = (*call)(env);
             TS_ASSERT(p_result->IsArray());
@@ -368,7 +368,7 @@ public:
             NdArray<double> input(input_shape);
             NdArray<double>::Iterator it = input.Begin();
             *it++ = 1; *it++ = 2; *it = 3;
-            std::vector<AbstractExpressionPtr> args = EXPR_LIST(VALUE(ArrayValue, input))(CONST(3))(CONST(0));
+            std::vector<AbstractExpressionPtr> args {VALUE(ArrayValue, input), CONST(3), CONST(0)};
             AbstractExpressionPtr p_call = boost::make_shared<FunctionCall>("Stretch", args);
             AbstractValuePtr p_result = (*p_call)(env);
 
@@ -380,9 +380,9 @@ public:
             std::vector<double> result_values(array.Begin(), array.End());
             TS_ASSERT_EQUALS(result_values, boost::assign::list_of(1)(2)(3)(1)(2)(3)(1)(2)(3));
 
-            args = EXPR_LIST(CONST(3))(CONST(3))(CONST(2));
+            args = {CONST(3), CONST(3), CONST(2)};
             DEFINE(p_shape, boost::make_shared<ArrayCreate>(args));
-            args = EXPR_LIST(VALUE(ArrayValue, array))(CONST(2))(DEFAULT_EXPR);
+            args = {VALUE(ArrayValue, array), CONST(2), DEFAULT_EXPR};
             p_call = boost::make_shared<FunctionCall>("Stretch", args);
             p_result = (*p_call)(env);
 
@@ -399,12 +399,12 @@ public:
             std::cout << " - window, shift, join" << std::endl;
             // Create a 2d array to operate on - comprehension of i*5+j for i=0:3, j=0:5
             const unsigned shape[] {3, 5};
-            DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(shape[0]))(VALUE(StringValue, "i")));
-            DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(shape[1]))(VALUE(StringValue, "j")));
+            DEFINE_TUPLE(i_range, EXPR_LIST(CONST(0))(CONST(0))(CONST(1))(CONST(shape[0]))(VALUE(StringValue, "i"))EXPR_LIST_END);
+            DEFINE_TUPLE(j_range, EXPR_LIST(CONST(1))(CONST(0))(CONST(1))(CONST(shape[1]))(VALUE(StringValue, "j"))EXPR_LIST_END);
             std::vector<AbstractExpressionPtr> comp_args {i_range, j_range};
-            std::vector<AbstractExpressionPtr> args = EXPR_LIST(LOOKUP("i"))(CONST(shape[1]));
+            std::vector<AbstractExpressionPtr> args {LOOKUP("i"), CONST(shape[1])};
             DEFINE(times, boost::make_shared<MathmlTimes>(args));
-            args = EXPR_LIST(times)(LOOKUP("j"));
+            args = {times, LOOKUP("j")};
             DEFINE(plus, boost::make_shared<MathmlPlus>(args));
             DEFINE(array_exp, boost::make_shared<ArrayCreate>(plus, comp_args));
             AbstractValuePtr p_array = (*array_exp)(env);
@@ -413,7 +413,7 @@ public:
             TS_ASSERT_EQUALS(input.GetShape()[1], 5u);
 
             // Create a window of the "time" (j) dimension: window(input, 2, default)
-            args = EXPR_LIST(VALUE(ArrayValue, input))(CONST(2))(DEFAULT_EXPR);
+            args = {VALUE(ArrayValue, input), CONST(2), DEFAULT_EXPR};
             DEFINE(window_call, boost::make_shared<FunctionCall>(LOOKUP("Window"), args));
             AbstractValuePtr p_window = (*window_call)(env);
             NdArray<double> window = GET_ARRAY(p_window);
@@ -468,9 +468,14 @@ public:
             }
 
             // Search forwards
-            std::vector<AbstractExpressionPtr> args
-                = EXPR_LIST(VALUE(ArrayValue, xs))(VALUE(ArrayValue, ys))(VALUE(ArrayValue, targets))
-                           (VALUE(ArrayValue, starts))(DEFAULT_EXPR)(DEFAULT_EXPR);
+            std::vector<AbstractExpressionPtr> args {
+                    VALUE(ArrayValue, xs),
+                    VALUE(ArrayValue, ys),
+                    VALUE(ArrayValue, targets),
+                    VALUE(ArrayValue, starts),
+                    DEFAULT_EXPR,
+                    DEFAULT_EXPR
+                    };
             AbstractValuePtr p_result = (*boost::make_shared<FunctionCall>("Interp", args))(env);
             NdArray<double> result = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(result.GetNumDimensions(), 2u);
@@ -486,7 +491,7 @@ public:
                 *(starts.Begin()+i) = 3.0 + i;  // [3, 4]
             }
             args = EXPR_LIST(VALUE(ArrayValue, xs))(VALUE(ArrayValue, ys))(VALUE(ArrayValue, targets))
-                            (VALUE(ArrayValue, starts))(CONST(0))(DEFAULT_EXPR);
+                            (VALUE(ArrayValue, starts))(CONST(0))(DEFAULT_EXPR)EXPR_LIST_END;
             p_result = (*boost::make_shared<FunctionCall>("Interp", args))(env);
             result = GET_ARRAY(p_result);
             TS_ASSERT_EQUALS(result.GetNumDimensions(), 2u);

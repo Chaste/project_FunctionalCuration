@@ -39,12 +39,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cxxtest/TestSuite.h>
 
 #include <string>
-#include <boost/assign/list_of.hpp>
 
 #include "ArrayFileReader.hpp"
 #include "ProtocolRunner.hpp"
 #include "ProtocolFileFinder.hpp"
-#include "ProtoHelperMacros.hpp"
 #include "NumericFileComparison.hpp"
 
 #include "FileFinder.hpp"
@@ -52,8 +50,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PetscSetupAndFinalize.hpp"
 
-typedef NdArray<double>::Range R;
-typedef std::vector<R> RangeSpec;
 
 class TestClamping : public CxxTest::TestSuite
 {
@@ -133,7 +129,8 @@ public:
                                       RelativeTo::ChasteSourceRoot);
         FileFinder cellml_file("projects/FunctionalCuration/test/data/simple_ode.cellml",
                                RelativeTo::ChasteSourceRoot);
-        ProtocolRunner runner(cellml_file, proto_file, dirname);runner.RunProtocol();
+        ProtocolRunner runner(cellml_file, proto_file, dirname);
+        runner.RunProtocol();
 
         FileFinder success_file(dirname + "/success", RelativeTo::ChasteTestOutput);
         TS_ASSERT(success_file.Exists());

@@ -438,8 +438,8 @@ public:
                         int shifted_j = j - shift;
                         if (shifted_j < 0) shifted_j = 0;
                         if ((unsigned)shifted_j >= shape[1]) shifted_j = shape[1]-1;
-                        NdArray<double>::Indices window_idx = boost::assign::list_of<unsigned>(shift+2)(i)(j);
-                        NdArray<double>::Indices input_idx (i, shifted_j);
+                        NdArray<double>::Indices window_idx{shift+2, i, j};
+                        NdArray<double>::Indices input_idx{i, shifted_j};
                         TS_ASSERT_EQUALS(window[window_idx], input[input_idx]);
                     }
                 }

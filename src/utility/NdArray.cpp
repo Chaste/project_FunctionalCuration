@@ -169,11 +169,13 @@ NdArray<DATA>& NdArray<DATA>::operator=(const NdArray<DATA>& rOther)
     return *this;
 }
 
+#include "Debug.hpp"
 
 template<typename DATA>
 DATA& NdArray<DATA>::operator[](const Indices& rIndices)
 {
     const Index num_dims = rIndices.size();
+    if (num_dims != mpInternalData->mExtents.size()) STACK;
     ASSERT_MSG(num_dims == mpInternalData->mExtents.size(),
                "Trying to index NdArray with wrong number of dimensions; array has "
                << mpInternalData->mExtents.size() << " dimensions but indices passed are length "
@@ -191,6 +193,7 @@ template<typename DATA>
 const DATA& NdArray<DATA>::operator[](const Indices& rIndices) const
 {
     const Index num_dims = rIndices.size();
+    if (num_dims != mpInternalData->mExtents.size()) STACK;
     ASSERT_MSG(num_dims == mpInternalData->mExtents.size(),
                "Trying to index NdArray with wrong number of dimensions; array has "
                << mpInternalData->mExtents.size() << " dimensions but indices passed are length "

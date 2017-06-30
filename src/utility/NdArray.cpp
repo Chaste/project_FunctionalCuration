@@ -177,7 +177,7 @@ DATA& NdArray<DATA>::operator[](const Indices& rIndices)
     ASSERT_MSG(num_dims == mpInternalData->mExtents.size(),
                "Trying to index NdArray with wrong number of dimensions; array has "
                << mpInternalData->mExtents.size() << " dimensions but indices passed are length "
-               << num_dims);
+               << num_dims << std::endl);
     RangeIndex actual_index = 0;
     for (Index i=0; i<num_dims; ++i)
     {
@@ -194,7 +194,7 @@ const DATA& NdArray<DATA>::operator[](const Indices& rIndices) const
     ASSERT_MSG(num_dims == mpInternalData->mExtents.size(),
                "Trying to index NdArray with wrong number of dimensions; array has "
                << mpInternalData->mExtents.size() << " dimensions but indices passed are length "
-               << num_dims);
+               << num_dims << std::endl);
     RangeIndex actual_index = 0;
     for (Index i=0; i<num_dims; ++i)
     {

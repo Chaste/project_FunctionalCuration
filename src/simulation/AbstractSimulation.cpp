@@ -418,8 +418,8 @@ EnvironmentPtr AbstractSimulation::Run()
                 array.Resize(shape);
             }
         }
-        // Re-throw, without causing parallel deadlock
-        throw rE;
+        // Re-throw original exception, without causing parallel deadlock
+        throw;
     }
     if (store_results)
     {

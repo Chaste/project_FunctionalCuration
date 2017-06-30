@@ -59,7 +59,8 @@ public:
                 errors.push_back(e);
             }
         }
-        ExceptionSet overall_error(errors, "file", 0u);
+        // Note that if this isn't const only the first throw below will have the correct message!
+        const ExceptionSet overall_error(errors, "file", 0u);
 
         TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Summary of errors that occurred (see earlier for details):\n");
         TS_ASSERT_THROWS_CONTAINS(throw overall_error, "Error 0\n");

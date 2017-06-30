@@ -130,7 +130,7 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         // Get the indices of the next operand element
         for (unsigned j=0; j<operand_dimensions; ++j)
         {
-            NdArray<double>::Indices ij(i, j);
+            NdArray<double>::Indices ij{i, j};
             idxs[j] = (NdArray<double>::Index)indices[ij];
         }
         idxs[dimension] = 0;
@@ -178,7 +178,7 @@ AbstractValuePtr Index::operator()(const Environment& rEnv) const
         // Get the indices of the next operand element
         for (unsigned j=0; j<operand_dimensions; ++j)
         {
-            NdArray<double>::Indices ij(i, j);
+            NdArray<double>::Indices ij{(unsigned)i, j};
             idxs[j] = (NdArray<double>::Index)indices[ij];
         }
         double value = operand[idxs];

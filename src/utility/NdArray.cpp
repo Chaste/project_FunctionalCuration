@@ -174,7 +174,10 @@ template<typename DATA>
 DATA& NdArray<DATA>::operator[](const Indices& rIndices)
 {
     const Index num_dims = rIndices.size();
-    assert(num_dims == mpInternalData->mExtents.size());
+    ASSERT_MSG(num_dims == mpInternalData->mExtents.size(),
+               "Trying to index NdArray with wrong number of dimensions; array has "
+               << mpInternalData->mExtents.size() << " dimensions but indices passed are length "
+               << num_dims);
     RangeIndex actual_index = 0;
     for (Index i=0; i<num_dims; ++i)
     {
@@ -188,7 +191,10 @@ template<typename DATA>
 const DATA& NdArray<DATA>::operator[](const Indices& rIndices) const
 {
     const Index num_dims = rIndices.size();
-    assert(num_dims == mpInternalData->mExtents.size());
+    ASSERT_MSG(num_dims == mpInternalData->mExtents.size(),
+               "Trying to index NdArray with wrong number of dimensions; array has "
+               << mpInternalData->mExtents.size() << " dimensions but indices passed are length "
+               << num_dims);
     RangeIndex actual_index = 0;
     for (Index i=0; i<num_dims; ++i)
     {

@@ -14,7 +14,7 @@ reproduce the results from that paper, having installed the necessary Chaste com
 as set out below.
 
 For work on applying Functional Curation to the cell-based side of Chaste, see our
-[../Wisc2013 paper to appear in ICCS2013].
+[../Wisc2013 paper in ICCS2013].
 
 == Installation ==
 
@@ -38,7 +38,7 @@ If you wish to work with the latest version of the Chaste and project code, you 
 from the Chaste repository using the following commands:
 {{{
 #!sh
-svn checkout --username anonymous https://chaste.cs.ox.ac.uk/svn/chaste/trunk Chaste
+git clone -b develop https://chaste.cs.ox.ac.uk/git/chaste.git Chaste
 cd Chaste/projects
 svn checkout --username anonymous https://chaste.cs.ox.ac.uk/svn/chaste/projects/FunctionalCuration
 }}}
@@ -57,16 +57,16 @@ See the [./FunctionalCuration sub-page for our main paper] for details of how to
 its results.  There are also many tests covering the lower-level functionality available for use by
 protocols.  Run all the default tests with:
 {{{
-scons cl=1 b=GccOptNative projects/FunctionalCuration
+scons cl=1 b=GccOpt projects/FunctionalCuration
 }}}
 If you have multiple cores available, you can build in parallel with (using 4 cores for example):
 {{{
-scons -j4 cl=1 b=GccOptNative projects/FunctionalCuration
+scons -j4 cl=1 b=GccOpt projects/FunctionalCuration
 }}}
 
 To build an executable that can run a single protocol on a single model, do:
 {{{
-scons cl=1 exe=1 b=GccOptNative projects/FunctionalCuration/apps
+scons cl=1 exe=1 b=GccOpt projects/FunctionalCuration/apps
 }}}
 
 The executable will appear at `projects/FunctionalCuration/apps/src/FunctionalCuration`.
